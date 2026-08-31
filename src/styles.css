@@ -1309,6 +1309,29 @@ input[type='range']::-moz-range-thumb {
   text-transform: uppercase;
   color: var(--meta-ink-2);
 }
+/* Barra de avance por tareas dentro de los modales de tarea */
+.tarea-progreso {
+  margin: 2px 0 2px;
+}
+.tp-track {
+  display: flex;
+  gap: 5px;
+}
+.tp-seg {
+  flex: 1;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--meta-line);
+}
+.tp-seg.done {
+  background: var(--brand);
+}
+.tp-seg.current {
+  background: rgba(245, 197, 24, 0.4);
+}
+.tp-caption {
+  margin-top: 6px;
+}
 /* contenido en tema oscuro dentro del sheet */
 .flowsheet h1 {
   color: var(--meta-ink);

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { Button, MetaSheet } from '../components/ui.jsx';
+import TareaProgreso from '../components/TareaProgreso.jsx';
 import { useMetrics } from '../metrics/MetricsProvider.jsx';
 import { useStore, tareaCompletada } from '../state/store.jsx';
 import { TAREAS, ENTRADA_TAREA, ORDEN_TAREAS } from '../flow.js';
@@ -44,8 +45,8 @@ export default function TareaIntro() {
     <>
       <Fondo />
       <MetaSheet label={`Tarea ${tarea.num} de 5`}>
-        <span className="tiny">Tarea {tarea.num}</span>
-        <h1>{tarea.titulo}</h1>
+        <TareaProgreso currentId={id} />
+        <h1 style={{ marginTop: 12 }}>{tarea.titulo}</h1>
         <div className="card">
           <div className="tiny" style={{ textTransform: 'uppercase', letterSpacing: '.04em' }}>
             Escenario

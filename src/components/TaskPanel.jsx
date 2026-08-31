@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { MetaSheet } from './ui.jsx';
+import TareaProgreso from './TareaProgreso.jsx';
 import { TAREAS, ORDEN_TAREAS, tareaDeRuta } from '../flow.js';
 import { useStore, tareaCompletada } from '../state/store.jsx';
 import { useMetrics } from '../metrics/MetricsProvider.jsx';
@@ -69,7 +70,8 @@ export default function TaskPanel() {
 
       {open && (
         <MetaSheet label={`Tarea ${tarea.num} de 5`} onClose={() => setOpen(false)}>
-          <h1>{tarea.titulo}</h1>
+          <TareaProgreso currentId={id} />
+          <h1 style={{ marginTop: 12 }}>{tarea.titulo}</h1>
           <div className="card">
             <div className="tiny" style={{ textTransform: 'uppercase', letterSpacing: '.04em' }}>
               Escenario
