@@ -219,16 +219,34 @@ export function Content({ children, tight }) {
   return <div className={`content${tight ? ' tight' : ''}`}>{children}</div>;
 }
 
-// Overlay del instrumento de la prueba (intro de tarea, SEQ). Se abre SOBRE la
-// pantalla de fondo (hub / dashboard): modal centrado en desktop, bottom sheet
-// a todo el ancho en movil. Es OBLIGATORIO: no se cierra tocando el fondo ni
-// tiene boton de cerrar; la unica salida es la accion que trae dentro.
-export function MetaSheet({ label, children }) {
+// Overlay del instrumento de la prueba (intro de tarea, SEQ, Bienvenida, SUS,
+// panel de Instrucciones). Se abre SOBRE la pantalla de fondo: modal centrado
+// en desktop, bottom sheet a todo el ancho en movil.
+//   - sin onClose  -> OBLIGATORIO: no se cierra (intro, SEQ, Bienvenida, SUS).
+//   - con onClose   -> se cierra tocando el fondo o el boton "Cerrar"
+//                      (Instrucciones, que se reabre con su FAB).
+export function MetaSheet({ label, children, onClose }) {
+  const dismissible = typeof onClose === 'function';
   return (
-    <div className="flowsheet-backdrop">
-      <div className="flowsheet" role="dialog" aria-modal="true" aria-label={label}>
+    <div className="flowsheet-backdrop" onClick={dismissible ? () => onClose() : undefined}>
+      <div
+        className="flowsheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label={label}
+        onClick={dismissible ? (e) => e.stopPropagation() : undefined}
+      >
         <div className="flowsheet-handle" aria-hidden="true" />
-        {label && <div className="flowsheet-label">{label}</div>}
+        {(label || dismissible) && (
+          <div className="flowsheet-top">
+            <span className="flowsheet-label">{label}</span>
+            {dismissible && (
+              <button type="button" className="btn ghost sm" onClick={() => onClose()}>
+                Cerrar
+              </button>
+            )}
+          </div>
+        )}
         {children}
       </div>
     </div>
