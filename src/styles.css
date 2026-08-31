@@ -1371,8 +1371,39 @@ input[type='range']::-moz-range-thumb {
   border-color: var(--brand);
   color: var(--ink);
 }
-.flowsheet .btn {
-  margin-top: 18px;
+.flowsheet .likert button {
+  background: var(--meta-surface);
+  border-color: var(--meta-line);
+  color: var(--meta-ink-2);
+}
+.flowsheet .likert button.sel {
+  background: rgba(245, 197, 24, 0.16);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.flowsheet .field > label {
+  color: var(--meta-ink-2);
+}
+.flowsheet .field input,
+.flowsheet .field select,
+.flowsheet .field textarea {
+  background: var(--meta-bg);
+  border-color: var(--meta-line);
+  color: var(--meta-ink);
+}
+.flowsheet .callout.info {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--meta-ink-2);
+}
+.flowsheet .btn.ghost {
+  color: var(--meta-ink);
+  border-color: var(--meta-line);
+}
+.flowsheet .btn.ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.flowsheet .btn.primary {
+  margin-top: 16px;
 }
 @media (max-width: 480px) {
   .flowsheet-backdrop {

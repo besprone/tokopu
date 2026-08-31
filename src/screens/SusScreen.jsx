@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Screen, MetaBar, Content, FooterActions, Button } from '../components/ui.jsx';
+import { Button, MetaSheet } from '../components/ui.jsx';
 import { useMetrics } from '../metrics/MetricsProvider.jsx';
 import { SUS_ITEMS, SUS_ESCALA } from '../flow.js';
+import SolicitudHub from './block1/SolicitudHub.jsx';
 
 export default function SusScreen() {
   const navigate = useNavigate();
@@ -29,15 +30,12 @@ export default function SusScreen() {
   const item = SUS_ITEMS[actual];
 
   return (
-    <Screen meta>
-      <MetaBar label="Cuestionario final" />
-      <Content>
-        <span className="tiny">
-          Cuestionario SUS · {actual + 1} de {total}
-        </span>
-        <h1 style={{ margintop: 8 }}>Tu experiencia general</h1>
-        <p className="lead">
-          Marca que tanto estas de acuerdo con cada afirmacion sobre la app Toko.
+    <>
+      <SolicitudHub />
+      <MetaSheet label="Cuestionario final">
+        <span className="tiny">SUS · {actual + 1} de {total}</span>
+        <p className="lead" style={{ margin: '4px 0 0' }}>
+          Que tan de acuerdo estas con esta afirmacion sobre la app Toko?
         </p>
 
         <div className="card">
@@ -58,7 +56,7 @@ export default function SusScreen() {
           </div>
         </div>
 
-        <div className="row between" style={{ marginTop: 16 }}>
+        <div className="row between" style={{ marginTop: 14 }}>
           <Button
             variant="ghost"
             className="sm"
@@ -67,9 +65,7 @@ export default function SusScreen() {
           >
             ← Anterior
           </Button>
-          <span className="tiny">
-            {contestadas}/{total} contestadas
-          </span>
+          <span className="tiny">{contestadas}/{total} contestadas</span>
           <Button
             variant="ghost"
             className="sm"
@@ -79,12 +75,11 @@ export default function SusScreen() {
             Siguiente →
           </Button>
         </div>
-      </Content>
-      <FooterActions>
+
         <Button variant="primary" disabled={!listo} onClick={enviar} track="sus_enviar">
-          {listo ? 'Ver resultados' : `Faltan ${total - contestadas} respuestas`}
+          {listo ? 'Enviar' : `Faltan ${total - contestadas} respuestas`}
         </Button>
-      </FooterActions>
-    </Screen>
+      </MetaSheet>
+    </>
   );
 }
