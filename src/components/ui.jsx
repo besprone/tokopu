@@ -219,6 +219,22 @@ export function Content({ children, tight }) {
   return <div className={`content${tight ? ' tight' : ''}`}>{children}</div>;
 }
 
+// Overlay del instrumento de la prueba (intro de tarea, SEQ). Se abre SOBRE la
+// pantalla de fondo (hub / dashboard): modal centrado en desktop, bottom sheet
+// a todo el ancho en movil. Es OBLIGATORIO: no se cierra tocando el fondo ni
+// tiene boton de cerrar; la unica salida es la accion que trae dentro.
+export function MetaSheet({ label, children }) {
+  return (
+    <div className="flowsheet-backdrop">
+      <div className="flowsheet" role="dialog" aria-modal="true" aria-label={label}>
+        <div className="flowsheet-handle" aria-hidden="true" />
+        {label && <div className="flowsheet-label">{label}</div>}
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function FooterActions({ children }) {
   return <div className="footer-actions">{children}</div>;
 }

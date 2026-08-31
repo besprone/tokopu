@@ -124,20 +124,6 @@ export default function Cotizador() {
               </div>
             </div>
 
-            <div className="slider-block" style={{ marginTop: 12 }}>
-              <div className="cap">Pago quincenal que realizara</div>
-              <div className="big">{r ? mxn(r.pagoQuincenal) : '—'}</div>
-              <div className={`capacity-meter${excede ? ' over' : ''}`}>
-                <div className="bar">
-                  <i style={{ width: `${usoPct}%` }} />
-                </div>
-                <div className="range-ends">
-                  <span>{r ? `${usoPct}% de la capacidad` : 'Elige el numero de quincenas'}</span>
-                  <span>Capacidad de pago {mxn(capacidad)}</span>
-                </div>
-              </div>
-            </div>
-
             <div className="field" style={{ marginTop: 16 }}>
               <label>Quincenas disponibles</label>
               <div className="chip-row">
@@ -153,6 +139,20 @@ export default function Cotizador() {
                     {n}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            <div className="slider-block" style={{ marginTop: 16 }}>
+              <div className="cap">Pago quincenal que realizara</div>
+              <div className="big">{r ? mxn(r.pagoQuincenal) : '—'}</div>
+              <div className={`capacity-meter${excede ? ' over' : ''}`}>
+                <div className="bar">
+                  <i style={{ width: `${usoPct}%` }} />
+                </div>
+                <div className="range-ends">
+                  <span>{r ? `${usoPct}% de la capacidad` : 'Elige el numero de quincenas'}</span>
+                  <span>Capacidad de pago {mxn(capacidad)}</span>
+                </div>
               </div>
             </div>
 
