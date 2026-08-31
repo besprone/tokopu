@@ -35,7 +35,7 @@ export default function SusScreen() {
       <MetaSheet label="Cuestionario final">
         <span className="tiny">SUS · {actual + 1} de {total}</span>
         <p className="lead" style={{ margin: '4px 0 0' }}>
-          Que tan de acuerdo estas con esta afirmacion sobre la app Toko?
+          ¿Qué tan de acuerdo estás con esta afirmación sobre la app Toko?
         </p>
 
         <div className="card">

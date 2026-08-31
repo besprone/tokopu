@@ -28,10 +28,13 @@ export default function SeqScreen() {
   return (
     <>
       <SolicitudHub />
-      <MetaSheet label="Pregunta rapida">
-        <span className="tiny">Evaluacion de la tarea{meta.num ? ` ${meta.num}` : ''}</span>
-        <h1>{meta.titulo}</h1>
-        <p className="lead">{SEQ_PREGUNTA}</p>
+      <MetaSheet label="Pregunta rápida">
+        <span className="tiny">
+          {meta.num
+            ? `Evaluación de la tarea ${meta.num} · ${meta.titulo}`
+            : `Evaluación · ${meta.titulo}`}
+        </span>
+        <h1>{SEQ_PREGUNTA}</h1>
 
         <div className="scale">
           {[1, 2, 3, 4, 5, 6, 7].map((n) => (

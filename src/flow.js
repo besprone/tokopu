@@ -9,8 +9,14 @@ export const TAREAS = {
     num: 1,
     titulo: 'Iniciar la solicitud',
     nucleo: false,
-    escenario:
-      'Llega Sara Fernanda Perez Lopez, profesora de primaria. Trabaja en la Secretaria de Educacion de Guerrero, con convenio de Educacion, y va a firmar de forma autografa (en papel/pantalla). Abre una nueva solicitud de credito para ella con esos datos.',
+    escenario: `Llega Sara a solicitar un crédito. Ábrele una nueva solicitud con sus datos.
+
+Datos de Sara:
+• Nombre: Sara Fernanda Pérez López
+• Puesto: profesora de primaria
+• Dependencia: Secretaría de Educación de Guerrero
+• Convenio: Educación
+• Tipo de firma: autógrafa`,
     exito:
       'Llegas al hub de progreso con dependencia = "Secretaria de Educacion - Guerrero", convenio = "Educacion" y tipo de firma = Autografa.',
     observar: [
@@ -26,8 +32,14 @@ export const TAREAS = {
     num: 2,
     titulo: 'Autenticar e identificar al cliente',
     nucleo: true,
-    escenario:
-      'Autentica e identifica a Sara. Te dara su celular (55 6209 5585) y su correo institucional que termina en .gob.mx (te lo dicta el facilitador). El facilitador te dira si el movil de Sara alcanzo a autenticar o no. Luego firma tu la carta de consulta al portal de la dependencia y pide a Sara que firme la suya.',
+    escenario: `Autentica e identifica a Sara para poder continuar. Necesitas:
+• Autenticar su identidad
+• Capturar su identificación (selfie e INE)
+• Firmar tu carta de consulta y que Sara firme la suya
+
+Datos de Sara:
+• Celular: 55 6209 5585
+• Correo: saraperez@gob.mx`,
     exito:
       'Pantalla "El cliente completo el proceso de autenticacion", con selfie e INE (frente y reverso) capturados, datos del OCR verificados (CURP PEMJ850624MDFRRL09, RFC PEMJ850624PL9, nombre Sara Fernanda Perez Lopez) y ambas firmas registradas.',
     observar: [
@@ -46,7 +58,7 @@ export const TAREAS = {
     titulo: 'Configurar la oferta',
     nucleo: true,
     escenario:
-      'Sara quiere $45,000 a 60 quincenas. El monto arranca en el minimo: muevelo hasta $45,000, elige el plazo de 60 quincenas y dile cuanto se le descontara cada quincena.',
+      'Sara quiere $45,000 a 60 quincenas. Configura esa oferta y dile cuánto se le descontará cada quincena.',
     exito:
       'Oferta confirmada con monto $45,000 y 60 quincenas; puedes decir el pago quincenal (~$1,235) y ubicar el CAT (~53%).',
     observar: [
@@ -63,8 +75,12 @@ export const TAREAS = {
     num: 4,
     titulo: 'Llenar la informacion y corregir un dato',
     nucleo: true,
-    escenario:
-      'Completa la informacion de la solicitud de Sara (5 pasos). Sus datos bancarios: banco BBVA, CLABE 012180001234567899, ingreso mensual $13,500. Antes de confirmar, Sara te dice: "me cambie de casa, ahora vivo en Av. Reforma 88, Colonia Centro, CP 45010". Corrige el domicilio y confirma los datos.',
+    escenario: `Completa la información de la solicitud de Sara y confírmala. Antes de confirmar, Sara te dice: «me cambié de casa, ahora vivo en Av. Reforma 88, Colonia Centro, CP 45010» — corrige el domicilio.
+
+Datos de Sara:
+• Banco: BBVA
+• CLABE: 012180001234567899
+• Ingreso mensual: $13,500`,
     exito:
       'Los 5 pasos completos; domicilio corregido (calle, colonia y CP nuevos); CLABE de 18 digitos y banco BBVA capturados; ingreso $13,500; datos confirmados.',
     observar: [
@@ -83,8 +99,11 @@ export const TAREAS = {
     num: 5,
     titulo: 'Documentos y envio',
     nucleo: true,
-    escenario:
-      'Sube los documentos de Sara y envia la solicitud. Adjunta la INE desde el explorador de archivos del equipo; los demas documentos se completan solos (demo). Luego envia la solicitud y termina.',
+    escenario: `Sube los documentos de Sara y envía la solicitud.
+• Adjunta la INE desde los archivos del equipo.
+• Los demás documentos se completan solos (es demo).
+
+Luego envía la solicitud para terminar.`,
     exito:
       '13 de 13 documentos cargados, pantalla "Felicidades / solicitud en proceso de evaluacion" y termina.',
     observar: [
@@ -145,17 +164,19 @@ export function tareaDeRuta(pathname = '') {
 }
 
 // Items del SUS (adaptacion al espanol del cuestionario de Brooke).
+// Impares = positivos, pares = negativos (el calculo en track.js depende de
+// este orden). Ver susResultado().
 export const SUS_ITEMS = [
-  'Creo que me gustaria usar este sistema con frecuencia.',
-  'Encuentro este sistema innecesariamente complejo.',
-  'Creo que el sistema fue facil de usar.',
-  'Creo que necesitaria apoyo de una persona tecnica para poder usar este sistema.',
-  'Encuentro que las diversas funciones del sistema estan bien integradas.',
-  'Creo que el sistema es demasiado inconsistente.',
-  'Imagino que la mayoria de la gente aprenderia a usar este sistema rapidamente.',
-  'Encuentro el sistema muy incomodo de usar.',
-  'Me senti muy seguro/a usando el sistema.',
-  'Necesite aprender muchas cosas antes de poder empezar a usar el sistema.',
+  'Creo que me gustaría usar Toko con frecuencia.',
+  'Encuentro Toko innecesariamente complejo.',
+  'Creo que Toko es fácil de usar.',
+  'Creo que necesitaría el apoyo de una persona experta para poder usar Toko.',
+  'Encuentro que las distintas funciones de Toko están bien integradas.',
+  'Creo que Toko es demasiado inconsistente.',
+  'Imagino que la mayoría de la gente aprendería a usar Toko muy rápido.',
+  'Encuentro Toko muy tedioso de usar.',
+  'Me sentí muy seguro/a al usar Toko.',
+  'Necesité aprender muchas cosas antes de poder empezar a usar Toko.',
 ];
 
 export const SUS_ESCALA = [
@@ -167,6 +188,6 @@ export const SUS_ESCALA = [
 ];
 
 export const SEQ_PREGUNTA =
-  'En general, que tan dificil o facil fue completar esta tarea?';
-export const SEQ_MIN_LABEL = 'Muy dificil';
-export const SEQ_MAX_LABEL = 'Muy facil';
+  'En general, ¿qué tan difícil o fácil te resultó completar esta tarea?';
+export const SEQ_MIN_LABEL = 'Muy difícil';
+export const SEQ_MAX_LABEL = 'Muy fácil';

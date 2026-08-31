@@ -45,13 +45,20 @@ export default function Bienvenida() {
       <Home />
       <MetaSheet label="Prueba de usabilidad">
         <h1 onClick={golpeTitulo} style={{ cursor: 'default', userSelect: 'none', marginTop: 0 }}>
-          Toko · Credito Maestro
+          Toko · Crédito Maestro
         </h1>
         <p className="lead">
-          Vas a levantar una solicitud de credito por descuento via nomina, de principio a
-          fin. Trabaja como lo harias normalmente y piensa en voz alta. Al terminar cada
-          tarea responderas una pregunta corta (SEQ) y, al final, un cuestionario de 10
-          items (SUS).
+          Gracias por tu tiempo. Vas a levantar una solicitud de crédito por descuento vía
+          nómina, de principio a fin, como lo harías con un cliente real.
+        </p>
+        <p className="lead">
+          Importante: evaluamos la app, no a ti. No hay respuestas correctas ni incorrectas;
+          si algo se traba o confunde, eso es justo lo que nos sirve.
+        </p>
+        <p className="lead">
+          Trabaja como lo harías normalmente y piensa en voz alta: di lo que buscas, lo que
+          esperas que pase y lo que te confunde. Al terminar cada tarea te haremos una
+          pregunta rápida, y al final unas preguntas de cierre.
         </p>
 
         <div className={`field${tocado && !valido ? ' invalid' : ''}`}>
@@ -68,8 +75,8 @@ export default function Bienvenida() {
         </div>
 
         <div className="callout info">
-          Se registra tu nombre, tus respuestas y tu recorrido para el analisis interno del
-          equipo de UX. Al iniciar se descarta cualquier sesion previa en este dispositivo.
+          Se registra tu nombre, tus respuestas y tu recorrido para el análisis interno del
+          equipo de UX. Al iniciar se descarta cualquier sesión previa en este dispositivo.
         </div>
 
         <button className="btn primary" disabled={!valido} onClick={iniciar}>

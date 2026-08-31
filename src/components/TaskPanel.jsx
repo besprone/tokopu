@@ -74,7 +74,9 @@ export default function TaskPanel() {
             <div className="tiny" style={{ textTransform: 'uppercase', letterSpacing: '.04em' }}>
               Escenario
             </div>
-            <p className="small" style={{ margin: '4px 0 0' }}>{tarea.escenario}</p>
+            <p className="small" style={{ margin: '4px 0 0', whiteSpace: 'pre-line' }}>
+              {tarea.escenario}
+            </p>
           </div>
 
           {modo && (
