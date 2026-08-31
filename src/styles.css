@@ -1226,7 +1226,10 @@ input[type='range']::-moz-range-thumb {
   position: fixed;
   right: 24px;
   bottom: 24px;
-  z-index: 70;
+  /* tier de los FAB: sobre el contenido y el + (40), pero DEBAJO del sheet del
+     + (.sheet-backdrop 56) y de los paneles del moderador (.panel-backdrop 60).
+     El panel de Instrucciones es su propio .flowsheet-backdrop (90). */
+  z-index: 50;
   display: inline-flex;
   align-items: center;
   gap: 8px;
