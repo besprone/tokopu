@@ -166,6 +166,7 @@ export default function Identificacion() {
                 key={i}
                 inputMode="numeric"
                 maxLength={1}
+                autoFocus={i === 0}
                 value={d}
                 onChange={(e) => {
                   const v = e.target.value.replace(/\D/g, '');
