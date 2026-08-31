@@ -37,7 +37,7 @@ export default function NuevaSolicitud() {
   return (
     <Screen>
       <StatusBar />
-      <TopBar onClose={() => navigate('/inicio')} />
+      <TopBar onClose={false} />
       <Content>
         <h1>Iniciemos la solicitud</h1>
         <p className="lead">

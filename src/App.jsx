@@ -24,33 +24,38 @@ import ModDetalle from './screens/moderador/ModDetalle.jsx';
 
 export default function App() {
   return (
-    <div className="device-wrap">
-      <div className="device">
-        <Routes>
-          <Route path="/" element={<Bienvenida />} />
-          <Route path="/inicio" element={<Home />} />
-          <Route path="/solicitudes" element={<Solicitudes />} />
-          <Route path="/nueva" element={<NuevaSolicitud />} />
-          <Route path="/solicitud" element={<SolicitudHub />} />
-          <Route path="/tarea/:id" element={<TareaIntro />} />
-          <Route path="/identificacion" element={<Identificacion />} />
-          <Route path="/cotizador" element={<Cotizador />} />
-          <Route path="/informacion" element={<InfoSolicitud />} />
-          <Route path="/informacion/confirmar" element={<ConfirmaDatos />} />
-          <Route path="/documentos" element={<Documentos />} />
-          <Route path="/completada" element={<Completada />} />
-          <Route path="/seq/:tarea" element={<SeqScreen />} />
-          <Route path="/sus" element={<SusScreen />} />
-          <Route path="/gracias" element={<Gracias />} />
-          <Route path="/moderador" element={<ModLogin />} />
-          <Route path="/moderador/sesiones" element={<ModSesiones />} />
-          <Route path="/moderador/sesion/:id" element={<ModDetalle />} />
-          <Route path="/resultados" element={<Navigate to="/" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        <SessionWidgets />
-        <TaskPanel />
+    <>
+      <div className="device-wrap">
+        <div className="device">
+          <Routes>
+            <Route path="/" element={<Bienvenida />} />
+            <Route path="/inicio" element={<Home />} />
+            <Route path="/solicitudes" element={<Solicitudes />} />
+            <Route path="/nueva" element={<NuevaSolicitud />} />
+            <Route path="/solicitud" element={<SolicitudHub />} />
+            <Route path="/tarea/:id" element={<TareaIntro />} />
+            <Route path="/identificacion" element={<Identificacion />} />
+            <Route path="/cotizador" element={<Cotizador />} />
+            <Route path="/informacion" element={<InfoSolicitud />} />
+            <Route path="/informacion/confirmar" element={<ConfirmaDatos />} />
+            <Route path="/documentos" element={<Documentos />} />
+            <Route path="/completada" element={<Completada />} />
+            <Route path="/seq/:tarea" element={<SeqScreen />} />
+            <Route path="/sus" element={<SusScreen />} />
+            <Route path="/gracias" element={<Gracias />} />
+            <Route path="/moderador" element={<ModLogin />} />
+            <Route path="/moderador/sesiones" element={<ModSesiones />} />
+            <Route path="/moderador/sesion/:id" element={<ModDetalle />} />
+            <Route path="/resultados" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+          <SessionWidgets />
+        </div>
       </div>
-    </div>
+      {/* Instrucciones de la tarea: vive a nivel de viewport (fuera del marco)
+          para abrir un modal en desktop y un bottom sheet a todo el ancho en
+          movil. */}
+      <TaskPanel />
+    </>
   );
 }

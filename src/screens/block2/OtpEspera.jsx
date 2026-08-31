@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Screen, StatusBar, TopBar, Content, FooterActions, Button } from '../../components/ui.jsx';
+import { Screen, StatusBar, TopBar, Content, FooterActions, Button, GuardarSalir } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 
 // Espera de la autenticacion + biometria del cliente en su propio celular.
@@ -7,7 +7,7 @@ import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 // Para el prototipo, tras OTP_ESPERA_MS se resuelve solo.
 export const OTP_ESPERA_MS = 30000;
 
-export default function OtpEspera({ onManual, onListo, onClose }) {
+export default function OtpEspera({ onManual, onListo }) {
   const { track } = useMetrics();
   const [listo, setListo] = useState(false);
   const cerrado = useRef(false);
@@ -42,7 +42,7 @@ export default function OtpEspera({ onManual, onListo, onClose }) {
   return (
     <Screen>
       <StatusBar />
-      <TopBar title="OTP" onClose={onClose} onBack={null} />
+      <TopBar title="OTP" right={<GuardarSalir />} onBack={null} />
       <Content>
         <div className="otp-wait">
           {listo ? (

@@ -222,6 +222,12 @@ export function progresoSolicitud(s) {
   return resultado;
 }
 
+// Hay una solicitud empezada y sin enviar -> se puede reanudar desde
+// "Guardadas" en la pantalla de Solicitudes.
+export function hayBorrador(s) {
+  return !!(s.iniciada && !s.enviada);
+}
+
 // Una tarea "completada" no se puede volver a abrir desde el hub.
 export function tareaCompletada(s, id) {
   switch (id) {

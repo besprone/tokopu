@@ -60,7 +60,7 @@ export default function ModLogin() {
           </Button>
         )}
         <Button variant="ghost" onClick={() => navigate('/')}>
-          ← Volver
+          ← Regresar
         </Button>
       </FooterActions>
     </Screen>

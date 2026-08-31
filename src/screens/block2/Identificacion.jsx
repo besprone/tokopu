@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Screen, StatusBar, Content, FooterActions, Button, TopBar, Callout } from '../../components/ui.jsx';
+import { Screen, StatusBar, Content, FooterActions, Button, TopBar, Callout, GuardarSalir } from '../../components/ui.jsx';
 import Field from '../../components/Field.jsx';
 import SignaturePad from '../../components/SignaturePad.jsx';
 import OtpEspera from './OtpEspera.jsx';
@@ -105,7 +105,7 @@ export default function Identificacion() {
   if (paso === 'contacto') {
     const ok = !vTel(cel) && !vEmail(mail);
     return (
-      <Shell onClose={() => navigate('/solicitud')} title="Identificacion">
+      <Shell title="Identificacion">
         <Content>
           <h1>Empecemos por autenticar al cliente</h1>
           <p className="lead">
@@ -133,7 +133,6 @@ export default function Identificacion() {
   if (paso === 'otp_espera') {
     return (
       <OtpEspera
-        onClose={() => navigate('/solicitud')}
         onManual={() => {
           setAutVia('manual');
           ir('otp_codigo');
@@ -157,7 +156,7 @@ export default function Identificacion() {
   if (paso === 'otp_codigo') {
     const full = otp.every((d) => d !== '');
     return (
-      <Shell onClose={() => navigate('/solicitud')} title="OTP">
+      <Shell title="OTP">
         <Content>
           <h1>Ingresa el codigo de 6 digitos</h1>
           <p className="lead">Pide al cliente el codigo que recibio por SMS o WhatsApp.</p>
@@ -189,7 +188,7 @@ export default function Identificacion() {
 
   if (paso === 'bio_intro') {
     return (
-      <Shell onClose={() => navigate('/solicitud')} title="Biometricos">
+      <Shell title="Biometricos">
         <Content>
           <div className="mock-oval" style={{ margin: '10px auto 20px' }} />
           <h1>Comencemos por identificar al cliente</h1>
@@ -209,7 +208,7 @@ export default function Identificacion() {
 
   if (paso === 'selfie') {
     return (
-      <Shell onClose={() => navigate('/solicitud')} title="Selfie">
+      <Shell title="Selfie">
         <Content>
           <div className="mock-camera">
             <div>
@@ -229,7 +228,7 @@ export default function Identificacion() {
   if (paso === 'ine_frente' || paso === 'ine_reverso') {
     const esFrente = paso === 'ine_frente';
     return (
-      <Shell onClose={() => navigate('/solicitud')} title="Captura INE">
+      <Shell title="Captura INE">
         <Content>
           <h1>Capturar {esFrente ? 'el frente' : 'el reverso'} de la INE</h1>
           <p className="lead">Por favor, captura la parte {esFrente ? 'frontal' : 'trasera'} de la INE del cliente.</p>
@@ -256,7 +255,7 @@ export default function Identificacion() {
   if (paso === 'ocr') {
     const remoto = autVia === 'remoto';
     return (
-      <Shell onClose={() => navigate('/solicitud')} title="Datos del cliente">
+      <Shell title="Datos del cliente">
         <Content>
           <h1>Tomemos los datos personales del cliente</h1>
           <p className="lead">
@@ -290,7 +289,7 @@ export default function Identificacion() {
 
   if (paso === 'firma_asesor') {
     return (
-      <Shell onClose={() => navigate('/solicitud')} title="Firma del asesor">
+      <Shell title="Firma del asesor">
         <Content>
           <h1>Firmar carta de consulta al portal de dependencia</h1>
           <p className="lead">
@@ -322,7 +321,7 @@ export default function Identificacion() {
 
   if (paso === 'firma_cliente') {
     return (
-      <Shell onClose={() => navigate('/solicitud')} title="Firma del cliente">
+      <Shell title="Firma del cliente">
         <Content>
           <h1>Firma autografa del cliente</h1>
           <p className="lead">
@@ -342,11 +341,11 @@ export default function Identificacion() {
   return null;
 }
 
-function Shell({ title, onClose, children }) {
+function Shell({ title, children }) {
   return (
     <Screen>
       <StatusBar />
-      <TopBar title={title} onClose={onClose} onBack={null} />
+      <TopBar title={title} right={<GuardarSalir />} onBack={null} />
       {children}
     </Screen>
   );

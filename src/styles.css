@@ -285,6 +285,13 @@ input[type='radio'] {
 .topbar button:hover {
   background: var(--line-2);
 }
+/* "Guardar y salir": accion de texto en el topbar del flujo de solicitud */
+.save-exit {
+  white-space: nowrap;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--brand-ink);
+}
 
 .content {
   padding: var(--pad);
@@ -935,7 +942,9 @@ input[type='range']::-moz-range-thumb {
   color: var(--brand-ink);
 }
 
-/* FAB flota DENTRO del marco del telefono, por encima del bottom-nav */
+/* FAB flota DENTRO del marco del telefono, por encima del bottom-nav.
+   Usa el primario del sistema (mismo par que .btn.primary: fondo --brand,
+   glifo --ink). */
 .fab {
   position: absolute;
   right: 16px;
@@ -944,13 +953,16 @@ input[type='range']::-moz-range-thumb {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--ink);
-  color: #fff;
+  background: var(--brand);
+  color: var(--ink);
   font-size: 26px;
   border: none;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 16px rgba(20, 24, 31, 0.22);
   display: grid;
   place-items: center;
+}
+.fab:hover {
+  background: var(--brand-600);
 }
 
 /* Cabecera de la app (Inicio / Solicitudes) */
@@ -1208,24 +1220,92 @@ input[type='range']::-moz-range-thumb {
   background: rgba(154, 103, 0, 0.9);
 }
 
-/* Pestana "Escenario" en el borde derecho: guion de la tarea, visible siempre */
-.task-tab {
-  position: absolute;
-  right: 0;
-  top: 62%;
-  transform: translateY(-50%);
-  z-index: 55;
-  writing-mode: vertical-rl;
+/* Instrucciones de la tarea: FAB de texto fijo a la PANTALLA (fuera del marco).
+   Abre un modal en desktop / un bottom sheet a todo el ancho en movil. */
+.instrucciones-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border: none;
-  background: rgba(122, 93, 0, 0.95);
+  background: rgba(122, 93, 0, 0.96);
   color: #fff;
-  padding: 12px 5px;
-  font-size: 9px;
+  padding: 12px 18px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border-radius: 8px 0 0 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+}
+.instrucciones-fab:hover {
+  background: rgba(122, 93, 0, 1);
+}
+.instrucciones-fab svg {
+  width: 16px;
+  height: 16px;
+}
+
+.instr-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(10, 12, 16, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.instr-panel {
+  background: var(--surface);
+  border-radius: var(--radius);
+  max-width: 460px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 22px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+.instr-handle {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .instrucciones-fab {
+    right: auto;
+    left: 12px;
+    bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+  .instr-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .instr-panel {
+    max-width: 100%;
+    border-radius: 18px 18px 0 0;
+    max-height: 80vh;
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+    animation: instr-up 0.22s ease-out;
+  }
+  .instr-handle {
+    display: block;
+    width: 40px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--line);
+    margin: 2px auto 12px;
+  }
+}
+
+@keyframes instr-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 .panel-backdrop {

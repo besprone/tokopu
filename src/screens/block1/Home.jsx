@@ -2,13 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, AppHeader, BottomNav, NewRequestFab } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
-
-const STATS = [
-  { n: '12', l: 'Totales' },
-  { n: '3', l: 'Guardadas' },
-  { n: '1', l: 'Regularizar' },
-  { n: '12', l: 'Aprobadas' },
-];
+import { useStore, hayBorrador } from '../../state/store.jsx';
 
 const PROMOS = [
   {
@@ -24,6 +18,14 @@ const PROMOS = [
 export default function Home() {
   const navigate = useNavigate();
   const { track } = useMetrics();
+  const { solicitud } = useStore();
+
+  const stats = [
+    { n: '12', l: 'Totales' },
+    { n: String(3 + (hayBorrador(solicitud) ? 1 : 0)), l: 'Guardadas' },
+    { n: '1', l: 'Regularizar' },
+    { n: '12', l: 'Aprobadas' },
+  ];
 
   return (
     <Screen>
@@ -47,7 +49,7 @@ export default function Home() {
         </div>
 
         <div className="stat-grid">
-          {STATS.map((s) => (
+          {stats.map((s) => (
             <button
               key={s.l}
               className="stat"

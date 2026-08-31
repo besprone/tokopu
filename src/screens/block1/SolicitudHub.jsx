@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Screen, StatusBar, Content, FooterActions, Button, TopBar } from '../../components/ui.jsx';
+import { Screen, StatusBar, Content, FooterActions, Button, TopBar, GuardarSalir } from '../../components/ui.jsx';
 import { useStore, progresoSolicitud, tareaCompletada } from '../../state/store.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { BLOQUE_TAREA } from '../../flow.js';
@@ -43,7 +43,7 @@ export default function SolicitudHub() {
   return (
     <Screen>
       <StatusBar />
-      <TopBar onClose={() => navigate('/inicio')} />
+      <TopBar right={<GuardarSalir />} />
       <Content>
         <h1>Inicia la solicitud de credito</h1>
         <p className="lead">

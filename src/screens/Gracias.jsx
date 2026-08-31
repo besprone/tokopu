@@ -21,7 +21,7 @@ export default function Gracias() {
       </Content>
       <FooterActions>
         <Button variant="primary" onClick={() => navigate('/')} track="gracias_volver">
-          Volver al inicio
+          Regresar al inicio
         </Button>
       </FooterActions>
     </Screen>

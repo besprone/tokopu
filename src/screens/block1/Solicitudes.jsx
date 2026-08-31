@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, AppHeader, BottomNav, NewRequestFab } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
-
-const STATS = [
-  { id: 'totales', n: '12', l: 'Totales' },
-  { id: 'guardadas', n: '3', l: 'Guardadas' },
-  { id: 'regularizar', n: '1', l: 'Regularizar' },
-  { id: 'aprobadas', n: '12', l: 'Aprobadas' },
-];
+import { useStore, hayBorrador, progresoSolicitud } from '../../state/store.jsx';
 
 const SOLICITUDES = [
   { dia: 'Hoy', n: 'Sara Fernandez', d: '45,000mxn / 22 semanas', st: 'evaluacion', label: 'En evaluacion' },
@@ -20,9 +15,31 @@ const SOLICITUDES = [
 ];
 
 export default function Solicitudes() {
+  const navigate = useNavigate();
   const { track } = useMetrics();
+  const { solicitud } = useStore();
   const [sel, setSel] = useState('totales');
   let dia = null;
+
+  const borrador = hayBorrador(solicitud);
+  const p = solicitud.datos.personales || {};
+  const nombreBorrador =
+    [p.nombre, p.apellidoPaterno, p.apellidoMaterno].filter(Boolean).join(' ') ||
+    'Solicitud en proceso';
+  const montoBorrador = solicitud.oferta?.monto;
+  const pctBorrador = progresoSolicitud(solicitud).pct;
+
+  const stats = [
+    { id: 'totales', n: '12', l: 'Totales' },
+    { id: 'guardadas', n: String(3 + (borrador ? 1 : 0)), l: 'Guardadas' },
+    { id: 'regularizar', n: '1', l: 'Regularizar' },
+    { id: 'aprobadas', n: '12', l: 'Aprobadas' },
+  ];
+
+  const reanudar = () => {
+    track('click', { target: 'reanudar_solicitud', pct: pctBorrador });
+    navigate('/solicitud');
+  };
 
   return (
     <Screen>
@@ -32,7 +49,7 @@ export default function Solicitudes() {
         <strong style={{ display: 'block', marginBottom: 10 }}>Tus solicitudes</strong>
 
         <div className="stat-grid">
-          {STATS.map((s) => (
+          {stats.map((s) => (
             <button
               key={s.id}
               className={`stat${sel === s.id ? ' sel' : ''}`}
@@ -47,6 +64,31 @@ export default function Solicitudes() {
             </button>
           ))}
         </div>
+
+        {borrador && (
+          <div style={{ marginTop: 18 }}>
+            <div style={{ marginBottom: 8, fontWeight: 700, fontSize: 14 }}>Guardadas</div>
+            <button
+              className="card"
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '12px 14px', marginBottom: 8 }}
+              onClick={reanudar}
+            >
+              <div className="row between">
+                <div>
+                  <div style={{ fontWeight: 600 }}>{nombreBorrador}</div>
+                  <div className="tiny">
+                    {montoBorrador ? `${montoBorrador.toLocaleString('es-MX')}mxn · ` : ''}
+                    {pctBorrador}% completado
+                  </div>
+                  <div className="small st evaluacion" style={{ fontWeight: 600 }}>
+                    Continuar solicitud
+                  </div>
+                </div>
+                <span className="muted">→</span>
+              </div>
+            </button>
+          </div>
+        )}
 
         <div style={{ marginTop: 18 }}>
           {SOLICITUDES.map((r, i) => {

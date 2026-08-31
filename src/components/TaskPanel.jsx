@@ -3,9 +3,12 @@ import { useLocation } from 'react-router-dom';
 import { TAREAS, ORDEN_TAREAS, tareaDeRuta } from '../flow.js';
 import { useStore, tareaCompletada } from '../state/store.jsx';
 
-// Pestana "Escenario" en el borde derecho: muestra SOLO el escenario de la
-// tarea que el asesor esta desarrollando en ese momento. Con ?mod=1 anade
-// "Que observar" (para el facilitador). Se oculta fuera de una tarea.
+// Instrucciones de la tarea. Disparador: un FAB de texto "Instrucciones" fijo a
+// la pantalla (fuera del marco del telefono). Al abrir:
+//   - desktop  -> modal centrado sobre toda la pantalla
+//   - movil    -> bottom sheet a todo el ancho (lo decide el CSS por media query)
+// Muestra SOLO el escenario de la tarea en curso. Con ?mod=1 anade "Que
+// observar" (para el facilitador). Se oculta fuera de una tarea.
 export default function TaskPanel() {
   const location = useLocation();
   const { solicitud } = useStore();
@@ -33,17 +36,41 @@ export default function TaskPanel() {
     if (!tarea) setOpen(false);
   }, [tarea]);
 
+  // Cerrar con Escape (ahora es un modal a nivel de pantalla).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => e.key === 'Escape' && setOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
   if (!tarea) return null;
 
   return (
     <>
-      <button className="task-tab" onClick={() => setOpen(true)} title="Escenario de la tarea">
-        Escenario · T{tarea.num}
+      <button
+        className="instrucciones-fab"
+        onClick={() => setOpen(true)}
+        title="Ver las instrucciones de la tarea"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M9 11h6M9 15h4" />
+          <path d="M7 3h7l5 5v13H7z" />
+          <path d="M14 3v5h5" />
+        </svg>
+        Instrucciones
       </button>
 
       {open && (
-        <div className="panel-backdrop" onClick={() => setOpen(false)}>
-          <div className="panel" onClick={(e) => e.stopPropagation()}>
+        <div className="instr-backdrop" onClick={() => setOpen(false)}>
+          <div
+            className="instr-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Instrucciones de la tarea ${tarea.num}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="instr-handle" aria-hidden="true" />
             <div className="row between">
               <h2 style={{ margin: 0 }}>
                 Tarea {tarea.num} — {tarea.titulo}

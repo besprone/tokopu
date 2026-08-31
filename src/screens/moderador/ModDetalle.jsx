@@ -90,7 +90,7 @@ export default function ModDetalle() {
         </Content>
         <FooterActions>
           <Button variant="ghost" onClick={() => navigate('/moderador/sesiones')}>
-            ← Volver
+            ← Regresar
           </Button>
         </FooterActions>
       </Screen>
@@ -203,7 +203,7 @@ export default function ModDetalle() {
           )}
         </div>
         <Button variant="ghost" onClick={() => navigate('/moderador/sesiones')}>
-          ← Volver a la lista
+          ← Regresar a la lista
         </Button>
       </FooterActions>
     </Screen>

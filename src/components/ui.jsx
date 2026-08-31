@@ -1,6 +1,26 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useMetrics } from '../metrics/MetricsProvider.jsx';
+
+// Boton "Guardar y salir" del topbar en el flujo de solicitud. La solicitud se
+// autoguarda en cada cambio; esto solo saca al asesor del flujo. Se reanuda
+// desde "Guardadas" en la pantalla de Solicitudes.
+export function GuardarSalir() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { track } = useMetrics();
+  return (
+    <button
+      className="save-exit"
+      onClick={() => {
+        track('click', { target: 'guardar_y_salir', desde: location.pathname });
+        navigate('/solicitudes');
+      }}
+    >
+      Guardar y salir
+    </button>
+  );
+}
 
 export function StatusBar() {
   return (
@@ -157,7 +177,7 @@ export function TopBar({ title, onBack, onClose, right }) {
             onBack ? onBack() : navigate(-1);
           }}
         >
-          ← Volver
+          ← Regresar
         </button>
       )}
       {title ? <strong className="small">{title}</strong> : <span className="grow" />}

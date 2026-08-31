@@ -164,7 +164,7 @@ export default function ModSesiones() {
       </Content>
       <FooterActions>
         <Button variant="ghost" onClick={() => navigate('/')}>
-          ← Volver al inicio
+          ← Regresar al inicio
         </Button>
       </FooterActions>
     </Screen>

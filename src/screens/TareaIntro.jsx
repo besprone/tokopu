@@ -32,10 +32,7 @@ export default function TareaIntro() {
   return (
     <Screen meta>
       <MetaBar label={`Tarea ${tarea.num} de 5`} />
-      <TopBar
-        onBack={() => navigate(-1)}
-        onClose={() => navigate(id === 'iniciar_solicitud' ? '/inicio' : '/solicitud')}
-      />
+      <TopBar onBack={() => navigate(-1)} onClose={false} />
       <Content>
         <span className="tiny">Tarea {tarea.num}</span>
         <h1>{tarea.titulo}</h1>
@@ -49,9 +46,6 @@ export default function TareaIntro() {
       <FooterActions>
         <Button variant="primary" onClick={empezar} track={`empezar_${id}`}>
           Empezar tarea →
-        </Button>
-        <Button variant="ghost" onClick={() => navigate(-1)} track={`intro_volver_${id}`}>
-          ← Volver
         </Button>
       </FooterActions>
     </Screen>
