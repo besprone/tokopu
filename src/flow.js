@@ -80,7 +80,10 @@ Datos de Sara:
 Datos de Sara:
 • Banco: BBVA
 • CLABE: 012180001234567899
-• Ingreso mensual: $13,500`,
+• Ingreso mensual: $13,500
+• Origen de los recursos: Salario
+• Destino de los recursos: Crédito al consumo
+• Liquidación anticipada: No`,
     exito:
       'Los 5 pasos completos; domicilio corregido (calle, colonia y CP nuevos); CLABE de 18 digitos y banco BBVA capturados; ingreso $13,500; datos confirmados.',
     observar: [
