@@ -14,6 +14,7 @@ import {
   construirSesion,
   enviarSesion,
   flushPendientes,
+  enviarParcialAlOcultar,
 } from './track.js';
 
 const MetricsCtx = createContext(null);
@@ -28,7 +29,20 @@ export function MetricsProvider({ children }) {
     setSnapshot({ events: getEvents(), meta: getMeta() });
     const unsub = subscribe((s) => setSnapshot({ events: s.events.slice(), meta: s.meta }));
     flushPendientes(); // reintenta sesiones que no llegaron al backend
-    return unsub;
+
+    // Sesion parcial al ocultar/cerrar la pagina -> no se pierden pruebas
+    // abandonadas en otro dispositivo.
+    const onHidden = () => {
+      if (document.visibilityState === 'hidden') enviarParcialAlOcultar();
+    };
+    document.addEventListener('visibilitychange', onHidden);
+    window.addEventListener('pagehide', enviarParcialAlOcultar);
+
+    return () => {
+      unsub();
+      document.removeEventListener('visibilitychange', onHidden);
+      window.removeEventListener('pagehide', enviarParcialAlOcultar);
+    };
   }, []);
 
   // route_change automatico

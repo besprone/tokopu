@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   // Guardado (lo llama el navegador del participante al enviar el SUS).
   if (req.method === 'POST') {
     if (!checkIngest(req)) return res.status(401).json({ error: 'ingesta' });
-    const s = req.body;
+    const { ingestToken: _t, ...s } = req.body || {};
     if (!s || !s.meta || !s.meta.sessionId || !Array.isArray(s.eventos)) {
       return res.status(400).json({ error: 'payload invalido' });
     }

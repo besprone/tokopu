@@ -51,6 +51,7 @@ export function requireAuth(req, res) {
 }
 
 export function checkIngest(req) {
-  const t = req.headers['x-ingest-token'];
+  // Header normal; o en el body para sendBeacon (no puede poner headers).
+  const t = req.headers['x-ingest-token'] || req.body?.ingestToken;
   return !!process.env.INGEST_TOKEN && t === process.env.INGEST_TOKEN;
 }

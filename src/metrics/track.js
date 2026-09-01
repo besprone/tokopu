@@ -4,7 +4,7 @@
 // Exporta la sesion completa a JSON y CSV.
 // ---------------------------------------------------------------------------
 
-import { enviarSesionAPI } from '../moderador/api.js';
+import { enviarSesionAPI, enviarSesionBeacon } from '../moderador/api.js';
 
 const STORAGE_EVENTS = 'toko.metrics.events.v1';
 const STORAGE_META = 'toko.metrics.meta.v1';
@@ -439,6 +439,30 @@ export async function enviarSesion(sesion) {
     return true;
   } catch {
     return false; // queda pendiente; se reintenta en flushPendientes
+  }
+}
+
+// Envia la sesion ACTUAL como parcial cuando la pagina se oculta / se cierra
+// (el participante bloquea el telefono, cambia de app o cierra la pestana).
+// Usa sendBeacon para sobrevivir al unload. No marca la sesion como enviada:
+// si el participante vuelve y termina el SUS, el envio completo la sobreescribe
+// (mismo sessionId en el Blob). Dedup por numero de eventos.
+let _ultBeaconEventos = 0;
+
+export function enviarParcialAlOcultar() {
+  if (!meta || meta._enviada) return;
+  const hayActividad = events.some(
+    (e) => !['session_start', 'route_change'].includes(e.evento)
+  );
+  if (!hayActividad) return;
+  if (events.length === _ultBeaconEventos) return; // nada nuevo desde el ultimo
+  _ultBeaconEventos = events.length;
+  try {
+    const sesion = construirSesion({ completa: false });
+    guardarSesionLocal(sesion); // copia local marcada no-sincronizada (respaldo)
+    enviarSesionBeacon(sesion);
+  } catch {
+    /* noop */
   }
 }
 

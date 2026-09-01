@@ -43,6 +43,28 @@ export async function enviarSesionAPI(sesion) {
   return r.json();
 }
 
+// Envio "fire and forget" que sobrevive al cierre de la pestana / bloqueo del
+// telefono: sendBeacon (sin headers -> el token va en el body) y, si no esta,
+// fetch con keepalive. Para sesiones parciales al ocultar la pagina.
+export function enviarSesionBeacon(sesion) {
+  try {
+    const payload = JSON.stringify({ ...sesion, ingestToken: INGEST });
+    if (navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: 'application/json' });
+      if (navigator.sendBeacon('/api/sessions', blob)) return true;
+    }
+    fetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-ingest-token': INGEST },
+      body: payload,
+      keepalive: true,
+    }).catch(() => {});
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // ---- moderador ----
 
 export async function loginMod(password) {
