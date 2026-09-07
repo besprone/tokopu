@@ -152,21 +152,34 @@ function NuevaSheet({ open, onClose }) {
   );
 }
 
+const IconHelp = () => (
+  <svg {...svgProps}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M9.6 9.2a2.4 2.4 0 0 1 4.8.2c0 1.6-2.4 2-2.4 3.8" />
+    <path d="M12 17h.01" strokeWidth="2.4" />
+  </svg>
+);
+
 export function AppHeader() {
   const [open, setOpen] = useState(false);
   const { track } = useMetrics();
   return (
     <div className="app-header">
-      <span className="brand-txt">Toko</span>
+      <button
+        className="header-help"
+        aria-label="Ayuda"
+        onClick={() => track('click', { target: 'ayuda' })}
+      >
+        <IconHelp />
+      </button>
       <button
         className="header-add"
-        aria-label="Nueva solicitud"
         onClick={() => {
           track('click', { target: 'fab_nueva' });
           setOpen(true);
         }}
       >
-        +
+        <span aria-hidden="true">+</span> Nueva
       </button>
       <NuevaSheet open={open} onClose={() => setOpen(false)} />
     </div>
