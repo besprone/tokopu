@@ -114,7 +114,10 @@ export const CLIENTE_EXISTENTE_MOCK = {
   nacionalidad: 'Mexicana',
   // Validaciones simuladas tras "Si, son los datos del cliente":
   tieneSolicitudesActivas: true, // -> pantalla "Solicitudes guardadas"
-  tieneCartaVigente: true, // -> salta directo a la espera de OTP
+  // SI hay carta de consulta vigente -> se "procesa" y va a la pantalla verde
+  // "Aprobado". Si NO -> flujo normal de autenticacion (espera de OTP).
+  tieneCartaVigente: true,
+  ingresoMensual: 8580, // capacidad ~ $1,158/quincena en la pantalla "Aprobado"
   solicitudesActivas: [
     { dia: 'Hoy', nombre: 'Sara Fernandez', detalle: '45,000mxn / 22 semanas', estado: 'Se abrio con otro asesor', retomable: false },
     { dia: '22 de agosto', nombre: 'Sara Fernandez', detalle: '33,000mxn / 22 semanas', estado: 'Guardada', retomable: true },

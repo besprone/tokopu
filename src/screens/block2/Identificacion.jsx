@@ -8,6 +8,7 @@ import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore } from '../../state/store.jsx';
 import { email as vEmail, telefono as vTel } from '../../domain/validators.js';
 import { OCR_MOCK, TALON_MOCK, CLIENTE_EXISTENTE_MOCK } from '../../domain/catalogs.js';
+import { capacidadPagoQuincenal, mxn } from '../../domain/finance.js';
 
 // Bloque 2: pantallas simuladas (camara, OTP y OCR). Sin logging fino:
 // solo se registran las transiciones de paso como `click`.
@@ -15,6 +16,7 @@ const PASOS = [
   'contacto',
   'cliente_existente',
   'solicitudes_activas',
+  'aprobado_interno',
   'otp_espera',
   'otp_codigo',
   'bio_intro',
@@ -45,6 +47,12 @@ export default function Identificacion() {
     track('click', { target: `ident_paso_${siguiente}` });
     setPaso(siguiente);
   };
+
+  // Cliente existente, tras revisar solicitudes activas: si tiene carta de
+  // consulta vigente se "procesa" y va a la pantalla verde "Aprobado"; si no,
+  // sigue el flujo normal (espera de OTP + firma de la carta).
+  const trasClienteExistente = () =>
+    ir(CLIENTE_EXISTENTE_MOCK.tieneCartaVigente ? 'aprobado_interno' : 'otp_espera');
 
   const aplicarOCR = () => {
     setTabData('personales', {
@@ -170,7 +178,9 @@ export default function Identificacion() {
         <FooterActions>
           <Button
             variant="primary"
-            onClick={() => ir(c.tieneSolicitudesActivas ? 'solicitudes_activas' : 'otp_espera')}
+            onClick={() =>
+              c.tieneSolicitudesActivas ? ir('solicitudes_activas') : trasClienteExistente()
+            }
             track="ident_cliente_existente_confirmar"
           >
             Si, son los datos del cliente →
@@ -182,9 +192,7 @@ export default function Identificacion() {
 
   if (paso === 'solicitudes_activas') {
     const items = CLIENTE_EXISTENTE_MOCK.solicitudesActivas;
-    // Tras retomar / crear: si el cliente ya tiene carta de consulta vigente
-    // salta directo a la espera de OTP (rama "sin carta vigente" pendiente).
-    const continuar = () => ir('otp_espera');
+    const continuar = () => trasClienteExistente();
     return (
       <Shell title="Identificacion">
         <Content>
@@ -225,6 +233,48 @@ export default function Identificacion() {
           </Button>
         </FooterActions>
       </Shell>
+    );
+  }
+
+  if (paso === 'aprobado_interno') {
+    const c = CLIENTE_EXISTENTE_MOCK;
+    const cap = capacidadPagoQuincenal(c.ingresoMensual);
+    const finalizar = () => {
+      // El cliente ya estaba validado internamente: la identificacion queda
+      // completa sin OTP/biometria/firma. Guardamos su ingreso para el cotizador.
+      setTabData('ingresos', { ingresoMensualComprobable: c.ingresoMensual });
+      setTabData('personales', { nombre: c.nombre });
+      patch({
+        auth: {
+          celular: cel,
+          email: c.email,
+          otpValidado: true,
+          biometriaCliente: true,
+          ineFrente: true,
+          ineReverso: true,
+          firmaAsesor: true,
+          firmaCliente: solicitud.tipoFirma === 'autografa',
+        },
+      });
+      track('task_complete', { tarea: 'identificacion', resultado: 'exito', via: 'cliente_existente' });
+      navigate('/seq/identificacion', { replace: true });
+    };
+    return (
+      <Screen>
+        <StatusBar />
+        <TopBar title={null} right={<CerrarSolicitud />} />
+        <div className="success-screen">
+          <div className="check">✓</div>
+          <h1>¡Aprobado! Comencemos con una buena oferta para {c.nombre}</h1>
+          <p>
+            El cliente tiene una capacidad de pago de <strong>{mxn(cap)}mxn</strong>
+          </p>
+          <div className="grow" />
+          <Button variant="primary" onClick={finalizar} track="ident_aprobado_interno_terminar">
+            Terminar autenticacion →
+          </Button>
+        </div>
+      </Screen>
     );
   }
 
