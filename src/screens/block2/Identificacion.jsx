@@ -14,6 +14,7 @@ import { OCR_MOCK, TALON_MOCK, CLIENTE_EXISTENTE_MOCK } from '../../domain/catal
 const PASOS = [
   'contacto',
   'cliente_existente',
+  'solicitudes_activas',
   'otp_espera',
   'otp_codigo',
   'bio_intro',
@@ -167,8 +168,60 @@ export default function Identificacion() {
           </button>
         </Content>
         <FooterActions>
-          <Button variant="primary" onClick={() => ir('otp_espera')} track="ident_cliente_existente_confirmar">
+          <Button
+            variant="primary"
+            onClick={() => ir(c.tieneSolicitudesActivas ? 'solicitudes_activas' : 'otp_espera')}
+            track="ident_cliente_existente_confirmar"
+          >
             Si, son los datos del cliente →
+          </Button>
+        </FooterActions>
+      </Shell>
+    );
+  }
+
+  if (paso === 'solicitudes_activas') {
+    const items = CLIENTE_EXISTENTE_MOCK.solicitudesActivas;
+    // Tras retomar / crear: si el cliente ya tiene carta de consulta vigente
+    // salta directo a la espera de OTP (rama "sin carta vigente" pendiente).
+    const continuar = () => ir('otp_espera');
+    return (
+      <Shell title="Identificacion">
+        <Content>
+          <h1>Solicitudes guardadas</h1>
+          <p className="lead">
+            Hemos detectado que existen solicitudes abiertas a nombre de este cliente. Podras
+            retomarlas haciendo tap sobre cualquiera de ellas.
+          </p>
+          <div className="stack" style={{ gap: 8, marginTop: 8 }}>
+            {items.map((s, i) => (
+              <React.Fragment key={i}>
+                <div style={{ fontWeight: 700, fontSize: 14, marginTop: i ? 8 : 0 }}>{s.dia}</div>
+                <button
+                  className="card"
+                  style={{ display: 'block', width: '100%', textAlign: 'left', padding: '12px 14px' }}
+                  disabled={!s.retomable}
+                  onClick={() => {
+                    track('click', { target: 'retomar_solicitud_cliente' });
+                    continuar();
+                  }}
+                >
+                  <div className="row between">
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{s.nombre}</div>
+                      <div className="tiny">{s.detalle}</div>
+                      <div className="small muted" style={{ fontWeight: 600 }}>{s.estado}</div>
+                    </div>
+                    {s.retomable && <span className="muted">→</span>}
+                  </div>
+                </button>
+              </React.Fragment>
+            ))}
+          </div>
+        </Content>
+        <FooterActions>
+          <Button variant="primary" onClick={continuar} track="ident_crear_nueva_solicitud">
+            Crear una nueva solicitud →
           </Button>
         </FooterActions>
       </Shell>

@@ -112,4 +112,12 @@ export const CLIENTE_EXISTENTE_MOCK = {
   email: 'sara@gmail.com',
   paisNacimiento: 'Mexico',
   nacionalidad: 'Mexicana',
+  // Validaciones simuladas tras "Si, son los datos del cliente":
+  tieneSolicitudesActivas: true, // -> pantalla "Solicitudes guardadas"
+  tieneCartaVigente: true, // -> salta directo a la espera de OTP
+  solicitudesActivas: [
+    { dia: 'Hoy', nombre: 'Sara Fernandez', detalle: '45,000mxn / 22 semanas', estado: 'Se abrio con otro asesor', retomable: false },
+    { dia: '22 de agosto', nombre: 'Sara Fernandez', detalle: '33,000mxn / 22 semanas', estado: 'Guardada', retomable: true },
+    { dia: '22 de abril', nombre: 'Sara Fernandez', detalle: '33,000mxn / 22 semanas', estado: 'Guardada', retomable: true },
+  ],
 };
