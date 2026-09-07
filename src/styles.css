@@ -285,12 +285,24 @@ input[type='radio'] {
 .topbar button:hover {
   background: var(--line-2);
 }
-/* "Guardar y salir": accion de texto en el topbar del flujo de solicitud */
-.save-exit {
-  white-space: nowrap;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--brand-ink);
+/* Icon-button "✕" del topbar del flujo (abre la alerta de guardar/salir) */
+.topbar-x {
+  font-size: 15px;
+  color: var(--ink-2);
+}
+/* Alerta "¿Guardar la solicitud?" — diálogo de producto (reusa .panel) */
+.panel.dialog {
+  max-width: 340px;
+}
+.dialog-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 18px;
+}
+.dialog-actions .btn.link {
+  align-self: center;
+  padding: 8px;
 }
 
 .content {
@@ -942,29 +954,6 @@ input[type='range']::-moz-range-thumb {
   color: var(--brand-ink);
 }
 
-/* FAB flota DENTRO del marco del telefono, por encima del bottom-nav.
-   Usa el primario del sistema (mismo par que .btn.primary: fondo --brand,
-   glifo --ink). */
-.fab {
-  position: absolute;
-  right: 16px;
-  bottom: 74px;
-  z-index: 40;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--brand);
-  color: var(--ink);
-  font-size: 26px;
-  border: none;
-  box-shadow: 0 6px 16px rgba(20, 24, 31, 0.22);
-  display: grid;
-  place-items: center;
-}
-.fab:hover {
-  background: var(--brand-600);
-}
-
 /* Cabecera de la app (Inicio / Solicitudes) */
 .app-header {
   flex: none;
@@ -974,26 +963,27 @@ input[type='range']::-moz-range-thumb {
   padding: 12px 18px 4px;
   background: var(--bg);
 }
-.app-header .brand svg {
-  width: 26px;
-  height: 26px;
-  display: block;
+.app-header .brand-txt {
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
-.app-header .hicon {
-  width: 30px;
-  height: 30px;
+.app-header .header-add {
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  font-weight: 700;
-  color: var(--ink-2);
+  border: none;
+  background: var(--brand);
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 2px 8px rgba(20, 24, 31, 0.15);
 }
-.app-header .avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #c7ccd4, #868e9c);
-  display: block;
+.app-header .header-add:hover {
+  background: var(--brand-600);
 }
 
 .stat-grid {

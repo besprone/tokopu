@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Screen, StatusBar, AppHeader, BottomNav, NewRequestFab } from '../../components/ui.jsx';
+import { Screen, StatusBar, AppHeader, BottomNav } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore, hayBorrador } from '../../state/store.jsx';
 
@@ -90,8 +90,6 @@ export default function Home() {
           ))}
         </div>
       </div>
-
-      <NewRequestFab />
       <BottomNav active="home" />
     </Screen>
   );

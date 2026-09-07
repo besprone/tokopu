@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Screen, StatusBar, Content, FooterActions, Button, TopBar, GuardarSalir } from '../../components/ui.jsx';
+import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore, DOCS_AUTOGRAFA, DOCS_DIGITAL } from '../../state/store.jsx';
 
@@ -101,7 +101,7 @@ export default function Documentos() {
   return (
     <Screen>
       <StatusBar />
-      <TopBar title="Captura de documentos" right={<GuardarSalir />} onBack={null} />
+      <TopBar title="Captura de documentos" right={<CerrarSolicitud />} />
       <Content>
         <h1>Captura de documentos</h1>
         <p className="lead">

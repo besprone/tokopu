@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Screen, StatusBar, Content, FooterActions, Button, TopBar, SummaryRow, Callout, GuardarSalir } from '../../components/ui.jsx';
+import { Screen, StatusBar, Content, FooterActions, Button, TopBar, SummaryRow, Callout, CerrarSolicitud } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore } from '../../state/store.jsx';
 import {
@@ -73,7 +73,7 @@ export default function Cotizador() {
   return (
     <Screen>
       <StatusBar />
-      <TopBar title="Seleccionar oferta" right={<GuardarSalir />} onBack={null} />
+      <TopBar title="Seleccionar oferta" right={<CerrarSolicitud />} />
       <Content>
         <div className="segmented" style={{ marginBottom: 16 }}>
           <button

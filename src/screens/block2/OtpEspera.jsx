@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Screen, StatusBar, TopBar, Content, FooterActions, Button, GuardarSalir } from '../../components/ui.jsx';
+import { Screen, StatusBar, TopBar, Content, FooterActions, Button, CerrarSolicitud } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 
 // Espera de la autenticacion + biometria del cliente en su propio celular.
@@ -42,7 +42,7 @@ export default function OtpEspera({ onManual, onListo }) {
   return (
     <Screen>
       <StatusBar />
-      <TopBar title="OTP" right={<GuardarSalir />} onBack={null} />
+      <TopBar title="OTP" right={<CerrarSolicitud />} />
       <Content>
         <div className="otp-wait">
           {listo ? (

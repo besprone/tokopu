@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Screen, StatusBar, AppHeader, BottomNav, NewRequestFab } from '../../components/ui.jsx';
+import { Screen, StatusBar, AppHeader, BottomNav } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore, hayBorrador, progresoSolicitud } from '../../state/store.jsx';
 
@@ -124,8 +124,6 @@ export default function Solicitudes() {
           })}
         </div>
       </div>
-
-      <NewRequestFab />
       <BottomNav active="list" />
     </Screen>
   );

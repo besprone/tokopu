@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Screen, StatusBar, Content, FooterActions, Button, TopBar, Callout, GuardarSalir } from '../../components/ui.jsx';
+import { Screen, StatusBar, Content, FooterActions, Button, TopBar, Callout, CerrarSolicitud } from '../../components/ui.jsx';
 import Field from '../../components/Field.jsx';
 import SignaturePad from '../../components/SignaturePad.jsx';
 import OtpEspera from './OtpEspera.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore } from '../../state/store.jsx';
 import { email as vEmail, telefono as vTel } from '../../domain/validators.js';
-import { OCR_MOCK, TALON_MOCK } from '../../domain/catalogs.js';
+import { OCR_MOCK, TALON_MOCK, CLIENTE_EXISTENTE_MOCK } from '../../domain/catalogs.js';
 
 // Bloque 2: pantallas simuladas (camara, OTP y OCR). Sin logging fino:
 // solo se registran las transiciones de paso como `click`.
 const PASOS = [
   'contacto',
+  'cliente_existente',
   'otp_espera',
   'otp_codigo',
   'bio_intro',
@@ -122,8 +123,52 @@ export default function Identificacion() {
           </p>
         </Content>
         <FooterActions>
-          <Button variant="primary" disabled={!ok} onClick={() => ir('otp_espera')} track="ident_iniciar_validacion">
+          <Button
+            variant="primary"
+            disabled={!ok}
+            onClick={() =>
+              ir(cel === CLIENTE_EXISTENTE_MOCK.celular ? 'cliente_existente' : 'otp_espera')
+            }
+            track="ident_iniciar_validacion"
+          >
             Iniciar validacion →
+          </Button>
+        </FooterActions>
+      </Shell>
+    );
+  }
+
+  if (paso === 'cliente_existente') {
+    const c = CLIENTE_EXISTENTE_MOCK;
+    return (
+      <Shell title="Identificacion">
+        <Content>
+          <h1>El numero corresponde a un cliente existente</h1>
+          <p className="lead">
+            Hemos detectado que el numero de celular ya consta en nuestro sistema. Por favor
+            revisa si son los datos del cliente antes de continuar.
+          </p>
+          <div className="card" style={{ marginTop: 8 }}>
+            <div className="summary-row"><span className="k">Nombre</span><span className="v">{c.nombre}</span></div>
+            <div className="summary-row"><span className="k">RFC</span><span className="v mono">{c.rfc}</span></div>
+            <div className="summary-row"><span className="k">CURP</span><span className="v mono">{c.curp}</span></div>
+            <div className="summary-row"><span className="k">Celular</span><span className="v">{c.celularFmt}</span></div>
+            <div className="summary-row"><span className="k">Email</span><span className="v">{c.email}</span></div>
+            <div className="summary-row"><span className="k">Pais de nacimiento</span><span className="v">{c.paisNacimiento}</span></div>
+            <div className="summary-row"><span className="k">Nacionalidad</span><span className="v">{c.nacionalidad}</span></div>
+          </div>
+          <p className="small" style={{ margin: '16px 0 4px' }}>¿Los datos no corresponden?</p>
+          <button
+            className="btn link"
+            style={{ padding: 0, fontWeight: 700 }}
+            onClick={() => ir('contacto')}
+          >
+            Volver a capturar
+          </button>
+        </Content>
+        <FooterActions>
+          <Button variant="primary" onClick={() => ir('otp_espera')} track="ident_cliente_existente_confirmar">
+            Si, son los datos del cliente →
           </Button>
         </FooterActions>
       </Shell>
@@ -346,7 +391,7 @@ function Shell({ title, children }) {
   return (
     <Screen>
       <StatusBar />
-      <TopBar title={title} right={<GuardarSalir />} onBack={null} />
+      <TopBar title={title} right={<CerrarSolicitud />} />
       {children}
     </Screen>
   );

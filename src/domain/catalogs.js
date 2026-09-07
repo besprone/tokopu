@@ -99,3 +99,17 @@ export const TALON_MOCK = {
 };
 
 export const FOLIO_DEMO = '66FKJSK';
+
+// Cliente que YA existe en el sistema. Escenario alterno de la Tarea 2, se
+// dispara cuando el celular tecleado es CLIENTE_EXISTENTE_MOCK.celular. NO es
+// la persona del guion (Sara Fernanda Perez Lopez).
+export const CLIENTE_EXISTENTE_MOCK = {
+  celular: '5540506070',
+  celularFmt: '55 4050 6070',
+  nombre: 'Sara Fernandez Diaz',
+  rfc: 'FEDS850624MG3',
+  curp: 'FEDS850624MDFRZR05',
+  email: 'sara@gmail.com',
+  paisNacimiento: 'Mexico',
+  nacionalidad: 'Mexicana',
+};

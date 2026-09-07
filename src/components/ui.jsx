@@ -1,24 +1,74 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useMetrics } from '../metrics/MetricsProvider.jsx';
+import { useStore } from '../state/store.jsx';
 
-// Boton "Guardar y salir" del topbar en el flujo de solicitud. La solicitud se
-// autoguarda en cada cambio; esto solo saca al asesor del flujo. Se reanuda
-// desde "Guardadas" en la pantalla de Solicitudes.
-export function GuardarSalir() {
+// Icon-button "✕" del topbar en el flujo de solicitud. Al tocarlo abre una
+// alerta (estilo producto) preguntando si guardar antes de salir. La solicitud
+// se autoguarda; "Guardar y salir" solo lleva a Solicitudes -> Guardadas.
+// "Salir sin guardar" descarta la solicitud (reset) y vuelve al dashboard.
+export function CerrarSolicitud() {
+  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { track } = useMetrics();
+  const { reset } = useStore();
+
+  const guardar = () => {
+    track('click', { target: 'cerrar_guardar', desde: location.pathname });
+    navigate('/solicitudes');
+  };
+  const descartar = () => {
+    track('click', { target: 'cerrar_descartar', desde: location.pathname });
+    reset();
+    try {
+      localStorage.removeItem('toko.solicitud.v1');
+    } catch {
+      /* noop */
+    }
+    navigate('/inicio');
+  };
+
   return (
-    <button
-      className="save-exit"
-      onClick={() => {
-        track('click', { target: 'guardar_y_salir', desde: location.pathname });
-        navigate('/solicitudes');
-      }}
-    >
-      Guardar y salir
-    </button>
+    <>
+      <button
+        className="topbar-x"
+        aria-label="Cerrar solicitud"
+        onClick={() => {
+          track('click', { target: 'cerrar_solicitud', desde: location.pathname });
+          setOpen(true);
+        }}
+      >
+        ✕
+      </button>
+      {open && (
+        <div className="panel-backdrop" onClick={() => setOpen(false)}>
+          <div
+            className="panel dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Guardar la solicitud"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ marginTop: 0 }}>¿Guardar la solicitud?</h2>
+            <p className="small">
+              Puedes retomarla después desde Solicitudes → Guardadas.
+            </p>
+            <div className="dialog-actions">
+              <Button variant="primary" onClick={guardar}>
+                Guardar y salir
+              </Button>
+              <Button variant="ghost" onClick={descartar}>
+                Salir sin guardar
+              </Button>
+              <button className="btn link" onClick={() => setOpen(false)}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -40,13 +90,6 @@ export function MetaBar({ label }) {
     </div>
   );
 }
-
-const AppleGlyph = () => (
-  <svg viewBox="0 0 24 24" fill="#14181f" aria-hidden="true">
-    <path d="M16.7 12.6c0-2.5 2-3.7 2.1-3.8-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.15-2.9.87-3.65.87-.76 0-1.9-.85-3.13-.83-1.6.02-3.08.93-3.9 2.36-1.67 2.9-.43 7.2 1.2 9.55.8 1.15 1.74 2.45 2.98 2.4 1.2-.05 1.65-.78 3.1-.78 1.44 0 1.85.78 3.12.75 1.29-.02 2.1-1.17 2.9-2.33.63-.92 1.02-1.79 1.05-1.86-.02-.01-2.35-.9-2.37-3.44z" />
-    <path d="M14.6 4.5c.67-.8 1.12-1.92 1-3.04-.96.04-2.13.64-2.82 1.44-.62.7-1.16 1.85-1.02 2.94 1.07.08 2.17-.55 2.84-1.34z" />
-  </svg>
-);
 
 const svgProps = {
   viewBox: '0 0 24 24',
@@ -80,18 +123,52 @@ const IconChart = () => (
   </svg>
 );
 
+// Sheet "Nueva ..." — se abre desde el + del header (antes era un FAB flotante).
+function NuevaSheet({ open, onClose }) {
+  const navigate = useNavigate();
+  const { track } = useMetrics();
+  if (!open) return null;
+  return (
+    <div className="sheet-backdrop" onClick={onClose}>
+      <div className="sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="handle" />
+        <button
+          className="sheet-item"
+          onClick={() => {
+            track('click', { target: 'nueva_solicitud_credito' });
+            navigate('/nueva');
+          }}
+        >
+          Nueva solicitud de credito <span>+</span>
+        </button>
+        <button className="sheet-item" onClick={onClose}>
+          Nueva consulta de capacidad <span>+</span>
+        </button>
+        <button className="sheet-item" onClick={onClose}>
+          Nueva cotizacion <span>+</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function AppHeader() {
+  const [open, setOpen] = useState(false);
+  const { track } = useMetrics();
   return (
     <div className="app-header">
-      <span className="brand">
-        <AppleGlyph />
-      </span>
-      <div className="row" style={{ gap: 12 }}>
-        <button className="hicon" aria-label="Ayuda">
-          ?
-        </button>
-        <span className="avatar" aria-hidden="true" />
-      </div>
+      <span className="brand-txt">Toko</span>
+      <button
+        className="header-add"
+        aria-label="Nueva solicitud"
+        onClick={() => {
+          track('click', { target: 'fab_nueva' });
+          setOpen(true);
+        }}
+      >
+        +
+      </button>
+      <NuevaSheet open={open} onClose={() => setOpen(false)} />
     </div>
   );
 }
@@ -118,48 +195,6 @@ export function BottomNav({ active }) {
         <IconChart />
       </button>
     </div>
-  );
-}
-
-export function NewRequestFab() {
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const { track } = useMetrics();
-  return (
-    <>
-      <button
-        className="fab"
-        aria-label="Nueva"
-        onClick={() => {
-          track('click', { target: 'fab_nueva' });
-          setOpen(true);
-        }}
-      >
-        +
-      </button>
-      {open && (
-        <div className="sheet-backdrop" onClick={() => setOpen(false)}>
-          <div className="sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="handle" />
-            <button
-              className="sheet-item"
-              onClick={() => {
-                track('click', { target: 'nueva_solicitud_credito' });
-                navigate('/nueva');
-              }}
-            >
-              Nueva solicitud de credito <span>+</span>
-            </button>
-            <button className="sheet-item" onClick={() => setOpen(false)}>
-              Nueva consulta de capacidad <span>+</span>
-            </button>
-            <button className="sheet-item" onClick={() => setOpen(false)}>
-              Nueva cotizacion <span>+</span>
-            </button>
-          </div>
-        </div>
-      )}
-    </>
   );
 }
 

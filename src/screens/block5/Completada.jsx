@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Screen, StatusBar, Content, FooterActions, Button, TopBar, SummaryRow, GuardarSalir } from '../../components/ui.jsx';
+import { Screen, StatusBar, Content, FooterActions, Button, TopBar, SummaryRow, CerrarSolicitud } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore, progresoSolicitud } from '../../state/store.jsx';
 import { mxn } from '../../domain/finance.js';
@@ -63,7 +63,7 @@ export default function Completada() {
   return (
     <Screen>
       <StatusBar />
-      <TopBar title="Solicitud completa" right={<GuardarSalir />} onBack={null} />
+      <TopBar title="Solicitud completa" right={<CerrarSolicitud />} />
       <Content>
         <h1>Solicitud completa</h1>
         <div className="progress" style={{ margin: '10px 0 18px' }}>

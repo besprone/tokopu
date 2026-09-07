@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Screen, StatusBar, Content, FooterActions, Button, TopBar, GuardarSalir } from '../../components/ui.jsx';
+import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud } from '../../components/ui.jsx';
 import Field from '../../components/Field.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore, TABS_INFO } from '../../state/store.jsx';
@@ -148,7 +148,7 @@ export default function InfoSolicitud() {
   return (
     <Screen>
       <StatusBar />
-      <TopBar title="Solicitud de credito" right={<GuardarSalir />} onBack={null} />
+      <TopBar title="Solicitud de credito" right={<CerrarSolicitud />} />
       <Content>
         <div className="stepper">
           {TABS_INFO.map((t, i) => {

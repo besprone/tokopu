@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Screen, StatusBar, Content, FooterActions, Button, TopBar, GuardarSalir } from '../../components/ui.jsx';
+import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore } from '../../state/store.jsx';
 
@@ -75,7 +75,7 @@ export default function ConfirmaDatos() {
   return (
     <Screen>
       <StatusBar />
-      <TopBar title="Confirma los datos" right={<GuardarSalir />} onBack={null} />
+      <TopBar title="Confirma los datos" right={<CerrarSolicitud />} />
       <Content>
         <h1>Confirma los datos de la solicitud</h1>
         <p className="lead">
