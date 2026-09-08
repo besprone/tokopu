@@ -44,15 +44,15 @@ export default function SolicitudHub() {
   // Solo el flujo digital tiene bloque de firma -> se retoma despues.
   const mostrarFirma = solicitud.tipoFirma === 'digital';
 
-  // Antes habia una pantalla de resumen (/completada); ahora el envio se hace
-  // aqui mismo y pasa directo al SEQ de la ultima tarea.
+  // El resumen previo a enviar ahora es este hub. "Enviar solicitud" marca la
+  // solicitud como enviada y muestra el feedback (/completada). Desde ahi
+  // "Terminar" cierra la ultima tarea. (Flujo autografa; el digital se retoma.)
   const enviar = () => {
     if (!solicitud.enviada) {
       patch({ enviada: true, enviadaISO: new Date().toISOString() });
     }
     track('click', { target: 'hub_enviar_solicitud' });
-    track('task_complete', { tarea: 'documentos_envio', resultado: 'exito' });
-    navigate('/seq/documentos_envio', { replace: true });
+    navigate('/completada');
   };
 
   return (

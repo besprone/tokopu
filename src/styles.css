@@ -894,10 +894,11 @@ input[type='range']::-moz-range-thumb {
 }
 
 .success-screen {
+  position: relative;
   background: var(--ok-bg);
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   padding: 32px var(--pad);
@@ -912,6 +913,67 @@ input[type='range']::-moz-range-thumb {
   place-items: center;
   font-size: 22px;
   margin-bottom: 16px;
+}
+/* Check "plano" (sin circulo) para el feedback de envio */
+.success-screen .check-plain {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+  margin-bottom: 18px;
+}
+.resumen-envio {
+  font-size: 15px;
+  line-height: 1.9;
+  position: relative;
+  z-index: 2;
+}
+.resumen-envio .k {
+  font-weight: 700;
+}
+
+/* Confeti de CSS puro para el feedback de envio */
+.success-screen > *:not(.confeti) {
+  position: relative;
+  z-index: 2;
+}
+.confeti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+.confeti-p {
+  position: absolute;
+  top: -24px;
+  width: 12px;
+  height: 16px;
+  opacity: 0;
+  animation: confeti-caida 2.9s cubic-bezier(0.2, 0.6, 0.35, 1) forwards;
+}
+.confeti-p.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.confeti-p.dot-sm {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+@keyframes confeti-caida {
+  0% {
+    opacity: 0;
+    transform: translateY(0) rotate(0);
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(var(--fall, 240px)) rotate(var(--r, 20deg));
+  }
 }
 
 /* ---------------- Mock camera ---------------- */
