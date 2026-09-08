@@ -1219,23 +1219,35 @@ input[type='range']::-moz-range-thumb {
 
 /* ---- Sheet de la carta de consulta (solo lectura, en firma del asesor) ---- */
 .carta-sheet-backdrop {
-  position: fixed;
+  position: absolute;
   inset: 0;
-  background: rgba(8, 10, 14, 0.62);
+  background: rgba(8, 10, 14, 0.55);
   display: flex;
   align-items: flex-end;
-  justify-content: center;
-  z-index: 95; /* sobre el FAB de instrucciones (50) y los paneles (60) */
+  z-index: 60; /* dentro del marco, sobre la pestana de moderador (55) */
+  animation: carta-fade 0.2s ease-out;
+}
+@keyframes carta-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .carta-sheet {
   background: var(--surface);
   width: 100%;
-  max-width: 420px;
-  height: 92vh;
+  height: 92%;
   border-radius: 18px 18px 0 0;
   padding: 14px 20px calc(18px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
+  animation: instr-up 0.28s ease-out;
+}
+/* El FAB de instrucciones estorba sobre el sheet: se oculta mientras esta abierto */
+body.carta-abierta .instrucciones-fab {
+  display: none;
 }
 .carta-sheet-close {
   align-self: flex-end;

@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, Content, FooterActions, Button, TopBar, Callout, CerrarSolicitud } from '../../components/ui.jsx';
 import Field from '../../components/Field.jsx';
@@ -771,10 +770,20 @@ function IneShot({ lado }) {
 }
 
 // Sheet de solo lectura con la carta de consulta que firmara el asesor.
-// Se monta en document.body (portal) para salir del marco del telefono y
-// quedar por encima del FAB de instrucciones.
+// Vive dentro del marco del telefono (.device) y sube desde abajo. Mientras
+// esta abierto se oculta el FAB de instrucciones (body.carta-abierta).
 function CartaSheet({ onClose }) {
-  return createPortal(
+  useEffect(() => {
+    document.body.classList.add('carta-abierta');
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.classList.remove('carta-abierta');
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [onClose]);
+
+  return (
     <div className="carta-sheet-backdrop" onClick={onClose}>
       <div
         className="carta-sheet"
@@ -792,8 +801,7 @@ function CartaSheet({ onClose }) {
           <img src="/carta_dependencia/carta.webp" alt="Carta de consulta al portal de dependencia" />
         </div>
       </div>
-    </div>,
-    document.body,
+    </div>
   );
 }
 
