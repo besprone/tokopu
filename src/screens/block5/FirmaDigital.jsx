@@ -2,19 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
-import { useStore, firmaDigitalAvance, FIRMA_DIGITAL_MS } from '../../state/store.jsx';
+import {
+  useStore,
+  firmaDigitalAvance,
+  FIRMA_DIGITAL_MS,
+  FIRMA_DIGITAL_ETAPAS as ETAPAS,
+} from '../../state/store.jsx';
 import { capacidadPagoQuincenal, mxn } from '../../domain/finance.js';
 
-// Etapas del proceso de firma digital que corre el CLIENTE en su celular
-// (link por WhatsApp/SMS). Aqui solo se refleja el avance para el asesor.
-const ETAPAS = [
-  { id: 'consent', label: 'Consentimientos', desc: 'Aviso de privacidad y consulta al portal' },
-  { id: 'celular', label: 'Verificacion de celular', desc: 'Codigo de 6 digitos' },
-  { id: 'selfie', label: 'Selfie', desc: 'Fotografia del rostro' },
-  { id: 'ine', label: 'Captura de INE', desc: 'Frente y reverso' },
-  { id: 'firma', label: 'Firma de la carta de consulta', desc: 'Firma en pantalla' },
-  { id: 'fin', label: 'Proceso completado', desc: 'El cliente cerro la ventana' },
-];
 const PASO_MS = FIRMA_DIGITAL_MS / ETAPAS.length;
 
 export default function FirmaDigital() {
@@ -44,7 +39,7 @@ export default function FirmaDigital() {
   const canal = solicitud.auth.firmaClienteCanal === 'sms' ? 'SMS' : 'WhatsApp';
 
   // Avance derivado del reloj: sigue corriendo aunque el asesor salga de aqui.
-  const { hechas, completa } = firmaDigitalAvance(solicitud, ETAPAS.length);
+  const { hechas, completa } = firmaDigitalAvance(solicitud);
 
   // Refresca la vista cada segundo mientras el proceso corre.
   useEffect(() => {

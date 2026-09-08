@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud } from '../../components/ui.jsx';
 import { useStore, progresoSolicitud, tareaCompletada, firmaDigitalAvance } from '../../state/store.jsx';
@@ -42,24 +42,32 @@ export default function SolicitudHub() {
   const mostrarFirma = solicitud.tipoFirma === 'digital';
   const firmaEnviada = solicitud.auth.firmaClienteEnviada;
   const firmaHecha = solicitud.auth.firmaCliente;
+  const [, setFirmaTick] = useState(0);
+
+  const avanceFirma = firmaDigitalAvance(solicitud);
 
   // La firma remota del cliente avanza por reloj desde que se envio el link:
-  // aunque el asesor no entre al tracker, al cumplirse el minuto se marca aqui.
+  // aunque el asesor no entre al tracker, el hub refresca el paso actual y, al
+  // cumplirse el minuto, marca la firma como hecha.
   useEffect(() => {
     if (!mostrarFirma || firmaHecha || !firmaEnviada) return undefined;
     const check = () => {
       if (firmaDigitalAvance(solicitud).completa) {
         patch({ auth: { firmaCliente: true, firmaClienteISO: new Date().toISOString() } });
+      } else {
+        setFirmaTick((t) => t + 1);
       }
     };
     check();
-    const id = setInterval(check, 2000);
+    const id = setInterval(check, 3000);
     return () => clearInterval(id);
   }, [mostrarFirma, firmaHecha, firmaEnviada, solicitud.auth.firmaClienteEnviadaISO]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const haceRato = (iso) => {
     if (!iso) return '';
-    const min = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+    const ms = Date.now() - new Date(iso).getTime();
+    if (ms < 45000) return 'recien';
+    const min = Math.round(ms / 60000);
     return min < 60 ? `hace ${min} min` : `hace ${Math.round(min / 60)} h`;
   };
   const fechaCorta = (iso) => {
@@ -131,7 +139,9 @@ export default function SolicitudHub() {
                   {firmaHecha
                     ? `Firmado ${fechaCorta(solicitud.auth.firmaClienteISO)}`
                     : firmaEnviada
-                      ? `Enviada ${haceRato(solicitud.auth.firmaClienteEnviadaISO)}`
+                      ? `Enviada ${haceRato(solicitud.auth.firmaClienteEnviadaISO)}${
+                          avanceFirma.etapa ? ` · ${avanceFirma.etapa.corto}` : ''
+                        }`
                       : 'Firma digital'}
                 </div>
               </span>

@@ -243,19 +243,32 @@ export function firmaDigitalPendiente(s) {
 // Duracion simulada del proceso de firma del cliente (link remoto).
 export const FIRMA_DIGITAL_MS = 60000;
 
+// Etapas del proceso de firma que corre el cliente en su celular. `corto` es
+// para el supporting text del hub; `label`/`desc` para el tracker.
+export const FIRMA_DIGITAL_ETAPAS = [
+  { id: 'consent', label: 'Consentimientos', corto: 'Consentimientos', desc: 'Aviso de privacidad y consulta al portal' },
+  { id: 'celular', label: 'Verificacion de celular', corto: 'Verificando celular', desc: 'Codigo de 6 digitos' },
+  { id: 'selfie', label: 'Selfie', corto: 'Selfie', desc: 'Fotografia del rostro' },
+  { id: 'ine', label: 'Captura de INE', corto: 'Capturando INE', desc: 'Frente y reverso' },
+  { id: 'firma', label: 'Firma de la carta de consulta', corto: 'Firmando la carta', desc: 'Firma en pantalla' },
+  { id: 'fin', label: 'Proceso completado', corto: 'Finalizando', desc: 'El cliente cerro la ventana' },
+];
+
 // Avance del proceso derivado del tiempo transcurrido desde que se envio el
 // link. Asi el check "avanza por detras" aunque el asesor no este viendo la
 // pantalla del tracker.
-export function firmaDigitalAvance(s, totalEtapas = 1) {
+export function firmaDigitalAvance(s) {
+  const total = FIRMA_DIGITAL_ETAPAS.length;
   if (s.auth.firmaCliente) {
-    return { hechas: totalEtapas, completa: true, transcurrido: FIRMA_DIGITAL_MS };
+    return { hechas: total, completa: true, etapa: null, transcurrido: FIRMA_DIGITAL_MS };
   }
   if (!s.auth.firmaClienteEnviadaISO) {
-    return { hechas: 0, completa: false, transcurrido: 0 };
+    return { hechas: 0, completa: false, etapa: FIRMA_DIGITAL_ETAPAS[0], transcurrido: 0 };
   }
   const t = Math.max(0, Date.now() - new Date(s.auth.firmaClienteEnviadaISO).getTime());
-  const hechas = Math.min(totalEtapas, Math.floor(t / (FIRMA_DIGITAL_MS / totalEtapas)));
-  return { hechas, completa: t >= FIRMA_DIGITAL_MS, transcurrido: t };
+  const hechas = Math.min(total, Math.floor(t / (FIRMA_DIGITAL_MS / total)));
+  const completa = t >= FIRMA_DIGITAL_MS;
+  return { hechas, completa, etapa: completa ? null : FIRMA_DIGITAL_ETAPAS[hechas], transcurrido: t };
 }
 
 // Una tarea "completada" no se puede volver a abrir desde el hub.
