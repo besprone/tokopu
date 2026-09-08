@@ -33,22 +33,22 @@ Datos de Sara:
     titulo: 'Autenticar e identificar al cliente',
     nucleo: true,
     escenario: `Autentica e identifica a Sara para poder continuar. Necesitas:
-• Autenticar su identidad
-• Capturar su identificación (selfie e INE)
-• Firmar tu carta de consulta y que Sara firme la suya
+• Autenticar su identidad (link por WhatsApp o captura manual)
+• Capturar su identificación (INE frente y reverso)
+• Firmar tu carta de consulta al portal de dependencia
 
 Datos de Sara:
 • Celular: 55 6209 5585
 • Correo: saraperez@gob.mx`,
     exito:
-      'Pantalla "El cliente completo el proceso de autenticacion", con selfie e INE (frente y reverso) capturados, datos del OCR verificados (CURP PEMJ850624MDFRRL09, RFC PEMJ850624PL9, nombre Sara Fernanda Perez Lopez) y ambas firmas registradas.',
+      'Pantalla verde "¡Aprobado! Comencemos con una buena oferta", con la INE capturada, los datos del cliente verificados (CURP PEMJ850624MDFRRL09) y tu firma de la carta de consulta registrada. Con firma autografa Sara firma en papel, no en la app.',
     observar: [
       'Captura el celular con 10 digitos exactos (sin +52) y el correo sin errores de dedo?',
       'Entiende la liga por WhatsApp y la espera de autenticacion? Es una pausa incomoda?',
-      'Si el movil de Sara NO autentica: encuentra "Continuar con captura manual" en el dispositivo del asesor?',
-      'La captura de selfie e INE se logra a la primera?',
-      'LEE los datos que autolleno el OCR (CURP, RFC, nombre) o los pasa de largo?',
-      'Firmar en pantalla es facil? El traspaso del dispositivo a Sara para su firma se siente natural?',
+      'Si el movil de Sara NO autentica: encuentra "Continuar captura manual" en el dispositivo del asesor?',
+      'En la captura manual: escanea la INE o teclea los datos? LEE lo que autolleno el escaneo o lo pasa de largo?',
+      'Encuentra "Ver la carta que vas a firmar" antes de firmar?',
+      'Firmar en pantalla es facil?',
     ],
     next: '/tarea/seleccionar_oferta',
   },

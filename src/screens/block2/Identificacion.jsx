@@ -226,6 +226,9 @@ export default function Identificacion() {
         biometriaCliente: true,
         ineFrente: true,
         ineReverso: true,
+        // El asesor capturo los datos del cliente (por escaneo o a mano): la
+        // identificacion queda completa para el calculo de progreso (bloque 2).
+        ocrAplicado: true,
         firmaAsesor: true,
         firmaCliente: solicitud.tipoFirma === 'autografa',
       },
@@ -376,6 +379,7 @@ export default function Identificacion() {
           biometriaCliente: true,
           ineFrente: true,
           ineReverso: true,
+          ocrAplicado: true,
           firmaAsesor: true,
           firmaCliente: solicitud.tipoFirma === 'autografa',
         },

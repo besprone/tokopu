@@ -235,11 +235,6 @@ export function hayBorrador(s) {
   return !!(s.iniciada && !s.enviada);
 }
 
-// Solo firma digital: la firma remota del cliente aun no se completa.
-export function firmaDigitalPendiente(s) {
-  return s.tipoFirma === 'digital' && !s.auth.firmaCliente;
-}
-
 // Duracion simulada del proceso de firma del cliente (link remoto).
 export const FIRMA_DIGITAL_MS = 60000;
 
