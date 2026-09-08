@@ -29,6 +29,9 @@ const PASOS = [
   'ine_reverso_ok', // "¿Es correcta la captura?" del reverso
   'ocr',
   'firma_asesor',
+  // Feedback final de la autenticacion. Hay 3 segun si el cliente es sujeto de
+  // credito; por ahora solo el mejor de los casos: 'resultado_ok'.
+  'resultado_ok',
 ];
 
 // Tips de encuadre (pantalla de captura de INE).
@@ -750,7 +753,7 @@ export default function Identificacion() {
               patch({ auth: { firmaAsesor: true } });
               // La firma del cliente ya no se hace en el dispositivo del asesor:
               // el cliente firma la carta de consulta desde el link (flujo remoto).
-              terminar();
+              ir('resultado_ok');
             }}
             track="ident_firma_asesor_confirmar"
           >
@@ -759,6 +762,32 @@ export default function Identificacion() {
         </FooterActions>
         {verCarta && <CartaSheet onClose={() => setVerCarta(false)} />}
       </Shell>
+    );
+  }
+
+  if (paso === 'resultado_ok') {
+    const nombre =
+      solicitud.datos.personales?.nombre || datos.nombre || 'el cliente';
+    const ingreso =
+      solicitud.datos.ingresos?.ingresoMensualComprobable ||
+      TALON_MOCK.ingresoMensualComprobable;
+    const cap = capacidadPagoQuincenal(ingreso);
+    return (
+      <Screen>
+        <StatusBar />
+        <TopBar title={null} onBack={atras} right={<CerrarSolicitud />} />
+        <div className="success-screen">
+          <div className="check">✓</div>
+          <h1>¡Aprobado! Comencemos con una buena oferta para {nombre}</h1>
+          <p>
+            El cliente tiene una capacidad de pago de <strong>{mxn(cap)}mxn</strong>
+          </p>
+          <div className="grow" />
+          <Button variant="dark" onClick={terminar} track="ident_resultado_ok_terminar">
+            Terminar autenticacion →
+          </Button>
+        </div>
+      </Screen>
     );
   }
 
