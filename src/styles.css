@@ -305,6 +305,46 @@ input[type='radio'] {
   padding: 8px;
 }
 
+/* ---- Captura de datos del cliente (escanear INE / manual) ---- */
+.sec-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 24px 0 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.sec-label:first-of-type {
+  margin-top: 6px;
+}
+.scan-ine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 16px;
+  margin-top: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 15px;
+}
+.scan-ine.done {
+  color: var(--ok);
+  border-color: var(--ok);
+}
+.scan-ine .scan-ico {
+  font-size: 17px;
+  line-height: 1;
+}
+.scan-hint {
+  margin-top: 10px;
+}
+
 .content {
   padding: var(--pad);
   flex: 1;

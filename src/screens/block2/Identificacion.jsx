@@ -20,6 +20,7 @@ const PASOS = [
   'otp_espera',
   // 'otp_codigo' se conserva en el archivo pero YA NO va en el flujo del asesor:
   // el OTP lo captura el cliente desde el link de WhatsApp (flujo remoto).
+  'datos_captura', // captura manual: escanear INE (autollena) o teclear los datos
   'bio_intro',
   'selfie',
   'ine_frente',
@@ -27,6 +28,17 @@ const PASOS = [
   'ocr',
   'firma_asesor',
 ];
+
+const DATOS_VACIOS = {
+  curp: '',
+  fechaIngreso: '',
+  rfc: '',
+  nombre: '',
+  segundoNombre: '',
+  apellidoPaterno: '',
+  apellidoMaterno: '',
+  fechaNacimiento: '',
+};
 
 export default function Identificacion() {
   const navigate = useNavigate();
@@ -36,6 +48,10 @@ export default function Identificacion() {
   const [cel, setCel] = useState(solicitud.auth.celular || '');
   const [mail, setMail] = useState(solicitud.auth.email || '');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  // Captura manual de datos del cliente (paso 'datos_captura').
+  const [datos, setDatos] = useState(DATOS_VACIOS);
+  const [ineEscaneada, setIneEscaneada] = useState(false);
+  const setDato = (k) => (v) => setDatos((d) => ({ ...d, [k]: v }));
   const [firmaAsesorOk, setFirmaAsesorOk] = useState(false);
   const [guardarFirma, setGuardarFirma] = useState(true);
   // 'remoto' = cliente autentico y completo biometria en su celular.
@@ -52,6 +68,84 @@ export default function Identificacion() {
   // sigue el flujo normal (espera de OTP + firma de la carta).
   const trasClienteExistente = () =>
     ir(CLIENTE_EXISTENTE_MOCK.tieneCartaVigente ? 'aprobado_interno' : 'otp_espera');
+
+  // Captura manual: al volver del escaneo de INE se autollenan los campos de
+  // la pantalla 'datos_captura' con lo que "detecto" el OCR.
+  const llenarDesdeINE = () => {
+    setDatos({
+      curp: OCR_MOCK.curp,
+      fechaIngreso: TALON_MOCK.fechaIngreso,
+      rfc: OCR_MOCK.rfc,
+      nombre: OCR_MOCK.nombre,
+      segundoNombre: OCR_MOCK.segundoNombre,
+      apellidoPaterno: OCR_MOCK.apellidoPaterno,
+      apellidoMaterno: OCR_MOCK.apellidoMaterno,
+      fechaNacimiento: OCR_MOCK.fechaNacimiento,
+    });
+    setIneEscaneada(true);
+  };
+
+  // "Continuar" desde 'datos_captura': vuelca los datos al bloque 4. Si hubo
+  // escaneo de INE tambien se autollena el resto (talon, domicilio, ingresos),
+  // igual que en aplicarOCR. Sin escaneo solo se guarda lo que se tecleo.
+  const continuarDatos = () => {
+    setTabData('personales', {
+      curp: datos.curp,
+      rfc: datos.rfc,
+      nombre: datos.nombre,
+      segundoNombre: datos.segundoNombre,
+      apellidoPaterno: datos.apellidoPaterno,
+      apellidoMaterno: datos.apellidoMaterno,
+      fechaNacimiento: datos.fechaNacimiento,
+      ...(ineEscaneada
+        ? {
+            genero: OCR_MOCK.genero,
+            estadoCivil: OCR_MOCK.estadoCivil,
+            paisNacimiento: OCR_MOCK.paisNacimiento,
+            nacionalidad: OCR_MOCK.nacionalidad,
+          }
+        : {}),
+    });
+    setTabData('laborales', {
+      fechaIngreso: datos.fechaIngreso,
+      ...(ineEscaneada
+        ? {
+            numSegSocial: TALON_MOCK.numSegSocial,
+            entidadFederativa: TALON_MOCK.entidadFederativa,
+            centroTrabajo: TALON_MOCK.centroTrabajo,
+            puesto: TALON_MOCK.puesto,
+          }
+        : {}),
+    });
+    if (ineEscaneada) {
+      setTabData('contacto', {
+        telefonoCelular: cel,
+        calle: OCR_MOCK.calle,
+        cp: OCR_MOCK.cp,
+        colonia: OCR_MOCK.colonia,
+        delegacion: OCR_MOCK.delegacion,
+        estado: OCR_MOCK.estado,
+        pais: OCR_MOCK.pais,
+      });
+      setTabData('ingresos', {
+        ingresoMensualComprobable: TALON_MOCK.ingresoMensualComprobable,
+        rangoIngreso: TALON_MOCK.rangoIngreso,
+      });
+    }
+    patch({
+      auth: {
+        biometriaCliente: true,
+        ineFrente: ineEscaneada,
+        ineReverso: ineEscaneada,
+        ocrAplicado: ineEscaneada,
+      },
+    });
+    track('click', {
+      target: 'ident_datos_captura_continuar',
+      via: ineEscaneada ? 'ine_ocr' : 'manual',
+    });
+    ir('firma_asesor');
+  };
 
   const aplicarOCR = () => {
     setTabData('personales', {
@@ -282,8 +376,9 @@ export default function Identificacion() {
       <OtpEspera
         onManual={() => {
           setAutVia('manual');
-          // Sin paso de OTP: el asesor pasa directo a la captura biometrica.
-          ir('bio_intro');
+          // Sin paso de OTP: el asesor captura los datos del cliente (escanea
+          // la INE o los teclea). El cliente ya hizo biometricos en su celular.
+          ir('datos_captura');
         }}
         onListo={() => {
           setAutVia('remoto');
@@ -298,6 +393,114 @@ export default function Identificacion() {
           ir('ocr');
         }}
       />
+    );
+  }
+
+  if (paso === 'datos_captura') {
+    const listo =
+      datos.curp.trim().length >= 10 && datos.fechaIngreso.trim().length >= 4;
+    return (
+      <Shell title="Datos del cliente">
+        <Content>
+          <h1>Tomemos los datos personales del cliente</h1>
+          <p className="lead">
+            Puedes llenar la informacion o escanear la identificacion oficial.
+          </p>
+
+          <div className="sec-label">Escaneo</div>
+          <button
+            type="button"
+            className={`scan-ine${ineEscaneada ? ' done' : ''}`}
+            onClick={() => {
+              if (ineEscaneada) return;
+              track('click', { target: 'ident_datos_escanear_ine' });
+              ir('ine_frente');
+            }}
+          >
+            <span>Escanear INE</span>
+            <span className="scan-ico" aria-hidden="true">
+              {ineEscaneada ? '✓' : '↑'}
+            </span>
+          </button>
+          {ineEscaneada && (
+            <p className="tiny scan-hint">
+              La INE se escaneo y ya esta agregada a la lista de documentos. El
+              cliente ademas completo biometricos.
+            </p>
+          )}
+
+          <div className="sec-label">
+            {ineEscaneada ? 'Datos de identificacion' : 'Identificacion'}
+          </div>
+          <Field
+            name="curp"
+            label="CURP"
+            value={datos.curp}
+            onChange={setDato('curp')}
+            maxLength={18}
+            placeholder="18 caracteres"
+          />
+          <Field
+            name="fechaIngreso"
+            label="Fecha de ingreso laboral"
+            type="date"
+            value={datos.fechaIngreso}
+            onChange={setDato('fechaIngreso')}
+          />
+          {ineEscaneada && (
+            <Field
+              name="rfc"
+              label="RFC"
+              value={datos.rfc}
+              onChange={setDato('rfc')}
+              maxLength={13}
+            />
+          )}
+
+          {ineEscaneada && (
+            <>
+              <div className="sec-label">Datos personales</div>
+              <Field name="nombre" label="Nombre" value={datos.nombre} onChange={setDato('nombre')} />
+              <Field
+                name="segundoNombre"
+                label="Segundo nombre"
+                required={false}
+                value={datos.segundoNombre}
+                onChange={setDato('segundoNombre')}
+              />
+              <Field
+                name="apellidoPaterno"
+                label="Apellido paterno"
+                value={datos.apellidoPaterno}
+                onChange={setDato('apellidoPaterno')}
+              />
+              <Field
+                name="apellidoMaterno"
+                label="Apellido materno"
+                value={datos.apellidoMaterno}
+                onChange={setDato('apellidoMaterno')}
+              />
+              <Field
+                name="fechaNacimiento"
+                label="Fecha de nacimiento"
+                type="date"
+                value={datos.fechaNacimiento}
+                onChange={setDato('fechaNacimiento')}
+              />
+            </>
+          )}
+        </Content>
+        <FooterActions>
+          <Button
+            variant="primary"
+            disabled={!listo}
+            onClick={continuarDatos}
+            track="ident_datos_captura_continuar_btn"
+          >
+            Continuar →
+          </Button>
+        </FooterActions>
+      </Shell>
     );
   }
 
@@ -393,7 +596,20 @@ export default function Identificacion() {
           </ul>
         </Content>
         <FooterActions>
-          <Button variant="primary" onClick={() => ir(esFrente ? 'ine_reverso' : 'ocr')} track={`ident_${paso}_confirmar`}>
+          <Button
+            variant="primary"
+            onClick={() => {
+              if (esFrente) return ir('ine_reverso');
+              // Captura manual: el escaneo vuelve a 'datos_captura' con los
+              // campos autollenados. En el flujo remoto sigue a 'ocr'.
+              if (autVia === 'manual') {
+                llenarDesdeINE();
+                return ir('datos_captura');
+              }
+              return ir('ocr');
+            }}
+            track={`ident_${paso}_confirmar`}
+          >
             Confirmar captura ✓
           </Button>
         </FooterActions>
