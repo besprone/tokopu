@@ -111,49 +111,54 @@ function DocScanSheet({ cfg, onAceptar, onClose }) {
         <button type="button" className="carta-sheet-close" aria-label="Cerrar" onClick={onClose}>
           ✕
         </button>
-        <h2>{cfg.titulo}</h2>
-        <p className="lead">{cfg.subtitulo}</p>
 
-        {fase === 'captura' ? (
-          <>
-            <div className="docscan-frame">
-              <span className="docscan-frame-ico" aria-hidden="true">📄</span>
-              <span className="tiny">Encuadra el documento</span>
+        <div className="docscan-body">
+          <h2>{cfg.titulo}</h2>
+          <p className="lead">{cfg.subtitulo}</p>
+
+          {fase === 'captura' ? (
+            <>
+              <div className="docscan-frame">
+                <span className="docscan-frame-ico" aria-hidden="true">📄</span>
+                <span className="tiny">Encuadra el documento</span>
+              </div>
+              <div className="sec-label" style={{ borderBottom: 'none', margin: '14px 0 2px' }}>
+                Consejos
+              </div>
+              <ul className="consejos tiny">
+                {CONSEJOS_CAPTURA.map((c, i) => (
+                  <li key={i}>{c}</li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <div className="docscan-doc">
+              <DocShot src={cfg.img} alt={`${cfg.label} capturado`} />
             </div>
-            <div className="sec-label" style={{ borderBottom: 'none', margin: '14px 0 2px' }}>
-              Consejos
-            </div>
-            <ul className="consejos tiny">
-              {CONSEJOS_CAPTURA.map((c, i) => (
-                <li key={i}>{c}</li>
-              ))}
-            </ul>
-            <div className="grow" />
-            <div className="docscan-actions">
+          )}
+        </div>
+
+        <div className="docscan-actions">
+          {fase === 'captura' ? (
+            <>
               <Button variant="ghost" onClick={() => setFase('revision')} track="docscan_carrete">
                 Desde carrete
               </Button>
               <Button variant="dark" onClick={() => setFase('revision')} track="docscan_capturar">
                 Capturar
               </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="docscan-doc">
-              <DocShot src={cfg.img} alt={`${cfg.label} capturado`} />
-            </div>
-            <div className="grow" />
-            <div className="docscan-actions">
+            </>
+          ) : (
+            <>
               <Button variant="ghost" onClick={() => setFase('captura')} track="docscan_reintentar">
                 Escanea de nuevo
               </Button>
               <Button variant="dark" onClick={onAceptar} track="docscan_aceptar">
                 Aceptar captura ✓
               </Button>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

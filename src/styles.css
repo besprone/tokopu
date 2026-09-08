@@ -1413,6 +1413,12 @@ body.carta-abierta .instrucciones-fab {
 .docscan-sheet {
   height: 88%;
 }
+.docscan-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .docscan-frame {
   display: flex;
   flex-direction: column;
@@ -1432,9 +1438,6 @@ body.carta-abierta .instrucciones-fab {
   font-size: 30px;
 }
 .docscan-doc {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 12px;
@@ -1456,8 +1459,10 @@ body.carta-abierta .instrucciones-fab {
   font-size: 34px;
 }
 .docscan-actions {
+  flex: none;
   display: flex;
   gap: 10px;
+  padding-top: 12px;
 }
 .docscan-actions .btn {
   flex: 1;
