@@ -286,7 +286,7 @@ export default function InfoSolicitud() {
     for (const [t, vals] of Object.entries(escaneoCfg.camposExtra || {})) {
       setTabData(t, vals);
     }
-    toggleDoc(escaneoCfg.doc, true);
+    toggleDoc(escaneoCfg.doc, { nombre: 'Cargado en la captura de la solicitud', demo: true });
     track('click', { target: `info_${tab}_escaneo_aceptado`, doc: escaneoCfg.doc });
     setScanOpen(false);
   };
