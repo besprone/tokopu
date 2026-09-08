@@ -13,3 +13,6 @@ dist
 
 # Videos de referencia (Figma), no van al repo
 mov/
+
+# Docs de referencia (Figma / guion), no van al repo
+pdf/
