@@ -800,7 +800,7 @@ export default function Identificacion() {
 
 // Foto "capturada" de la INE en la pantalla de revision. Usa la imagen de
 // muestra en /public/ine/<lado>.<ext>; si no existe cae a un recuadro simulado.
-const INE_EXTS = ['png', 'jpg', 'jpeg', 'webp'];
+const INE_EXTS = ['webp', 'jpeg', 'jpg', 'png'];
 function IneShot({ lado }) {
   const [i, setI] = useState(0);
   if (i >= INE_EXTS.length) {

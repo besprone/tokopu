@@ -61,7 +61,7 @@ const ESCANEO_TAB = {
   },
 };
 
-const DOC_EXTS = ['png', 'jpg', 'jpeg', 'webp'];
+const DOC_EXTS = ['webp', 'png', 'jpg', 'jpeg'];
 
 // Foto "capturada" del documento. Usa /public/<img>.<ext> y si no existe
 // ninguna extension cae a un recuadro simulado.
