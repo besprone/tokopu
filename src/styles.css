@@ -345,6 +345,55 @@ input[type='radio'] {
   margin-top: 10px;
 }
 
+/* ---- Captura de INE (encuadre / revision "¿Es correcta la captura?") ---- */
+.ine-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  aspect-ratio: 16 / 10;
+  background: #1b1f27;
+  border: 1px solid #2a2f3a;
+  border-radius: var(--radius);
+  color: #aeb6c2;
+  margin: 4px 0 8px;
+}
+.ine-frame-ico {
+  font-size: 30px;
+}
+.consejos {
+  margin: 0 0 12px;
+  padding-left: 18px;
+}
+.consejos li {
+  margin: 3px 0;
+}
+.ine-shot {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.ine-shot--mock {
+  aspect-ratio: 16 / 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--ink-3);
+  font-size: 34px;
+}
+.btn-row {
+  display: flex;
+  gap: 10px;
+}
+.btn-row .btn {
+  flex: 1;
+}
+
 .content {
   padding: var(--pad);
   flex: 1;

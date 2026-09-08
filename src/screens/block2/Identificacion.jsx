@@ -24,9 +24,18 @@ const PASOS = [
   'bio_intro',
   'selfie',
   'ine_frente',
+  'ine_frente_ok', // "¿Es correcta la captura?" del frente
   'ine_reverso',
+  'ine_reverso_ok', // "¿Es correcta la captura?" del reverso
   'ocr',
   'firma_asesor',
+];
+
+// Tips de encuadre (pantalla de captura de INE).
+const CONSEJOS_INE = [
+  'Consigue que el documento entre completamente en la pantalla.',
+  'Asegurate de no moverte en el momento de la fotografia.',
+  'Evita reflejos y luces directas. Un lugar con luz de dia o cerca de una ventana suele dar mejor resultado.',
 ];
 
 const DATOS_VACIOS = {
@@ -577,41 +586,78 @@ export default function Identificacion() {
     );
   }
 
-  if (paso === 'ine_frente' || paso === 'ine_reverso') {
-    const esFrente = paso === 'ine_frente';
-    return (
-      <Shell title="Captura INE">
-        <Content>
-          <h1>Capturar {esFrente ? 'el frente' : 'el reverso'} de la INE</h1>
-          <p className="lead">Por favor, captura la parte {esFrente ? 'frontal' : 'trasera'} de la INE del cliente.</p>
-          <div className="mock-camera" style={{ aspectRatio: '16/10' }}>
-            <div>
-              <div style={{ fontSize: 30 }}>🪪</div>
-              Encuadra la credencial
+  if (paso.startsWith('ine_')) {
+    const esFrente = paso === 'ine_frente' || paso === 'ine_frente_ok';
+    const esRevision = paso.endsWith('_ok');
+    const lado = esFrente ? 'frente' : 'reverso';
+
+    // Pantalla de captura: encuadre + consejos + obturador simulado.
+    if (!esRevision) {
+      return (
+        <Shell title="Captura de INE">
+          <Content>
+            <h1>Capturar {esFrente ? 'el frente' : 'el reverso'} de la INE</h1>
+            <p className="lead">
+              Coloca {esFrente ? 'la parte frontal' : 'la parte trasera'} de la INE del cliente
+              dentro del recuadro y toma la foto.
+            </p>
+            <div className="ine-frame">
+              <span className="ine-frame-ico" aria-hidden="true">🪪</span>
+              <span className="tiny">Encuadra la credencial</span>
             </div>
-          </div>
-          <ul className="tiny" style={{ paddingLeft: 18 }}>
-            <li>Consigue que el documento entre completamente en la pantalla.</li>
-            <li>Evita reflejos y luces directas.</li>
-          </ul>
+            <div className="sec-label" style={{ borderBottom: 'none', margin: '14px 0 2px' }}>
+              Consejos
+            </div>
+            <ul className="consejos tiny">
+              {CONSEJOS_INE.map((c, i) => (
+                <li key={i}>{c}</li>
+              ))}
+            </ul>
+            <button
+              className="shutter"
+              aria-label="Tomar foto"
+              onClick={() => ir(`ine_${lado}_ok`)}
+            />
+            <p className="tiny" style={{ textAlign: 'center' }}>Camara simulada</p>
+          </Content>
+        </Shell>
+      );
+    }
+
+    // Pantalla de revision: "¿Es correcta la captura?" con la foto capturada.
+    const confirmar = () => {
+      if (esFrente) return ir('ine_reverso');
+      // Captura manual: el escaneo vuelve a 'datos_captura' con los campos
+      // autollenados. En el flujo remoto sigue a 'ocr'.
+      if (autVia === 'manual') {
+        llenarDesdeINE();
+        return ir('datos_captura');
+      }
+      return ir('ocr');
+    };
+    return (
+      <Shell title="Captura de INE">
+        <Content>
+          <h1>¿Es correcta la captura?</h1>
+          <p className="lead">
+            Revisa que se lea bien {esFrente ? 'el frente' : 'el reverso'} de la INE. Si salio
+            borrosa o cortada, vuelve a escanearla.
+          </p>
+          <IneShot lado={lado} />
         </Content>
         <FooterActions>
-          <Button
-            variant="primary"
-            onClick={() => {
-              if (esFrente) return ir('ine_reverso');
-              // Captura manual: el escaneo vuelve a 'datos_captura' con los
-              // campos autollenados. En el flujo remoto sigue a 'ocr'.
-              if (autVia === 'manual') {
-                llenarDesdeINE();
-                return ir('datos_captura');
-              }
-              return ir('ocr');
-            }}
-            track={`ident_${paso}_confirmar`}
-          >
-            Confirmar captura ✓
-          </Button>
+          <div className="btn-row">
+            <Button
+              variant="ghost"
+              onClick={() => ir(`ine_${lado}`)}
+              track={`ident_ine_${lado}_reintentar`}
+            >
+              Escanea de nuevo
+            </Button>
+            <Button variant="primary" onClick={confirmar} track={`ident_ine_${lado}_confirmar`}>
+              Confirmar ✓
+            </Button>
+          </div>
         </FooterActions>
       </Shell>
     );
@@ -686,6 +732,28 @@ export default function Identificacion() {
   }
 
   return null;
+}
+
+// Foto "capturada" de la INE en la pantalla de revision. Usa la imagen de
+// muestra en /public/ine/<lado>.png; si no existe cae a un recuadro simulado.
+function IneShot({ lado }) {
+  const [err, setErr] = useState(false);
+  if (err) {
+    return (
+      <div className="ine-shot ine-shot--mock">
+        <span aria-hidden="true">🪪</span>
+        <span className="tiny">Captura simulada de la INE ({lado})</span>
+      </div>
+    );
+  }
+  return (
+    <img
+      className="ine-shot"
+      src={`/ine/${lado}.png`}
+      alt={`INE ${lado} capturada`}
+      onError={() => setErr(true)}
+    />
+  );
 }
 
 function Shell({ title, children }) {
