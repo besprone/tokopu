@@ -236,6 +236,7 @@ export default function InfoSolicitud() {
   });
   const [forceSig, setForceSig] = useState(0);
   const [scanOpen, setScanOpen] = useState(false);
+  const [limpiado, setLimpiado] = useState({});
 
   const def = TAB_DEFS[tab];
   const valores = solicitud.datos[tab] || {};
@@ -248,6 +249,24 @@ export default function InfoSolicitud() {
 
   useEffect(() => {
     setScanOpen(false);
+    // En los tabs con escaneo, los campos del documento arrancan VACIOS aunque
+    // un OCR previo (bloque 2) los haya dejado con datos: se llenan al cargar
+    // el documento aqui. No se limpia si ya se escaneo, si el tab ya se
+    // completo, o si ya se limpio antes en esta sesion (para no borrar lo que
+    // el asesor teclee y luego revisite).
+    const cfg = ESCANEO_TAB[tab];
+    if (
+      cfg &&
+      !solicitud.documentos[cfg.doc] &&
+      !solicitud.tabsCompletadas[tab] &&
+      !limpiado[tab]
+    ) {
+      const vacio = {};
+      for (const k of Object.keys(cfg.campos)) vacio[k] = '';
+      setTabData(tab, vacio);
+      setLimpiado((m) => ({ ...m, [tab]: true }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
   const aceptarEscaneo = () => {
@@ -331,7 +350,8 @@ export default function InfoSolicitud() {
           Paso {idxTab + 1} de {TABS_INFO.length}
         </span>
         <h1 style={{ marginTop: 2 }}>{def.titulo}</h1>
-        {(escaneado || (solicitud.auth.ocrAplicado && def.ocr.length > 0)) && (
+        {((escaneoCfg && escaneado) ||
+          (!escaneoCfg && solicitud.auth.ocrAplicado && def.ocr.length > 0)) && (
           <p className="tiny" style={{ marginBottom: 12 }}>
             Los campos resaltados se autollenaron con un documento escaneado. Verifica y
             corrige si es necesario.
