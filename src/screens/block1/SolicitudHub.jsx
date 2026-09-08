@@ -7,7 +7,7 @@ import { BLOQUE_TAREA } from '../../flow.js';
 
 export default function SolicitudHub() {
   const navigate = useNavigate();
-  const { solicitud } = useStore();
+  const { solicitud, patch } = useStore();
   const { track } = useMetrics();
   const prog = progresoSolicitud(solicitud);
 
@@ -40,6 +40,21 @@ export default function SolicitudHub() {
 
   const puedeEnviar = identOk && ofertaOk && infoOk && docsOk;
 
+  // Firma autografa: no hay bloque de firma en la app (se firma en papel).
+  // Solo el flujo digital tiene bloque de firma -> se retoma despues.
+  const mostrarFirma = solicitud.tipoFirma === 'digital';
+
+  // Antes habia una pantalla de resumen (/completada); ahora el envio se hace
+  // aqui mismo y pasa directo al SEQ de la ultima tarea.
+  const enviar = () => {
+    if (!solicitud.enviada) {
+      patch({ enviada: true, enviadaISO: new Date().toISOString() });
+    }
+    track('click', { target: 'hub_enviar_solicitud' });
+    track('task_complete', { tarea: 'documentos_envio', resultado: 'exito' });
+    navigate('/seq/documentos_envio', { replace: true });
+  };
+
   return (
     <Screen>
       <StatusBar />
@@ -71,24 +86,13 @@ export default function SolicitudHub() {
             identOk
           )}
           {item('informacion', 'Informacion de la solicitud', b.b4.extra, infoOk, 'informacion_solicitud', ofertaOk)}
-          {item('documentos', 'Documentos', b.b5.extra, enviada, 'documentos_envio', infoOk)}
-          {item(
-            'firma',
-            'Firma de la solicitud',
-            solicitud.tipoFirma === 'autografa' ? 'Firma autografa' : 'Firma digital',
-            enviada,
-            'documentos_envio',
-            infoOk
-          )}
+          {item('documentos', 'Documentos', b.b5.extra, docsOk, 'documentos_envio', infoOk)}
+          {mostrarFirma &&
+            item('firma', 'Firma de la solicitud', 'Firma digital', enviada, 'documentos_envio', infoOk)}
         </div>
       </Content>
       <FooterActions>
-        <Button
-          variant="primary"
-          disabled={!puedeEnviar}
-          onClick={() => navigate('/completada')}
-          track="hub_enviar_solicitud"
-        >
+        <Button variant="primary" disabled={!puedeEnviar} onClick={enviar} track="hub_enviar_solicitud">
           Enviar solicitud →
         </Button>
       </FooterActions>

@@ -108,7 +108,7 @@ Datos de Sara:
 
 Luego envía la solicitud para terminar.`,
     exito:
-      '13 de 13 documentos cargados, pantalla "Felicidades / solicitud en proceso de evaluacion" y termina.',
+      '13 de 13 documentos cargados; vuelve al hub y envia la solicitud desde ahi (boton "Enviar solicitud"); termina.',
     observar: [
       'El explorador de archivos del equipo se abre bien?',
       'Entiende que adjuntar la INE completa los demas documentos?',

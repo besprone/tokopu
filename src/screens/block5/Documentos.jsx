@@ -154,10 +154,13 @@ export default function Documentos() {
         <Button
           variant="primary"
           disabled={!todos}
-          onClick={() => navigate('/completada')}
+          onClick={() => {
+            track('click', { target: 'documentos_listos' });
+            navigate('/solicitud');
+          }}
           track="enviar_documentos"
         >
-          Enviar documentos →
+          Continuar →
         </Button>
       </FooterActions>
     </Screen>
