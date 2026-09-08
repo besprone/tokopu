@@ -18,7 +18,8 @@ const PASOS = [
   'solicitudes_activas',
   'aprobado_interno',
   'otp_espera',
-  'otp_codigo',
+  // 'otp_codigo' se conserva en el archivo pero YA NO va en el flujo del asesor:
+  // el OTP lo captura el cliente desde el link de WhatsApp (flujo remoto).
   'bio_intro',
   'selfie',
   'ine_frente',
@@ -281,7 +282,8 @@ export default function Identificacion() {
       <OtpEspera
         onManual={() => {
           setAutVia('manual');
-          ir('otp_codigo');
+          // Sin paso de OTP: el asesor pasa directo a la captura biometrica.
+          ir('bio_intro');
         }}
         onListo={() => {
           setAutVia('remoto');
