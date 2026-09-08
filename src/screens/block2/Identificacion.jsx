@@ -735,10 +735,11 @@ export default function Identificacion() {
 }
 
 // Foto "capturada" de la INE en la pantalla de revision. Usa la imagen de
-// muestra en /public/ine/<lado>.png; si no existe cae a un recuadro simulado.
+// muestra en /public/ine/<lado>.<ext>; si no existe cae a un recuadro simulado.
+const INE_EXTS = ['png', 'jpg', 'jpeg', 'webp'];
 function IneShot({ lado }) {
-  const [err, setErr] = useState(false);
-  if (err) {
+  const [i, setI] = useState(0);
+  if (i >= INE_EXTS.length) {
     return (
       <div className="ine-shot ine-shot--mock">
         <span aria-hidden="true">🪪</span>
@@ -749,9 +750,9 @@ function IneShot({ lado }) {
   return (
     <img
       className="ine-shot"
-      src={`/ine/${lado}.png`}
+      src={`/ine/${lado}.${INE_EXTS[i]}`}
       alt={`INE ${lado} capturada`}
-      onError={() => setErr(true)}
+      onError={() => setI((n) => n + 1)}
     />
   );
 }
