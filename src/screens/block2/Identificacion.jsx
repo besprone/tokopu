@@ -54,6 +54,9 @@ export default function Identificacion() {
   const { track } = useMetrics();
   const { solicitud, patch, setTabData } = useStore();
   const [paso, setPaso] = useState('contacto');
+  // Pila de pasos visitados para que "← Regresar" vuelva al paso anterior de
+  // ESTE flujo (no a la ruta previa). Vacia en 'contacto' => sale del flujo.
+  const [historial, setHistorial] = useState([]);
   const [cel, setCel] = useState(solicitud.auth.celular || '');
   const [mail, setMail] = useState(solicitud.auth.email || '');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -70,7 +73,22 @@ export default function Identificacion() {
 
   const ir = (siguiente) => {
     track('click', { target: `ident_paso_${siguiente}` });
+    setHistorial((h) => [...h, paso]);
     setPaso(siguiente);
+  };
+
+  // "← Regresar": vuelve al paso anterior de la pila; si esta vacia (paso
+  // inicial) sale del flujo con navigate(-1).
+  const atras = () => {
+    if (historial.length === 0) {
+      track('click', { target: 'ident_atras_salir' });
+      navigate(-1);
+      return;
+    }
+    const prev = historial[historial.length - 1];
+    track('click', { target: `ident_atras_${prev}` });
+    setHistorial((h) => h.slice(0, -1));
+    setPaso(prev);
   };
 
   // Cliente existente, tras revisar solicitudes activas: si tiene carta de
@@ -218,7 +236,7 @@ export default function Identificacion() {
   if (paso === 'contacto') {
     const ok = !vTel(cel) && !vEmail(mail);
     return (
-      <Shell title="Identificacion">
+      <Shell onBack={atras} title="Identificacion">
         <Content>
           <h1>Empecemos por autenticar al cliente</h1>
           <p className="lead">
@@ -253,7 +271,7 @@ export default function Identificacion() {
   if (paso === 'cliente_existente') {
     const c = CLIENTE_EXISTENTE_MOCK;
     return (
-      <Shell title="Identificacion">
+      <Shell onBack={atras} title="Identificacion">
         <Content>
           <h1>El numero corresponde a un cliente existente</h1>
           <p className="lead">
@@ -297,7 +315,7 @@ export default function Identificacion() {
     const items = CLIENTE_EXISTENTE_MOCK.solicitudesActivas;
     const continuar = () => trasClienteExistente();
     return (
-      <Shell title="Identificacion">
+      <Shell onBack={atras} title="Identificacion">
         <Content>
           <h1>Solicitudes guardadas</h1>
           <p className="lead">
@@ -365,7 +383,7 @@ export default function Identificacion() {
     return (
       <Screen>
         <StatusBar />
-        <TopBar title={null} right={<CerrarSolicitud />} />
+        <TopBar title={null} onBack={atras} right={<CerrarSolicitud />} />
         <div className="success-screen">
           <div className="check">✓</div>
           <h1>¡Aprobado! Comencemos con una buena oferta para {c.nombre}</h1>
@@ -384,6 +402,7 @@ export default function Identificacion() {
   if (paso === 'otp_espera') {
     return (
       <OtpEspera
+        onBack={atras}
         onManual={() => {
           setAutVia('manual');
           // Sin paso de OTP: el asesor captura los datos del cliente (escanea
@@ -410,7 +429,7 @@ export default function Identificacion() {
     const listo =
       datos.curp.trim().length >= 10 && datos.fechaIngreso.trim().length >= 4;
     return (
-      <Shell title="Datos del cliente">
+      <Shell onBack={atras} title="Datos del cliente">
         <Content>
           <h1>Tomemos los datos personales del cliente</h1>
           <p className="lead">
@@ -517,7 +536,7 @@ export default function Identificacion() {
   if (paso === 'otp_codigo') {
     const full = otp.every((d) => d !== '');
     return (
-      <Shell title="OTP">
+      <Shell onBack={atras} title="OTP">
         <Content>
           <h1>Ingresa el codigo de 6 digitos</h1>
           <p className="lead">Pide al cliente el codigo que recibio por SMS o WhatsApp.</p>
@@ -550,7 +569,7 @@ export default function Identificacion() {
 
   if (paso === 'bio_intro') {
     return (
-      <Shell title="Biometricos">
+      <Shell onBack={atras} title="Biometricos">
         <Content>
           <div className="mock-oval" style={{ margin: '10px auto 20px' }} />
           <h1>Comencemos por identificar al cliente</h1>
@@ -570,7 +589,7 @@ export default function Identificacion() {
 
   if (paso === 'selfie') {
     return (
-      <Shell title="Selfie">
+      <Shell onBack={atras} title="Selfie">
         <Content>
           <div className="mock-camera">
             <div>
@@ -595,7 +614,7 @@ export default function Identificacion() {
     // Pantalla de captura: encuadre + consejos + obturador simulado.
     if (!esRevision) {
       return (
-        <Shell title="Captura de INE">
+        <Shell onBack={atras} title="Captura de INE">
           <Content>
             <h1>Capturar {esFrente ? 'el frente' : 'el reverso'} de la INE</h1>
             <p className="lead">
@@ -637,7 +656,7 @@ export default function Identificacion() {
       return ir('ocr');
     };
     return (
-      <Shell title="Captura de INE">
+      <Shell onBack={atras} title="Captura de INE">
         <Content>
           <h1>¿Es correcta la captura?</h1>
           <p className="lead">
@@ -667,7 +686,7 @@ export default function Identificacion() {
   if (paso === 'ocr') {
     const remoto = autVia === 'remoto';
     return (
-      <Shell title="Datos del cliente">
+      <Shell onBack={atras} title="Datos del cliente">
         <Content>
           <h1>Tomemos los datos personales del cliente</h1>
           <p className="lead">
@@ -701,7 +720,7 @@ export default function Identificacion() {
 
   if (paso === 'firma_asesor') {
     return (
-      <Shell title="Firma del asesor">
+      <Shell onBack={atras} title="Firma del asesor">
         <Content>
           <h1>Firmar carta de consulta al portal de dependencia</h1>
           <p className="lead">
@@ -805,11 +824,11 @@ function CartaSheet({ onClose }) {
   );
 }
 
-function Shell({ title, children }) {
+function Shell({ title, onBack, children }) {
   return (
     <Screen>
       <StatusBar />
-      <TopBar title={title} right={<CerrarSolicitud />} />
+      <TopBar title={title} onBack={onBack} right={<CerrarSolicitud />} />
       {children}
     </Screen>
   );

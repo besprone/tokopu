@@ -7,7 +7,7 @@ import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 // Para el prototipo, tras OTP_ESPERA_MS se resuelve solo.
 export const OTP_ESPERA_MS = 30000;
 
-export default function OtpEspera({ onManual, onListo }) {
+export default function OtpEspera({ onManual, onListo, onBack }) {
   const { track } = useMetrics();
   const [listo, setListo] = useState(false);
   const cerrado = useRef(false);
@@ -42,7 +42,7 @@ export default function OtpEspera({ onManual, onListo }) {
   return (
     <Screen>
       <StatusBar />
-      <TopBar title="OTP" right={<CerrarSolicitud />} />
+      <TopBar title="OTP" onBack={onBack} right={<CerrarSolicitud />} />
       <Content>
         <div className="otp-wait">
           {listo ? (
