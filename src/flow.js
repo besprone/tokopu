@@ -159,6 +159,7 @@ const RUTA_TAREA = {
   '/informacion': 'informacion_solicitud',
   '/informacion/confirmar': 'informacion_solicitud',
   '/documentos': 'documentos_envio',
+  '/firma-digital': 'documentos_envio',
   '/completada': 'documentos_envio',
 };
 

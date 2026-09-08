@@ -15,7 +15,6 @@ export default function SolicitudHub() {
   const identOk = tareaCompletada(solicitud, 'identificacion');
   const ofertaOk = tareaCompletada(solicitud, 'seleccionar_oferta');
   const infoOk = tareaCompletada(solicitud, 'informacion_solicitud');
-  const enviada = solicitud.enviada;
   const docsOk = b.b5.pct >= 80;
 
   // El intro de la tarea ocurre ANTES del hub. Aqui cada bloque lleva directo
@@ -38,11 +37,27 @@ export default function SolicitudHub() {
     </button>
   );
 
-  const puedeEnviar = identOk && ofertaOk && infoOk && docsOk;
-
   // Firma autografa: no hay bloque de firma en la app (se firma en papel).
-  // Solo el flujo digital tiene bloque de firma -> se retoma despues.
+  // Solo el flujo digital tiene bloque de firma (link remoto al cliente).
   const mostrarFirma = solicitud.tipoFirma === 'digital';
+  const firmaEnviada = solicitud.auth.firmaClienteEnviada;
+  const firmaHecha = solicitud.auth.firmaCliente;
+
+  const haceRato = (iso) => {
+    if (!iso) return '';
+    const min = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+    return min < 60 ? `hace ${min} min` : `hace ${Math.round(min / 60)} h`;
+  };
+  const fechaCorta = (iso) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return `${d.getDate()}/${d.getMonth() + 1} ${String(d.getHours()).padStart(2, '0')}:${String(
+      d.getMinutes()
+    ).padStart(2, '0')}h`;
+  };
+
+  const puedeEnviar =
+    identOk && ofertaOk && infoOk && docsOk && (!mostrarFirma || firmaHecha);
 
   // El resumen previo a enviar ahora es este hub. "Enviar solicitud" marca la
   // solicitud como enviada y muestra el feedback (/completada). Desde ahi
@@ -87,8 +102,30 @@ export default function SolicitudHub() {
           )}
           {item('informacion', 'Informacion de la solicitud', b.b4.extra, infoOk, 'informacion_solicitud', ofertaOk)}
           {item('documentos', 'Documentos', b.b5.extra, docsOk, 'documentos_envio', infoOk)}
-          {mostrarFirma &&
-            item('firma', 'Firma de la solicitud', 'Firma digital', enviada, 'documentos_envio', infoOk)}
+          {mostrarFirma && (
+            <button
+              className="hub-item"
+              disabled={!docsOk || firmaHecha}
+              onClick={() => {
+                track('click', { target: 'hub_firma_digital' });
+                navigate('/firma-digital');
+              }}
+            >
+              <span>
+                <div style={{ fontWeight: 600 }}>Firma de la solicitud</div>
+                <div className="sub">
+                  {firmaHecha
+                    ? `Firmado ${fechaCorta(solicitud.auth.firmaClienteISO)}`
+                    : firmaEnviada
+                      ? `Enviada ${haceRato(solicitud.auth.firmaClienteEnviadaISO)}`
+                      : 'Firma digital'}
+                </div>
+              </span>
+              <span className={firmaHecha ? 'badge-check' : 'muted'}>
+                {firmaHecha ? '✓' : firmaEnviada ? '⏳' : '+'}
+              </span>
+            </button>
+          )}
         </div>
       </Content>
       <FooterActions>

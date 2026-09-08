@@ -55,6 +55,11 @@ function estadoInicial() {
       ocrAplicado: false,
       firmaAsesor: false,
       firmaCliente: false,
+      // Firma digital remota (link al cliente por WhatsApp/SMS)
+      firmaClienteEnviada: false,
+      firmaClienteEnviadaISO: null,
+      firmaClienteCanal: null, // 'whatsapp' | 'sms'
+      firmaClienteISO: null,
     },
     // Bloque 3
     capacidadPago: null,
@@ -172,7 +177,9 @@ export function progresoSolicitud(s) {
     (s.convenio ? 0.25 : 0) +
     (s.tipoFirma ? 0.25 : 0);
 
-  // Bloque 2
+  // Bloque 2 (identificacion y autenticacion). En autografa la firma del
+  // cliente es parte de este bloque; en digital es un bloque aparte (la firma
+  // remota se hace al final, con el link) y NO cuenta aqui.
   const pasos2 = [
     Boolean(s.auth.celular && s.auth.email),
     s.auth.otpValidado,
@@ -180,8 +187,8 @@ export function progresoSolicitud(s) {
     s.auth.ineFrente && s.auth.ineReverso,
     s.auth.ocrAplicado,
     s.auth.firmaAsesor,
-    s.tipoFirma === 'autografa' ? s.auth.firmaCliente : true,
   ];
+  if (s.tipoFirma === 'autografa') pasos2.push(s.auth.firmaCliente);
   const b2 = pasos2.filter(Boolean).length / pasos2.length;
 
   // Bloque 3
@@ -226,6 +233,11 @@ export function progresoSolicitud(s) {
 // "Guardadas" en la pantalla de Solicitudes.
 export function hayBorrador(s) {
   return !!(s.iniciada && !s.enviada);
+}
+
+// Solo firma digital: la firma remota del cliente aun no se completa.
+export function firmaDigitalPendiente(s) {
+  return s.tipoFirma === 'digital' && !s.auth.firmaCliente;
 }
 
 // Una tarea "completada" no se puede volver a abrir desde el hub.

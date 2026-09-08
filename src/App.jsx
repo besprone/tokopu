@@ -14,6 +14,7 @@ import Cotizador from './screens/block3/Cotizador.jsx';
 import InfoSolicitud from './screens/block4/InfoSolicitud.jsx';
 import ConfirmaDatos from './screens/block4/ConfirmaDatos.jsx';
 import Documentos from './screens/block5/Documentos.jsx';
+import FirmaDigital from './screens/block5/FirmaDigital.jsx';
 import Completada from './screens/block5/Completada.jsx';
 import SeqScreen from './screens/SeqScreen.jsx';
 import SusScreen from './screens/SusScreen.jsx';
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="/informacion" element={<InfoSolicitud />} />
             <Route path="/informacion/confirmar" element={<ConfirmaDatos />} />
             <Route path="/documentos" element={<Documentos />} />
+            <Route path="/firma-digital" element={<FirmaDigital />} />
             <Route path="/completada" element={<Completada />} />
             <Route path="/seq/:tarea" element={<SeqScreen />} />
             <Route path="/sus" element={<SusScreen />} />
