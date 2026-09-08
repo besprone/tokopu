@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud } from '../../components/ui.jsx';
-import { useStore, progresoSolicitud, tareaCompletada } from '../../state/store.jsx';
+import { useStore, progresoSolicitud, tareaCompletada, firmaDigitalAvance } from '../../state/store.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { BLOQUE_TAREA } from '../../flow.js';
 
@@ -42,6 +42,20 @@ export default function SolicitudHub() {
   const mostrarFirma = solicitud.tipoFirma === 'digital';
   const firmaEnviada = solicitud.auth.firmaClienteEnviada;
   const firmaHecha = solicitud.auth.firmaCliente;
+
+  // La firma remota del cliente avanza por reloj desde que se envio el link:
+  // aunque el asesor no entre al tracker, al cumplirse el minuto se marca aqui.
+  useEffect(() => {
+    if (!mostrarFirma || firmaHecha || !firmaEnviada) return undefined;
+    const check = () => {
+      if (firmaDigitalAvance(solicitud).completa) {
+        patch({ auth: { firmaCliente: true, firmaClienteISO: new Date().toISOString() } });
+      }
+    };
+    check();
+    const id = setInterval(check, 2000);
+    return () => clearInterval(id);
+  }, [mostrarFirma, firmaHecha, firmaEnviada, solicitud.auth.firmaClienteEnviadaISO]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const haceRato = (iso) => {
     if (!iso) return '';

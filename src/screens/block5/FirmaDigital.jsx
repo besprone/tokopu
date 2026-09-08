@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
-import { useStore } from '../../state/store.jsx';
+import { useStore, firmaDigitalAvance, FIRMA_DIGITAL_MS } from '../../state/store.jsx';
 import { capacidadPagoQuincenal, mxn } from '../../domain/finance.js';
 
 // Etapas del proceso de firma digital que corre el CLIENTE en su celular
@@ -15,12 +15,7 @@ const ETAPAS = [
   { id: 'firma', label: 'Firma de la carta de consulta', desc: 'Firma en pantalla' },
   { id: 'fin', label: 'Proceso completado', desc: 'El cliente cerro la ventana' },
 ];
-
-// El proceso del cliente "tarda lo que tarde el cliente"; para la prueba lo
-// simulamos en ~1 minuto total (repartido entre las etapas). El moderador
-// puede saltarlo ("completar ahora" = 0 s).
-const SIM_TOTAL_MS = 60000;
-const PASO_MS = Math.round(SIM_TOTAL_MS / ETAPAS.length);
+const PASO_MS = FIRMA_DIGITAL_MS / ETAPAS.length;
 
 export default function FirmaDigital() {
   const navigate = useNavigate();
@@ -31,7 +26,7 @@ export default function FirmaDigital() {
   const firmada = solicitud.auth.firmaCliente;
 
   const [paso, setPaso] = useState(enviada || firmada ? 'tracker' : 'envio');
-  const [hechas, setHechas] = useState(firmada ? ETAPAS.length : 0);
+  const [, setTick] = useState(0); // fuerza re-render mientras el proceso corre
 
   const modo = (() => {
     try {
@@ -48,6 +43,24 @@ export default function FirmaDigital() {
   const cap = capacidadPagoQuincenal(solicitud.datos.ingresos?.ingresoMensualComprobable || 0);
   const canal = solicitud.auth.firmaClienteCanal === 'sms' ? 'SMS' : 'WhatsApp';
 
+  // Avance derivado del reloj: sigue corriendo aunque el asesor salga de aqui.
+  const { hechas, completa } = firmaDigitalAvance(solicitud, ETAPAS.length);
+
+  // Refresca la vista cada segundo mientras el proceso corre.
+  useEffect(() => {
+    if (paso !== 'tracker' || completa) return undefined;
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, [paso, completa]);
+
+  // Al cumplirse el minuto, persiste la firma (si no la marco ya el hub).
+  useEffect(() => {
+    if (paso === 'tracker' && completa && !firmada) {
+      patch({ auth: { firmaCliente: true, firmaClienteISO: new Date().toISOString() } });
+      track('click', { target: 'firma_digital_completada' });
+    }
+  }, [paso, completa, firmada]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const enviarLink = (c) => {
     patch({
       auth: {
@@ -60,22 +73,18 @@ export default function FirmaDigital() {
     setPaso('tracker');
   };
 
-  // Avance automatico del cliente (simulado).
-  useEffect(() => {
-    if (paso !== 'tracker' || firmada) return;
-    if (hechas >= ETAPAS.length) {
-      patch({ auth: { firmaCliente: true, firmaClienteISO: new Date().toISOString() } });
-      track('click', { target: 'firma_digital_completada' });
-      return;
-    }
-    const t = setTimeout(() => {
-      track('click', { target: `firma_digital_etapa_${ETAPAS[hechas].id}` });
-      setHechas((n) => n + 1);
-    }, PASO_MS);
-    return () => clearTimeout(t);
-  }, [paso, hechas, firmada]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const completa = firmada || hechas >= ETAPAS.length;
+  // Moderador: adelanta el "reloj" del cliente moviendo la hora de envio.
+  const adelantar = (etapas) => {
+    const nuevas = Math.min(ETAPAS.length, hechas + etapas);
+    patch({
+      auth: {
+        firmaClienteEnviadaISO: new Date(Date.now() - nuevas * PASO_MS - 200).toISOString(),
+      },
+    });
+  };
+  const completarAhora = () => {
+    patch({ auth: { firmaCliente: true, firmaClienteISO: new Date().toISOString() } });
+  };
 
   if (paso === 'envio') {
     return (
@@ -123,7 +132,7 @@ export default function FirmaDigital() {
         <p className="lead">
           {completa
             ? 'El cliente completo el proceso de firma digital. Ya puedes enviar la solicitud.'
-            : `Link enviado por ${canal}. El avance depende del cliente.`}
+            : `Link enviado por ${canal}. El avance depende del cliente y continua aunque salgas de esta pantalla.`}
         </p>
 
         <div className="card">
@@ -181,13 +190,10 @@ export default function FirmaDigital() {
             </p>
             {modo && (
               <div className="row" style={{ gap: 14, justifyContent: 'center' }}>
-                <button
-                  className="btn link"
-                  onClick={() => setHechas((n) => Math.min(ETAPAS.length, n + 1))}
-                >
+                <button className="btn link" onClick={() => adelantar(1)}>
                   avanzar etapa
                 </button>
-                <button className="btn link" onClick={() => setHechas(ETAPAS.length)}>
+                <button className="btn link" onClick={completarAhora}>
                   completar ahora
                 </button>
               </div>

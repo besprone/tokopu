@@ -240,6 +240,24 @@ export function firmaDigitalPendiente(s) {
   return s.tipoFirma === 'digital' && !s.auth.firmaCliente;
 }
 
+// Duracion simulada del proceso de firma del cliente (link remoto).
+export const FIRMA_DIGITAL_MS = 60000;
+
+// Avance del proceso derivado del tiempo transcurrido desde que se envio el
+// link. Asi el check "avanza por detras" aunque el asesor no este viendo la
+// pantalla del tracker.
+export function firmaDigitalAvance(s, totalEtapas = 1) {
+  if (s.auth.firmaCliente) {
+    return { hechas: totalEtapas, completa: true, transcurrido: FIRMA_DIGITAL_MS };
+  }
+  if (!s.auth.firmaClienteEnviadaISO) {
+    return { hechas: 0, completa: false, transcurrido: 0 };
+  }
+  const t = Math.max(0, Date.now() - new Date(s.auth.firmaClienteEnviadaISO).getTime());
+  const hechas = Math.min(totalEtapas, Math.floor(t / (FIRMA_DIGITAL_MS / totalEtapas)));
+  return { hechas, completa: t >= FIRMA_DIGITAL_MS, transcurrido: t };
+}
+
 // Una tarea "completada" no se puede volver a abrir desde el hub.
 export function tareaCompletada(s, id) {
   switch (id) {
