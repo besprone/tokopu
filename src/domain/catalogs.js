@@ -98,6 +98,12 @@ export const TALON_MOCK = {
   rangoIngreso: '10000-15000',
 };
 
+// Datos simulados que "devuelve" el escaneo del estado de cuenta (bloque 4).
+export const CUENTA_MOCK = {
+  banco: 'BBVA',
+  cuentaClabe: '012180001234567899',
+};
+
 export const FOLIO_DEMO = '66FKJSK';
 
 // Cliente que YA existe en el sistema. Escenario alterno de la Tarea 2, se

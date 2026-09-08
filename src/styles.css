@@ -1279,6 +1279,60 @@ body.carta-abierta .instrucciones-fab {
   border-radius: 4px;
 }
 
+/* ---- Captura de documento (recibo de nomina / estado de cuenta) ---- */
+.docscan-sheet {
+  height: 88%;
+}
+.docscan-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  max-height: 40vh;
+  background: #1b1f27;
+  border: 1px solid #2a2f3a;
+  border-radius: var(--radius);
+  color: #aeb6c2;
+  margin: 4px 0 0;
+}
+.docscan-frame-ico {
+  font-size: 30px;
+}
+.docscan-doc {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px;
+  background: #fff;
+}
+.docscan-shot {
+  display: block;
+  width: 100%;
+  border-radius: 4px;
+}
+.docscan-shot--mock {
+  aspect-ratio: 3 / 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--ink-3);
+  font-size: 34px;
+}
+.docscan-actions {
+  display: flex;
+  gap: 10px;
+}
+.docscan-actions .btn {
+  flex: 1;
+}
+
 /* ---------------- Doc list ---------------- */
 
 .doc-group-title {
