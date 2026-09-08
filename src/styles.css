@@ -1510,6 +1510,7 @@ body.carta-abierta .instrucciones-fab {
   color: var(--ok);
 }
 .spin-sm {
+  display: inline-block;
   width: 18px;
   height: 18px;
   border: 2px solid var(--line);

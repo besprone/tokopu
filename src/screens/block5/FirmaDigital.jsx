@@ -16,7 +16,11 @@ const ETAPAS = [
   { id: 'fin', label: 'Proceso completado', desc: 'El cliente cerro la ventana' },
 ];
 
-const PASO_MS = 3500; // avance simulado por etapa
+// El proceso del cliente "tarda lo que tarde el cliente"; para la prueba lo
+// simulamos en ~1 minuto total (repartido entre las etapas). El moderador
+// puede saltarlo ("completar ahora" = 0 s).
+const SIM_TOTAL_MS = 60000;
+const PASO_MS = Math.round(SIM_TOTAL_MS / ETAPAS.length);
 
 export default function FirmaDigital() {
   const navigate = useNavigate();
@@ -176,12 +180,17 @@ export default function FirmaDigital() {
               Esperando al cliente…
             </p>
             {modo && (
-              <button
-                className="btn link"
-                onClick={() => setHechas((n) => Math.min(ETAPAS.length, n + 1))}
-              >
-                avanzar etapa (moderador)
-              </button>
+              <div className="row" style={{ gap: 14, justifyContent: 'center' }}>
+                <button
+                  className="btn link"
+                  onClick={() => setHechas((n) => Math.min(ETAPAS.length, n + 1))}
+                >
+                  avanzar etapa
+                </button>
+                <button className="btn link" onClick={() => setHechas(ETAPAS.length)}>
+                  completar ahora
+                </button>
+              </div>
             )}
           </>
         )}

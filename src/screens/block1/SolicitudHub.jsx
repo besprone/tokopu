@@ -122,7 +122,13 @@ export default function SolicitudHub() {
                 </div>
               </span>
               <span className={firmaHecha ? 'badge-check' : 'muted'}>
-                {firmaHecha ? '✓' : firmaEnviada ? '⏳' : '+'}
+                {firmaHecha ? (
+                  '✓'
+                ) : firmaEnviada ? (
+                  <span className="spin-sm" aria-label="En proceso" />
+                ) : (
+                  '+'
+                )}
               </span>
             </button>
           )}
