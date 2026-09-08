@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, Content, FooterActions, Button, TopBar, Callout, CerrarSolicitud } from '../../components/ui.jsx';
 import Field from '../../components/Field.jsx';
@@ -63,6 +64,7 @@ export default function Identificacion() {
   const setDato = (k) => (v) => setDatos((d) => ({ ...d, [k]: v }));
   const [firmaAsesorOk, setFirmaAsesorOk] = useState(false);
   const [guardarFirma, setGuardarFirma] = useState(true);
+  const [verCarta, setVerCarta] = useState(false); // sheet con la carta a firmar
   // 'remoto' = cliente autentico y completo biometria en su celular.
   // 'manual' = captura en el dispositivo del asesor (cliente en sucursal).
   const [autVia, setAutVia] = useState(null);
@@ -706,6 +708,16 @@ export default function Identificacion() {
           <p className="lead">
             Realiza tu firma dentro del recuadro. Si necesitas corregirla usa "Borrar firma".
           </p>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              track('click', { target: 'ident_ver_carta_dependencia' });
+              setVerCarta(true);
+            }}
+            style={{ marginBottom: 14 }}
+          >
+            📄 Ver la carta que vas a firmar
+          </Button>
           <label className="row" style={{ gap: 8, marginBottom: 10 }}>
             <input type="checkbox" checked={guardarFirma} onChange={(e) => setGuardarFirma(e.target.checked)} />
             <span className="small">Guardar mi firma para proximas solicitudes.</span>
@@ -727,6 +739,7 @@ export default function Identificacion() {
             Confirmar →
           </Button>
         </FooterActions>
+        {verCarta && <CartaSheet onClose={() => setVerCarta(false)} />}
       </Shell>
     );
   }
@@ -754,6 +767,33 @@ function IneShot({ lado }) {
       alt={`INE ${lado} capturada`}
       onError={() => setI((n) => n + 1)}
     />
+  );
+}
+
+// Sheet de solo lectura con la carta de consulta que firmara el asesor.
+// Se monta en document.body (portal) para salir del marco del telefono y
+// quedar por encima del FAB de instrucciones.
+function CartaSheet({ onClose }) {
+  return createPortal(
+    <div className="carta-sheet-backdrop" onClick={onClose}>
+      <div
+        className="carta-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Carta de consulta al portal de dependencia"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button type="button" className="carta-sheet-close" aria-label="Cerrar" onClick={onClose}>
+          ✕
+        </button>
+        <h2>Carta de consulta al portal de dependencia</h2>
+        <p className="lead">Podras consultar la carta en el espacio inferior.</p>
+        <div className="carta-doc">
+          <img src="/carta_dependencia/carta.webp" alt="Carta de consulta al portal de dependencia" />
+        </div>
+      </div>
+    </div>,
+    document.body,
   );
 }
 
