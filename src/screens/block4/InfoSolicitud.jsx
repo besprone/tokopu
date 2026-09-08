@@ -40,6 +40,13 @@ const ESCANEO_TAB = {
       puesto: TALON_MOCK.puesto,
       fechaIngreso: TALON_MOCK.fechaIngreso,
     },
+    // El talon tambien trae el sueldo -> autollena el tab de ingresos.
+    camposExtra: {
+      ingresos: {
+        ingresoMensualComprobable: TALON_MOCK.ingresoMensualComprobable,
+        rangoIngreso: TALON_MOCK.rangoIngreso,
+      },
+    },
   },
   bancarios: {
     doc: 'edo-cuenta',
@@ -204,7 +211,7 @@ const TAB_DEFS = {
     titulo: 'Origen y destino de ingresos',
     ocr: ['ingresoMensualComprobable'],
     campos: [
-      { name: 'ingresoMensualComprobable', label: 'Ingreso mensual comprobable (MXN)', type: 'number', inputMode: 'numeric', validate: (v) => V.entero(v, { min: 3000, max: 200000 }), hint: 'Define la capacidad de pago usada en el cotizador.' },
+      { name: 'ingresoMensualComprobable', label: 'Ingreso mensual comprobable (MXN)', type: 'number', inputMode: 'numeric', validate: (v) => V.entero(v, { min: 3000, max: 200000 }), lockIfFilled: true, hint: 'Proviene del talon de pagos. Define la capacidad de pago del cotizador.' },
       { name: 'origenRecursos', label: 'Origen de los recursos', options: ORIGEN_RECURSOS, validate: V.req },
       { name: 'destinoRecursos', label: 'Destino de los recursos', options: DESTINO_RECURSOS, validate: V.req },
       { name: 'liquidacionAnticipada', label: 'Tiene planeada la liquidacion anticipada', options: ['No', 'Si'], validate: V.req },
@@ -275,6 +282,10 @@ export default function InfoSolicitud() {
 
   const aceptarEscaneo = () => {
     setTabData(tab, { ...escaneoCfg.campos });
+    // Un documento puede autollenar campos de otros tabs (el talon trae el sueldo).
+    for (const [t, vals] of Object.entries(escaneoCfg.camposExtra || {})) {
+      setTabData(t, vals);
+    }
     toggleDoc(escaneoCfg.doc, true);
     track('click', { target: `info_${tab}_escaneo_aceptado`, doc: escaneoCfg.doc });
     setScanOpen(false);
@@ -356,7 +367,8 @@ export default function InfoSolicitud() {
         <h1 style={{ marginTop: 2 }}>{def.titulo}</h1>
         {def.subtitulo && <p className="lead">{def.subtitulo}</p>}
         {((escaneoCfg && escaneado) ||
-          (!escaneoCfg && solicitud.auth.ocrAplicado && def.ocr.length > 0)) && (
+          (!escaneoCfg && solicitud.auth.ocrAplicado && def.ocr.length > 0) ||
+          def.campos.some((c) => c.lockIfFilled && valores[c.name])) && (
           <p className="tiny" style={{ marginBottom: 12 }}>
             Los campos resaltados se autollenaron con un documento escaneado. Verifica y
             corrige si es necesario.
@@ -406,13 +418,14 @@ export default function InfoSolicitud() {
             inputMode={c.inputMode}
             maxLength={c.maxLength}
             hint={c.hint}
-            disabled={!!c.disabled}
+            disabled={!!c.disabled || (!!c.lockIfFilled && !!valores[c.name])}
             required={c.required !== false}
             prefilled={
               !c.disabled &&
-              ((solicitud.auth.ocrAplicado && def.ocr.includes(c.name)) ||
-                (escaneado && camposEscaneo.includes(c.name))) &&
-              !!valores[c.name]
+              !!valores[c.name] &&
+              (!!c.lockIfFilled ||
+                (solicitud.auth.ocrAplicado && def.ocr.includes(c.name)) ||
+                (escaneado && camposEscaneo.includes(c.name)))
             }
             value={valores[c.name] ?? ''}
             validate={c.validate}
