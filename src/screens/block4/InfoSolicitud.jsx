@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud, Callout } from '../../components/ui.jsx';
+import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud } from '../../components/ui.jsx';
 import Field from '../../components/Field.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore, TABS_INFO } from '../../state/store.jsx';
@@ -30,8 +30,6 @@ const ESCANEO_TAB = {
   laborales: {
     doc: 'talon-1',
     label: 'Talon de pagos',
-    // Los campos no se muestran hasta escanear el talon (o pedir captura manual).
-    ocultarCampos: true,
     titulo: 'Capturar del recibo de nomina',
     subtitulo: 'Por favor, captura el recibo de nomina del cliente.',
     img: '/talon/talon',
@@ -238,7 +236,6 @@ export default function InfoSolicitud() {
   });
   const [forceSig, setForceSig] = useState(0);
   const [scanOpen, setScanOpen] = useState(false);
-  const [manualForzado, setManualForzado] = useState(false);
 
   const def = TAB_DEFS[tab];
   const valores = solicitud.datos[tab] || {};
@@ -248,13 +245,9 @@ export default function InfoSolicitud() {
   const escaneoCfg = ESCANEO_TAB[tab] || null;
   const escaneado = escaneoCfg ? !!solicitud.documentos[escaneoCfg.doc] : false;
   const camposEscaneo = escaneoCfg ? Object.keys(escaneoCfg.campos) : [];
-  // Tabs con ocultarCampos: los campos aparecen recien tras escanear el
-  // documento (o si el asesor pide capturarlos a mano).
-  const camposOcultos = !!(escaneoCfg?.ocultarCampos && !escaneado && !manualForzado);
 
   useEffect(() => {
     setScanOpen(false);
-    setManualForzado(false);
   }, [tab]);
 
   const aceptarEscaneo = () => {
@@ -338,7 +331,7 @@ export default function InfoSolicitud() {
           Paso {idxTab + 1} de {TABS_INFO.length}
         </span>
         <h1 style={{ marginTop: 2 }}>{def.titulo}</h1>
-        {(escaneado || (def.ocr.length > 0 && !camposOcultos)) && (
+        {(escaneado || (solicitud.auth.ocrAplicado && def.ocr.length > 0)) && (
           <p className="tiny" style={{ marginBottom: 12 }}>
             Los campos resaltados se autollenaron con un documento escaneado. Verifica y
             corrige si es necesario.
@@ -363,57 +356,43 @@ export default function InfoSolicitud() {
                 {escaneado ? '✓' : '↑'}
               </span>
             </button>
-            {escaneado && (
+            {escaneado ? (
               <p className="tiny scan-hint">
                 El {escaneoCfg.label} ha sido escaneado y agregado a la lista de documentos.
               </p>
+            ) : (
+              <p className="tiny scan-hint">
+                Escanea el {escaneoCfg.label.toLowerCase()} para autollenar los campos, o
+                capturalos a mano.
+              </p>
             )}
-            {!camposOcultos && <div className="sec-label">{def.titulo}</div>}
+            <div className="sec-label">{def.titulo}</div>
           </>
         )}
 
-        {camposOcultos ? (
-          <>
-            <Callout kind="info">
-              Escanea el {escaneoCfg.label.toLowerCase()} para traer los datos laborales del
-              cliente.
-            </Callout>
-            <button
-              className="btn link"
-              style={{ padding: '10px 0 0' }}
-              onClick={() => {
-                track('click', { target: `info_${tab}_llenar_manual` });
-                setManualForzado(true);
-              }}
-            >
-              Prefiero llenarlos manualmente
-            </button>
-          </>
-        ) : (
-          def.campos.map((c) => (
-            <Field
-              key={c.name}
-              name={c.name}
-              tab={tab}
-              label={c.label}
-              type={c.type}
-              options={c.options}
-              inputMode={c.inputMode}
-              maxLength={c.maxLength}
-              hint={c.hint}
-              required={c.required !== false}
-              prefilled={
-                ((solicitud.auth.ocrAplicado && def.ocr.includes(c.name)) ||
-                  (escaneado && camposEscaneo.includes(c.name))) &&
-                !!valores[c.name]
-              }
-              value={valores[c.name] ?? ''}
-              validate={c.validate}
-              forceValidateSignal={forceSig}
-              onChange={(v) => setTabData(tab, { [c.name]: v })}
-            />
-          ))
-        )}
+        {def.campos.map((c) => (
+          <Field
+            key={c.name}
+            name={c.name}
+            tab={tab}
+            label={c.label}
+            type={c.type}
+            options={c.options}
+            inputMode={c.inputMode}
+            maxLength={c.maxLength}
+            hint={c.hint}
+            required={c.required !== false}
+            prefilled={
+              ((solicitud.auth.ocrAplicado && def.ocr.includes(c.name)) ||
+                (escaneado && camposEscaneo.includes(c.name))) &&
+              !!valores[c.name]
+            }
+            value={valores[c.name] ?? ''}
+            validate={c.validate}
+            forceValidateSignal={forceSig}
+            onChange={(v) => setTabData(tab, { [c.name]: v })}
+          />
+        ))}
       </Content>
       <FooterActions>
         <div className="row" style={{ gap: 8 }}>
@@ -426,13 +405,7 @@ export default function InfoSolicitud() {
           >
             ← Atras
           </Button>
-          <Button
-            variant="primary"
-            className="grow"
-            disabled={camposOcultos}
-            onClick={continuar}
-            track={`info_${tab}_continuar`}
-          >
+          <Button variant="primary" className="grow" onClick={continuar} track={`info_${tab}_continuar`}>
             {idxTab < TABS_INFO.length - 1 ? 'Continuar →' : 'Revisar datos →'}
           </Button>
         </div>
