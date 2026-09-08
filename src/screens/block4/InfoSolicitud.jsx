@@ -191,17 +191,13 @@ const TAB_DEFS = {
   },
   contacto: {
     titulo: 'Datos de contacto',
-    ocr: ['telefonoCelular', 'calle', 'cp', 'colonia', 'delegacion', 'estado', 'pais'],
+    subtitulo:
+      'En caso de que necesitemos contactar al cliente. El celular ya quedo validado en la autenticacion.',
+    ocr: [],
     campos: [
-      { name: 'telefonoCelular', label: 'Telefono celular', validate: V.telefono, type: 'tel', inputMode: 'numeric', maxLength: 10 },
+      { name: 'telefonoCelular', label: 'Telefono celular', validate: V.telefono, type: 'tel', inputMode: 'numeric', maxLength: 10, disabled: true },
       { name: 'telefonoDomicilio', label: 'Telefono de domicilio', validate: V.telefonoOpcional, type: 'tel', inputMode: 'numeric', maxLength: 10, ...OPCIONAL },
       { name: 'telefonoOficina', label: 'Telefono de oficina', validate: V.telefonoOpcional, type: 'tel', inputMode: 'numeric', maxLength: 10, ...OPCIONAL },
-      { name: 'calle', label: 'Calle y numero', validate: V.req },
-      { name: 'cp', label: 'Codigo postal', validate: V.cp, inputMode: 'numeric', maxLength: 5 },
-      { name: 'colonia', label: 'Colonia', validate: V.req },
-      { name: 'delegacion', label: 'Delegacion / Municipio', validate: V.req },
-      { name: 'estado', label: 'Estado', options: ESTADOS_MX, validate: V.req },
-      { name: 'pais', label: 'Pais', validate: V.req },
     ],
   },
   ingresos: {
@@ -265,6 +261,14 @@ export default function InfoSolicitud() {
       for (const k of Object.keys(cfg.campos)) vacio[k] = '';
       setTabData(tab, vacio);
       setLimpiado((m) => ({ ...m, [tab]: true }));
+    }
+    // El celular de contacto viene de la autenticacion (bloque 2) y va bloqueado.
+    if (
+      tab === 'contacto' &&
+      solicitud.auth.celular &&
+      solicitud.datos.contacto.telefonoCelular !== solicitud.auth.celular
+    ) {
+      setTabData('contacto', { telefonoCelular: solicitud.auth.celular });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
@@ -350,6 +354,7 @@ export default function InfoSolicitud() {
           Paso {idxTab + 1} de {TABS_INFO.length}
         </span>
         <h1 style={{ marginTop: 2 }}>{def.titulo}</h1>
+        {def.subtitulo && <p className="lead">{def.subtitulo}</p>}
         {((escaneoCfg && escaneado) ||
           (!escaneoCfg && solicitud.auth.ocrAplicado && def.ocr.length > 0)) && (
           <p className="tiny" style={{ marginBottom: 12 }}>
@@ -401,8 +406,10 @@ export default function InfoSolicitud() {
             inputMode={c.inputMode}
             maxLength={c.maxLength}
             hint={c.hint}
+            disabled={!!c.disabled}
             required={c.required !== false}
             prefilled={
+              !c.disabled &&
               ((solicitud.auth.ocrAplicado && def.ocr.includes(c.name)) ||
                 (escaneado && camposEscaneo.includes(c.name))) &&
               !!valores[c.name]

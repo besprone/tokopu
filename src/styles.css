@@ -657,6 +657,12 @@ h2,
 .field.prefilled input {
   background: var(--ok-bg);
 }
+.field input:disabled,
+.field select:disabled {
+  background: var(--line-2);
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
 
 /* ---------------- Tabs ---------------- */
 
