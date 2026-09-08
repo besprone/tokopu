@@ -32,7 +32,7 @@ const ESCANEO_TAB = {
     label: 'Talon de pagos',
     titulo: 'Capturar del recibo de nomina',
     subtitulo: 'Por favor, captura el recibo de nomina del cliente.',
-    img: '/talon/recibo',
+    img: '/talon/talon',
     campos: {
       numSegSocial: TALON_MOCK.numSegSocial,
       entidadFederativa: TALON_MOCK.entidadFederativa,
@@ -46,7 +46,7 @@ const ESCANEO_TAB = {
     label: 'Estado de cuenta',
     titulo: 'Capturar el estado de cuenta',
     subtitulo: 'Por favor, captura la caratula del estado de cuenta del cliente.',
-    img: '/estado_cuenta/estado',
+    img: '/estado_cuenta/edocuenta',
     campos: {
       banco: CUENTA_MOCK.banco,
       cuentaClabe: CUENTA_MOCK.cuentaClabe,
