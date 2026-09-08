@@ -10,3 +10,6 @@ dist
 
 # Vercel
 .vercel
+
+# Videos de referencia (Figma), no van al repo
+mov/

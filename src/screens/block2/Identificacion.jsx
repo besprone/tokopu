@@ -25,7 +25,6 @@ const PASOS = [
   'ine_reverso',
   'ocr',
   'firma_asesor',
-  'firma_cliente',
 ];
 
 export default function Identificacion() {
@@ -37,7 +36,6 @@ export default function Identificacion() {
   const [mail, setMail] = useState(solicitud.auth.email || '');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [firmaAsesorOk, setFirmaAsesorOk] = useState(false);
-  const [firmaClienteOk, setFirmaClienteOk] = useState(false);
   const [guardarFirma, setGuardarFirma] = useState(true);
   // 'remoto' = cliente autentico y completo biometria en su celular.
   // 'manual' = captura en el dispositivo del asesor (cliente en sucursal).
@@ -456,30 +454,12 @@ export default function Identificacion() {
             disabled={!firmaAsesorOk}
             onClick={() => {
               patch({ auth: { firmaAsesor: true } });
-              if (solicitud.tipoFirma === 'autografa') ir('firma_cliente');
-              else terminar();
+              // La firma del cliente ya no se hace en el dispositivo del asesor:
+              // el cliente firma la carta de consulta desde el link (flujo remoto).
+              terminar();
             }}
             track="ident_firma_asesor_confirmar"
           >
-            Confirmar →
-          </Button>
-        </FooterActions>
-      </Shell>
-    );
-  }
-
-  if (paso === 'firma_cliente') {
-    return (
-      <Shell title="Firma del cliente">
-        <Content>
-          <h1>Firma autografa del cliente</h1>
-          <p className="lead">
-            Pide al cliente que firme la carta de consulta al portal de la dependencia.
-          </p>
-          <SignaturePad onChange={setFirmaClienteOk} />
-        </Content>
-        <FooterActions>
-          <Button variant="primary" disabled={!firmaClienteOk} onClick={terminar} track="ident_firma_cliente_confirmar">
             Confirmar →
           </Button>
         </FooterActions>
