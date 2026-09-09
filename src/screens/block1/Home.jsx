@@ -17,8 +17,13 @@ const PROMOS = [
 
 export default function Home() {
   const navigate = useNavigate();
-  const { track } = useMetrics();
+  const { track, meta } = useMetrics();
   const { solicitud } = useStore();
+
+  // El asesor del prototipo es el participante de la prueba: lo saludamos con
+  // el nombre que capturo en la bienvenida (solo el primer nombre).
+  const primerNombre = meta?.participante?.trim().split(/\s+/)[0];
+  const saludo = primerNombre || 'Gerardo';
 
   const stats = [
     { n: '12', l: 'Totales' },
@@ -32,7 +37,7 @@ export default function Home() {
       <StatusBar />
       <AppHeader />
       <div className="content" style={{ paddingTop: 8, paddingBottom: 96 }}>
-        <h1 style={{ marginBottom: 16 }}>Hola, Gerardo!</h1>
+        <h1 style={{ marginBottom: 16 }}>Hola, {saludo}!</h1>
 
         <div className="row between" style={{ marginBottom: 10 }}>
           <strong>Tus solicitudes</strong>
