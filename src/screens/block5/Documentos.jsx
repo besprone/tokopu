@@ -38,8 +38,11 @@ export default function Documentos() {
 
   const hechos = docs.filter((d) => solicitud.documentos[d.id]).length;
   const todos = hechos === docs.length;
-  // El primer documento de la lista (la INE) autocompleta los demas.
-  const gatilloId = docs[0]?.id;
+  // El comprobante de domicilio es el que el asesor sube de verdad (los demas
+  // ya vienen de la identificacion / bloque 4); al adjuntarlo se completa el
+  // resto en la demo. Si no estuviera en la lista, cae al primer documento.
+  const gatilloId =
+    docs.find((d) => d.id === 'comprobante-dom')?.id || docs[0]?.id;
 
   // Autocompleta (demo) los documentos que aun no estan cargados.
   const autocompletarResto = () => {
@@ -105,8 +108,8 @@ export default function Documentos() {
       <Content>
         <h1>Captura de documentos</h1>
         <p className="lead">
-          {hechos} de {docs.length} documentos cargados. Al adjuntar la INE se completan los
-          demas (demo).
+          {hechos} de {docs.length} documentos cargados. Los de la identificacion ya vienen
+          adjuntos; al subir el comprobante de domicilio se completan los demas (demo).
         </p>
 
         {Object.entries(grupos).map(([grupo, items]) => (

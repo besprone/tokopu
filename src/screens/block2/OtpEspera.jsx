@@ -1,16 +1,34 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Screen, StatusBar, TopBar, Content, FooterActions, Button, CerrarSolicitud } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
+import { AUTENTICACION_REMOTA } from '../../domain/catalogs.js';
 
-// Espera de la autenticacion + biometria del cliente en su propio celular.
-// En real puede tardar minutos u horas, asi que el indicador es INDETERMINADO.
-// Para el prototipo, tras OTP_ESPERA_MS se resuelve solo.
-export const OTP_ESPERA_MS = 30000;
+// Espera de la autenticacion + biometria del cliente en su propio celular
+// (link por WhatsApp). El asesor ve el avance por etapas; para el prototipo la
+// simulacion corre por tiempo (AUTENTICACION_REMOTA.duracionMs).
+export const OTP_ESPERA_MS = AUTENTICACION_REMOTA.duracionMs;
+
+function etapasRemotas() {
+  const e = [
+    { id: 'consent', label: 'Consentimientos', desc: 'Aviso de privacidad y consulta al portal' },
+    { id: 'otp', label: 'Verificacion de celular', desc: 'Codigo de 6 digitos' },
+    { id: 'selfie', label: 'Selfie', desc: 'Fotografia del rostro' },
+  ];
+  if (AUTENTICACION_REMOTA.subeINE) {
+    e.push({ id: 'ine', label: 'Captura de INE', desc: 'Frente y reverso' });
+  }
+  e.push({ id: 'firma', label: 'Firma de la carta de consulta', desc: 'Firma en pantalla' });
+  return e;
+}
 
 export default function OtpEspera({ onManual, onListo, onBack }) {
   const { track } = useMetrics();
-  const [listo, setListo] = useState(false);
+  const ETAPAS = etapasRemotas();
+  const PASO_MS = OTP_ESPERA_MS / ETAPAS.length;
+
+  const [hechas, setHechas] = useState(0);
   const cerrado = useRef(false);
+  const completa = hechas >= ETAPAS.length;
 
   const modo = (() => {
     try {
@@ -22,54 +40,66 @@ export default function OtpEspera({ onManual, onListo, onBack }) {
 
   useEffect(() => {
     track('click', { target: 'otp_espera_inicio', duracionMs: OTP_ESPERA_MS });
-    const id = setTimeout(() => {
-      if (cerrado.current) return;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Avance simulado del cliente, etapa por etapa.
+  useEffect(() => {
+    if (cerrado.current) return undefined;
+    if (hechas >= ETAPAS.length) {
       cerrado.current = true;
-      setListo(true);
       track('click', { target: 'otp_autenticado_remoto' });
-      setTimeout(() => onListo(), 1100);
-    }, OTP_ESPERA_MS);
-    return () => clearTimeout(id);
-  }, []); // eslint-disable-line
+      const t = setTimeout(() => onListo(), 900);
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(() => {
+      track('click', { target: `otp_remoto_etapa_${ETAPAS[hechas].id}` });
+      setHechas((n) => n + 1);
+    }, PASO_MS);
+    return () => clearTimeout(t);
+  }, [hechas]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const saltar = () => {
     if (cerrado.current) return;
-    cerrado.current = true;
     track('click', { target: 'otp_espera_saltar_mod' });
-    onListo();
+    setHechas(ETAPAS.length);
   };
 
   return (
     <Screen>
       <StatusBar />
-      <TopBar title="OTP" onBack={onBack} right={<CerrarSolicitud />} />
+      <TopBar title="Autenticacion" onBack={onBack} right={<CerrarSolicitud />} />
       <Content>
-        <div className="otp-wait">
-          {listo ? (
-            <div className="otp-done" aria-hidden="true">
-              ✓
-            </div>
-          ) : (
-            <div className="otp-spinner" aria-hidden="true" />
-          )}
-          <p className={`otp-wait-label${listo ? ' listo' : ''}`}>
-            {listo ? 'El cliente autentico su movil' : 'Esperando confirmacion del cliente…'}
-          </p>
-        </div>
-
-        <h1 style={{ marginTop: 22 }}>
-          {listo
-            ? 'Listo: el cliente completo la autenticacion y la biometria en su celular'
-            : 'El cliente esta autenticando su celular'}
-        </h1>
+        <h1>{completa ? 'El cliente completo la autenticacion' : 'El cliente esta autenticando su celular'}</h1>
         <p className="lead">
-          Enviamos una liga por WhatsApp al cliente. Desde su telefono valida el codigo y
-          completa la biometria (selfie e INE). El tiempo depende del cliente.
+          {completa
+            ? 'Recibimos su verificacion, biometria y firma. Revisa los datos y continua.'
+            : 'Enviamos una liga por WhatsApp al cliente. Desde su telefono valida el codigo y completa el proceso. El tiempo depende del cliente.'}
         </p>
+
+        <div className="tiny" style={{ margin: '18px 0 8px', fontWeight: 700 }}>
+          {Math.min(hechas, ETAPAS.length)} de {ETAPAS.length} completados
+        </div>
+        <ol className="firma-etapas">
+          {ETAPAS.map((e, i) => {
+            const done = i < hechas;
+            const current = i === hechas && !completa;
+            return (
+              <li key={e.id} className={`firma-etapa${done ? ' done' : ''}${current ? ' current' : ''}`}>
+                <span className="fe-ic" aria-hidden="true">
+                  {done ? '✓' : current ? <span className="spin-sm" /> : i + 1}
+                </span>
+                <span className="fe-txt">
+                  <span className="fe-label">{e.label}</span>
+                  <span className="tiny">{e.desc}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ol>
       </Content>
 
       <FooterActions>
-        {!listo && (
+        {!completa && (
           <>
             <p className="tiny" style={{ margin: '0 0 4px' }}>
               Si el cliente esta contigo en sucursal, puedes hacerlo en este dispositivo.

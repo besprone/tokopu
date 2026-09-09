@@ -104,6 +104,15 @@ export const CUENTA_MOCK = {
   cuentaClabe: '012180001234567899',
 };
 
+// Autenticacion remota del cliente (link por WhatsApp). El asesor solo ve el
+// avance por etapas; la simulacion corre por tiempo. `subeINE` = el cliente
+// tambien captura su INE desde el link (si no, el asesor la captura despues).
+export const AUTENTICACION_REMOTA = {
+  subeINE: true,
+  firmaCarta: true, // el cliente firma la carta de consulta desde el link
+  duracionMs: 36000,
+};
+
 export const FOLIO_DEMO = '66FKJSK';
 
 // Cliente que YA existe en el sistema. Escenario alterno de la Tarea 2, se

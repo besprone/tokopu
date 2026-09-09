@@ -7,7 +7,7 @@ import OtpEspera from './OtpEspera.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore } from '../../state/store.jsx';
 import { email as vEmail, telefono as vTel } from '../../domain/validators.js';
-import { OCR_MOCK, TALON_MOCK, CLIENTE_EXISTENTE_MOCK } from '../../domain/catalogs.js';
+import { OCR_MOCK, TALON_MOCK, CLIENTE_EXISTENTE_MOCK, AUTENTICACION_REMOTA } from '../../domain/catalogs.js';
 import { capacidadPagoQuincenal, mxn } from '../../domain/finance.js';
 
 // Bloque 2: pantallas simuladas (camara, OTP y OCR). Sin logging fino:
@@ -27,7 +27,8 @@ const PASOS = [
   'ine_frente_ok', // "¿Es correcta la captura?" del frente
   'ine_reverso',
   'ine_reverso_ok', // "¿Es correcta la captura?" del reverso
-  'ocr',
+  // 'ocr' se conserva en el archivo pero YA NO va en el flujo: los datos del
+  // cliente se revisan en 'datos_captura' (pre-llenado si el escaneo/OCR corrio).
   'firma_asesor',
   // Feedback final de la autenticacion. Hay 3 segun si el cliente es sujeto de
   // credito; por ahora solo el mejor de los casos: 'resultado_ok'.
@@ -55,7 +56,7 @@ const DATOS_VACIOS = {
 export default function Identificacion() {
   const navigate = useNavigate();
   const { track } = useMetrics();
-  const { solicitud, patch, setTabData } = useStore();
+  const { solicitud, patch, setTabData, toggleDoc } = useStore();
   const [paso, setPaso] = useState('contacto');
   // Pila de pasos visitados para que "← Regresar" vuelva al paso anterior de
   // ESTE flujo (no a la ruta previa). Vacia en 'contacto' => sale del flujo.
@@ -171,6 +172,9 @@ export default function Identificacion() {
         ocrAplicado: ineEscaneada,
       },
     });
+    if (ineEscaneada) {
+      toggleDoc('ine', { nombre: 'Capturada en la identificacion', demo: true });
+    }
     track('click', {
       target: 'ident_datos_captura_continuar',
       via: ineEscaneada ? 'ine_ocr' : 'manual',
@@ -418,15 +422,23 @@ export default function Identificacion() {
         }}
         onListo={() => {
           setAutVia('remoto');
+          const subeINE = AUTENTICACION_REMOTA.subeINE;
           patch({
             auth: {
               otpValidado: true,
               biometriaCliente: true,
-              ineFrente: true,
-              ineReverso: true,
+              ineFrente: subeINE,
+              ineReverso: subeINE,
+              ocrAplicado: subeINE,
             },
           });
-          ir('ocr');
+          if (subeINE) {
+            // Como si el OCR del INE del cliente ya hubiera corrido: 'datos_captura'
+            // llega pre-llenado y el INE ya cuenta como documento.
+            llenarDesdeINE();
+            toggleDoc('ine', { nombre: 'Capturada en la identificacion', demo: true });
+          }
+          ir('datos_captura');
         }}
       />
     );
@@ -460,8 +472,8 @@ export default function Identificacion() {
           </button>
           {ineEscaneada && (
             <p className="tiny scan-hint">
-              La INE se escaneo y ya esta agregada a la lista de documentos. El
-              cliente ademas completo biometricos.
+              La INE ya esta agregada a la lista de documentos.
+              {autVia === 'remoto' && ' El cliente completo su identificacion desde el link.'}
             </p>
           )}
 
