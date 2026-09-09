@@ -20,7 +20,7 @@ function etapasRemotas() {
   return e;
 }
 
-export default function OtpEspera({ onManual, onListo, onBack, yaCompletado }) {
+export default function OtpEspera({ onManual, onListo, onBack }) {
   const { track } = useMetrics();
   const { solicitud, patch } = useStore();
   const ETAPAS = etapasRemotas();
@@ -49,7 +49,7 @@ export default function OtpEspera({ onManual, onListo, onBack, yaCompletado }) {
     : Date.now();
   const t = Math.max(0, Date.now() - inicio);
   const hechas = Math.min(ETAPAS.length, Math.floor(t / PASO_MS));
-  const completa = yaCompletado || t >= OTP_ESPERA_MS;
+  const completa = t >= OTP_ESPERA_MS;
 
   // Refresca la vista cada segundo mientras corre.
   useEffect(() => {
@@ -66,6 +66,11 @@ export default function OtpEspera({ onManual, onListo, onBack, yaCompletado }) {
   };
 
   const hechasVista = completa ? ETAPAS.length : hechas;
+
+  // Con el INE ya cargado el asesor puede avanzar con esos datos aunque el
+  // cliente siga con los biometricos y la firma de la carta.
+  const idxINE = ETAPAS.findIndex((e) => e.id === 'ine');
+  const ineListo = idxINE >= 0 && hechasVista > idxINE;
 
   return (
     <Screen>
@@ -110,6 +115,16 @@ export default function OtpEspera({ onManual, onListo, onBack, yaCompletado }) {
           <Button variant="primary" onClick={onListo} track="ident_otp_remoto_continuar">
             Continuar →
           </Button>
+        ) : ineListo ? (
+          <>
+            <p className="tiny" style={{ margin: '0 0 4px' }}>
+              Ya tenemos el INE del cliente. Los biometricos y la firma de la carta siguen en
+              proceso.
+            </p>
+            <Button variant="primary" onClick={onListo} track="ident_otp_remoto_continuar_ine">
+              Continuar con los datos del INE →
+            </Button>
+          </>
         ) : (
           <>
             <p className="tiny" style={{ margin: '0 0 4px' }}>
