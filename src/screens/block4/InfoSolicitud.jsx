@@ -244,7 +244,6 @@ export default function InfoSolicitud() {
   });
   const [forceSig, setForceSig] = useState(0);
   const [scanOpen, setScanOpen] = useState(false);
-  const [limpiado, setLimpiado] = useState({});
   const visitados = useRef(new Set());
 
   const def = TAB_DEFS[tab];
@@ -277,23 +276,6 @@ export default function InfoSolicitud() {
     const yaVisto = visitados.current.has(tab);
     visitados.current.add(tab);
     if (yaVisto) setForceSig((n) => n + 1);
-    // En los tabs con escaneo, los campos del documento arrancan VACIOS aunque
-    // un OCR previo (bloque 2) los haya dejado con datos: se llenan al cargar
-    // el documento aqui. No se limpia si ya se escaneo, si el tab ya se
-    // completo, o si ya se limpio antes en esta sesion (para no borrar lo que
-    // el asesor teclee y luego revisite).
-    const cfg = ESCANEO_TAB[tab];
-    if (
-      cfg &&
-      !solicitud.documentos[cfg.doc] &&
-      !solicitud.tabsCompletadas[tab] &&
-      !limpiado[tab]
-    ) {
-      const vacio = {};
-      for (const k of Object.keys(cfg.campos)) vacio[k] = '';
-      setTabData(tab, vacio);
-      setLimpiado((m) => ({ ...m, [tab]: true }));
-    }
     // El celular de contacto viene de la autenticacion (bloque 2) y va bloqueado.
     if (
       tab === 'contacto' &&

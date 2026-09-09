@@ -44,7 +44,6 @@ const CONSEJOS_INE = [
 
 const DATOS_VACIOS = {
   curp: '',
-  fechaIngreso: '',
   rfc: '',
   nombre: '',
   segundoNombre: '',
@@ -102,11 +101,11 @@ export default function Identificacion() {
     ir(CLIENTE_EXISTENTE_MOCK.tieneCartaVigente ? 'aprobado_interno' : 'otp_espera');
 
   // Captura manual: al volver del escaneo de INE se autollenan los campos de
-  // la pantalla 'datos_captura' con lo que "detecto" el OCR.
+  // identidad de 'datos_captura' con lo que "detecto" el OCR (los datos
+  // laborales / ingresos NO: esos vienen del talon en el bloque 4).
   const llenarDesdeINE = () => {
     setDatos({
       curp: OCR_MOCK.curp,
-      fechaIngreso: TALON_MOCK.fechaIngreso,
       rfc: OCR_MOCK.rfc,
       nombre: OCR_MOCK.nombre,
       segundoNombre: OCR_MOCK.segundoNombre,
@@ -117,9 +116,9 @@ export default function Identificacion() {
     setIneEscaneada(true);
   };
 
-  // "Continuar" desde 'datos_captura': vuelca los datos al bloque 4. Si hubo
-  // escaneo de INE tambien se autollena el resto (talon, domicilio, ingresos),
-  // igual que en aplicarOCR. Sin escaneo solo se guarda lo que se tecleo.
+  // "Continuar" desde 'datos_captura': vuelca los datos de IDENTIDAD al bloque
+  // 4. Los datos laborales y de ingresos NO se tocan: se capturan con el talon
+  // de pagos en el bloque 4.
   const continuarDatos = () => {
     setTabData('personales', {
       curp: datos.curp,
@@ -138,32 +137,7 @@ export default function Identificacion() {
           }
         : {}),
     });
-    setTabData('laborales', {
-      fechaIngreso: datos.fechaIngreso,
-      ...(ineEscaneada
-        ? {
-            numSegSocial: TALON_MOCK.numSegSocial,
-            entidadFederativa: TALON_MOCK.entidadFederativa,
-            centroTrabajo: TALON_MOCK.centroTrabajo,
-            puesto: TALON_MOCK.puesto,
-          }
-        : {}),
-    });
-    if (ineEscaneada) {
-      setTabData('contacto', {
-        telefonoCelular: cel,
-        calle: OCR_MOCK.calle,
-        cp: OCR_MOCK.cp,
-        colonia: OCR_MOCK.colonia,
-        delegacion: OCR_MOCK.delegacion,
-        estado: OCR_MOCK.estado,
-        pais: OCR_MOCK.pais,
-      });
-      setTabData('ingresos', {
-        ingresoMensualComprobable: TALON_MOCK.ingresoMensualComprobable,
-        rangoIngreso: TALON_MOCK.rangoIngreso,
-      });
-    }
+    setTabData('contacto', { telefonoCelular: cel });
     patch({
       auth: {
         biometriaCliente: true,
@@ -447,8 +421,7 @@ export default function Identificacion() {
   }
 
   if (paso === 'datos_captura') {
-    const listo =
-      datos.curp.trim().length >= 10 && datos.fechaIngreso.trim().length >= 4;
+    const listo = datos.curp.trim().length >= 10;
     return (
       <Shell onBack={atras} title="Datos del cliente">
         <Content>
@@ -489,13 +462,6 @@ export default function Identificacion() {
             onChange={setDato('curp')}
             maxLength={18}
             placeholder="18 caracteres"
-          />
-          <Field
-            name="fechaIngreso"
-            label="Fecha de ingreso laboral"
-            type="date"
-            value={datos.fechaIngreso}
-            onChange={setDato('fechaIngreso')}
           />
           {ineEscaneada && (
             <Field
