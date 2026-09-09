@@ -713,8 +713,11 @@ h2,
   gap: 8px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  margin: 6px 0 14px;
-  padding-bottom: 4px;
+  /* full-bleed: el carril de scroll llega al borde del marco; el padding
+     interno vuelve a alinear el primer/ultimo chip con el contenido */
+  margin: 6px calc(var(--pad) * -1) 14px;
+  padding: 0 var(--pad) 4px;
+  scrollbar-width: none;
 }
 .tab-chips::-webkit-scrollbar {
   display: none;
