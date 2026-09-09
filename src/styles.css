@@ -707,6 +707,45 @@ h2,
   background: var(--ok);
 }
 
+/* Bloque 4: chips de grupos (navegacion libre, no wizard) */
+.tab-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 6px 0 14px;
+  padding-bottom: 4px;
+}
+.tab-chips::-webkit-scrollbar {
+  display: none;
+}
+.tab-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.tab-chip.ok:not(.active) {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+.tab-chip.active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+.tab-chip .chip-check {
+  font-size: 11px;
+}
+
 .tabs {
   display: flex;
   gap: 6px;

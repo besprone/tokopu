@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud } from '../../components/ui.jsx';
 import Field from '../../components/Field.jsx';
@@ -245,10 +245,25 @@ export default function InfoSolicitud() {
   const [forceSig, setForceSig] = useState(0);
   const [scanOpen, setScanOpen] = useState(false);
   const [limpiado, setLimpiado] = useState({});
+  const visitados = useRef(new Set());
 
   const def = TAB_DEFS[tab];
   const valores = solicitud.datos[tab] || {};
-  const idxTab = TABS_INFO.indexOf(tab);
+
+  // Validez de cualquier grupo (no solo el actual): navegacion libre entre
+  // chips; solo se puede "Revisar datos" cuando los 5 estan completos.
+  const grupoValido = (t) => {
+    const d = TAB_DEFS[t];
+    const vals = solicitud.datos[t] || {};
+    return d.campos.every((c) => {
+      if (c.required === false && (vals[c.name] == null || vals[c.name] === '')) return true;
+      return !(c.validate ? c.validate(vals[c.name]) : null);
+    });
+  };
+  const validez = TABS_INFO.map(grupoValido);
+  const nValidos = validez.filter(Boolean).length;
+  const todoValido = nValidos === TABS_INFO.length;
+  const gruposFaltantes = TABS_INFO.filter((t, i) => !validez[i]);
 
   // Escaneo de documento del tab actual (talon de pagos / estado de cuenta).
   const escaneoCfg = ESCANEO_TAB[tab] || null;
@@ -257,6 +272,11 @@ export default function InfoSolicitud() {
 
   useEffect(() => {
     setScanOpen(false);
+    // Al RE-entrar a un grupo ya visitado, se fuerza la validacion para que se
+    // vea que le falta (en la primera visita se deja limpio).
+    const yaVisto = visitados.current.has(tab);
+    visitados.current.add(tab);
+    if (yaVisto) setForceSig((n) => n + 1);
     // En los tabs con escaneo, los campos del documento arrancan VACIOS aunque
     // un OCR previo (bloque 2) los haya dejado con datos: se llenan al cargar
     // el documento aqui. No se limpia si ya se escaneo, si el tab ya se
@@ -296,45 +316,25 @@ export default function InfoSolicitud() {
     setScanOpen(false);
   };
 
-  const erroresTab = useMemo(() => {
-    const out = {};
-    for (const c of def.campos) {
-      if (c.required === false && (valores[c.name] == null || valores[c.name] === '')) continue;
-      const e = c.validate ? c.validate(valores[c.name]) : null;
-      if (e) out[c.name] = e;
-    }
-    return out;
-  }, [def, valores]);
+  // Mantiene tabsCompletadas = validez de cada grupo (para el progreso del hub).
+  useEffect(() => {
+    TABS_INFO.forEach((t) => {
+      const v = grupoValido(t);
+      if (!!solicitud.tabsCompletadas[t] !== v) markTab(t, v);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [solicitud.datos]);
 
-  const tabValido = Object.keys(erroresTab).length === 0;
-
-  const continuar = () => {
-    if (!tabValido) {
-      setForceSig((n) => n + 1);
-      track('click', { target: `info_${tab}_continuar_bloqueado`, errores: Object.keys(erroresTab) });
-      return;
-    }
-    markTab(tab, true);
-    track('click', { target: `info_${tab}_continuar_ok` });
-    if (idxTab < TABS_INFO.length - 1) {
-      setTab(TABS_INFO[idxTab + 1]);
-    } else {
-      navigate('/informacion/confirmar');
-    }
+  const irAGrupo = (t) => {
+    setTab(t);
+    track('click', { target: `info_grupo_${t}` });
   };
 
-  const atras = () => {
-    if (idxTab === 0) return;
-    setTab(TABS_INFO[idxTab - 1]);
-    track('click', { target: `info_${tab}_atras` });
-  };
-
-  const irAPaso = (i) => {
-    // solo se puede volver a un paso ya completado
-    if (i < idxTab || solicitud.tabsCompletadas[TABS_INFO[i]]) {
-      setTab(TABS_INFO[i]);
-      track('click', { target: `info_paso_${TABS_INFO[i]}` });
-    }
+  const revisar = () => {
+    if (!todoValido) return;
+    TABS_INFO.forEach((t) => markTab(t, true));
+    track('click', { target: 'info_revisar_datos_ok' });
+    navigate('/informacion/confirmar');
   };
 
   return (
@@ -342,32 +342,32 @@ export default function InfoSolicitud() {
       <StatusBar />
       <TopBar title="Solicitud de credito" right={<CerrarSolicitud />} />
       <Content>
-        <div className="stepper">
+        <div className="tab-chips" role="tablist" aria-label="Grupos de datos">
           {TABS_INFO.map((t, i) => {
-            const hecho = !!solicitud.tabsCompletadas[t];
-            const actual = i === idxTab;
-            const clickable = i < idxTab || hecho;
+            const activo = t === tab;
+            const ok = validez[i];
             return (
-              <React.Fragment key={t}>
-                <button
-                  type="button"
-                  className={`dot${actual ? ' current' : ''}${hecho && !actual ? ' done' : ''}`}
-                  onClick={() => irAPaso(i)}
-                  disabled={!clickable && !actual}
-                  aria-label={`Paso ${i + 1}: ${TAB_LABEL[t]}`}
-                >
-                  {hecho && !actual ? '✓' : i + 1}
-                </button>
-                {i < TABS_INFO.length - 1 && (
-                  <span className={`stepper-bar${hecho ? ' done' : ''}`} />
+              <button
+                key={t}
+                type="button"
+                role="tab"
+                aria-selected={activo}
+                className={`tab-chip${activo ? ' active' : ''}${ok ? ' ok' : ''}`}
+                onClick={() => irAGrupo(t)}
+              >
+                {TAB_LABEL[t]}
+                {ok && !activo && (
+                  <span className="chip-check" aria-hidden="true">
+                    ✓
+                  </span>
                 )}
-              </React.Fragment>
+              </button>
             );
           })}
         </div>
 
         <span className="tiny">
-          Paso {idxTab + 1} de {TABS_INFO.length}
+          {nValidos} de {TABS_INFO.length} grupos completos · llénalos en el orden que quieras
         </span>
         <h1 style={{ marginTop: 2 }}>{def.titulo}</h1>
         {def.subtitulo && <p className="lead">{def.subtitulo}</p>}
@@ -440,20 +440,19 @@ export default function InfoSolicitud() {
         ))}
       </Content>
       <FooterActions>
-        <div className="row" style={{ gap: 8 }}>
-          <Button
-            variant="ghost"
-            className="grow"
-            disabled={idxTab === 0}
-            onClick={atras}
-            track={`info_${tab}_atras`}
-          >
-            ← Atras
-          </Button>
-          <Button variant="primary" className="grow" onClick={continuar} track={`info_${tab}_continuar`}>
-            {idxTab < TABS_INFO.length - 1 ? 'Continuar →' : 'Revisar datos →'}
-          </Button>
-        </div>
+        {!todoValido && (
+          <p className="tiny" style={{ margin: '0 0 6px', textAlign: 'center' }}>
+            Faltan datos obligatorios en: {gruposFaltantes.map((t) => TAB_LABEL[t]).join(', ')}
+          </p>
+        )}
+        <Button
+          variant="primary"
+          disabled={!todoValido}
+          onClick={revisar}
+          track="info_revisar_datos"
+        >
+          Revisar datos →
+        </Button>
       </FooterActions>
       {scanOpen && escaneoCfg && (
         <DocScanSheet cfg={escaneoCfg} onAceptar={aceptarEscaneo} onClose={() => setScanOpen(false)} />
