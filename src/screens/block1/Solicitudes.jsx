@@ -7,7 +7,7 @@ import { useStore, hayBorrador, progresoSolicitud } from '../../state/store.jsx'
 const SOLICITUDES = [
   { dia: 'Hoy', n: 'Sara Fernandez', d: '45,000mxn / 22 semanas', st: 'evaluacion', label: 'En evaluacion' },
   { dia: 'Hoy', n: 'Oliver Fernandez', d: '43,000mxn / 96 semanas', st: 'aprobada', label: 'Aprobada' },
-  { dia: 'Ayer', n: 'Gerardo Pina', d: '183,000mxn / 96 semanas', st: 'aprobada', label: 'Aprobada' },
+  { dia: 'Ayer', n: 'Ricardo Pina', d: '183,000mxn / 96 semanas', st: 'aprobada', label: 'Aprobada' },
   { dia: 'Ayer', n: 'Elisa Manuel Rodriguez', d: '81,000mxn / 96 semanas', st: 'aprobada', label: 'Aprobada' },
   { dia: 'Ayer', n: 'Alejandra Lanzalde', d: '83,000mxn / 120 semanas', st: 'rechazada', label: 'Rechazada' },
   { dia: '22 de agosto', n: 'Marisa Sami', d: '83,000mxn / 96 semanas', st: 'aprobada', label: 'Aprobada' },
