@@ -105,11 +105,13 @@ export const CUENTA_MOCK = {
 };
 
 // Autenticacion remota del cliente (link por WhatsApp). El asesor solo ve el
-// avance por etapas; la simulacion corre por tiempo. `subeINE` = el cliente
-// tambien captura su INE desde el link (si no, el asesor la captura despues).
+// avance por etapas; la simulacion corre por tiempo.
+// Orden: Validar celular (OTP) -> Carga del INE -> Biometricos -> Carta de
+// consulta al portal. OTP y Carta son obligatorios; el INE y los biometricos
+// van juntos (el "proceso de identificacion") y se pueden saltar: si no los
+// hace el cliente, los captura el asesor en su dispositivo.
 export const AUTENTICACION_REMOTA = {
-  subeINE: true,
-  firmaCarta: true, // el cliente firma la carta de consulta desde el link
+  subeIdentificacion: true, // el cliente hace INE + biometricos desde el link
   duracionMs: 36000,
 };
 

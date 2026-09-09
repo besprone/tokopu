@@ -423,17 +423,19 @@ export default function Identificacion() {
         }}
         onListo={() => {
           setAutVia('remoto');
-          const subeINE = AUTENTICACION_REMOTA.subeINE;
+          // El INE y los biometricos van juntos: si el cliente no hizo la
+          // identificacion en el link, la hace el asesor en 'datos_captura'.
+          const identOk = AUTENTICACION_REMOTA.subeIdentificacion;
           patch({
             auth: {
               otpValidado: true,
-              biometriaCliente: true,
-              ineFrente: subeINE,
-              ineReverso: subeINE,
-              ocrAplicado: subeINE,
+              biometriaCliente: identOk,
+              ineFrente: identOk,
+              ineReverso: identOk,
+              ocrAplicado: identOk,
             },
           });
-          if (subeINE) {
+          if (identOk) {
             // Como si el OCR del INE del cliente ya hubiera corrido: 'datos_captura'
             // llega pre-llenado y el INE ya cuenta como documento.
             llenarDesdeINE();

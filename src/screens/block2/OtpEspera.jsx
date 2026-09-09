@@ -10,15 +10,13 @@ import { AUTENTICACION_REMOTA } from '../../domain/catalogs.js';
 export const OTP_ESPERA_MS = AUTENTICACION_REMOTA.duracionMs;
 
 function etapasRemotas() {
-  const e = [
-    { id: 'consent', label: 'Consentimientos', desc: 'Aviso de privacidad y consulta al portal' },
-    { id: 'otp', label: 'Verificacion de celular', desc: 'Codigo de 6 digitos' },
-    { id: 'selfie', label: 'Selfie', desc: 'Fotografia del rostro' },
-  ];
-  if (AUTENTICACION_REMOTA.subeINE) {
-    e.push({ id: 'ine', label: 'Captura de INE', desc: 'Frente y reverso' });
+  const e = [{ id: 'otp', label: 'Validar celular', desc: 'Codigo de 6 digitos (OTP)' }];
+  if (AUTENTICACION_REMOTA.subeIdentificacion) {
+    // El INE y los biometricos van juntos (proceso de identificacion).
+    e.push({ id: 'ine', label: 'Carga del INE', desc: 'Frente y reverso' });
+    e.push({ id: 'bio', label: 'Biometricos', desc: 'Selfie de validacion de identidad' });
   }
-  e.push({ id: 'firma', label: 'Firma de la carta de consulta', desc: 'Firma en pantalla' });
+  e.push({ id: 'carta', label: 'Carta de consulta al portal', desc: 'Firma en pantalla' });
   return e;
 }
 
