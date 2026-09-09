@@ -414,6 +414,7 @@ export default function Identificacion() {
     return (
       <OtpEspera
         onBack={atras}
+        yaCompletado={autVia === 'remoto'}
         onManual={() => {
           setAutVia('manual');
           // Sin paso de OTP: el asesor captura los datos del cliente (escanea

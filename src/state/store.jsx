@@ -55,6 +55,9 @@ function estadoInicial() {
       ocrAplicado: false,
       firmaAsesor: false,
       firmaCliente: false,
+      // Autenticacion remota del cliente (link WhatsApp): hora de inicio para
+      // simular el avance por reloj y que se conserve al salir/volver.
+      authRemotaISO: null,
       // Firma digital remota (link al cliente por WhatsApp/SMS)
       firmaClienteEnviada: false,
       firmaClienteEnviadaISO: null,
