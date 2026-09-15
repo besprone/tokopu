@@ -214,6 +214,10 @@ input[type='radio'] {
   background: rgba(255, 255, 255, 0.06);
   color: var(--meta-ink-2);
 }
+.screen.meta .callout.warn {
+  background: rgba(245, 197, 24, 0.14);
+  color: var(--meta-ink);
+}
 .screen.meta .field > label {
   color: var(--meta-ink-2);
 }

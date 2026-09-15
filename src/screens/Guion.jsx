@@ -1,6 +1,13 @@
 import React from 'react';
 import { Screen, MetaBar, Content } from '../components/ui.jsx';
-import { GRUPOS_PRUEBA } from '../flow.js';
+import {
+  GRUPOS_PRUEBA,
+  SEQ_PREGUNTA,
+  SEQ_MIN_LABEL,
+  SEQ_MAX_LABEL,
+  SUS_ITEMS,
+  SUS_ESCALA,
+} from '../flow.js';
 
 // Guion del facilitador para sesiones EN PISO (moderadas): todo lo que hay
 // que decir/observar, de principio a fin, en un solo lugar. Se arma desde
@@ -68,15 +75,37 @@ export default function Guion() {
               </div>
               <p className="small" style={{ margin: '4px 0 0' }}>{g.exito}</p>
             </div>
+            <div className="callout warn" style={{ marginTop: 10, flexDirection: 'column' }}>
+              <strong className="small">No se te olvide: pregúntale el SEQ</strong>
+              <p className="small" style={{ margin: '2px 0 0' }}>{SEQ_PREGUNTA}</p>
+              <p className="tiny" style={{ margin: '2px 0 0' }}>
+                1 · {SEQ_MIN_LABEL} — 7 · {SEQ_MAX_LABEL}
+              </p>
+            </div>
           </div>
         ))}
 
         <h2 style={{ marginTop: 20 }}>Cierre</h2>
-        <div className="card" style={{ marginBottom: 24 }}>
+        <div className="card">
           <p className="small" style={{ margin: 0 }}>
             La prueba terminó. Cuéntame en general qué tal te pareció usar la app — qué se
             sintió fácil, qué se sintió confuso, y si hay algo que cambiarías.
           </p>
+        </div>
+
+        <div className="callout warn" style={{ marginTop: 10, marginBottom: 24, flexDirection: 'column' }}>
+          <strong className="small">No se te olvide: el cuestionario SUS completo</strong>
+          <p className="tiny" style={{ margin: '4px 0 8px' }}>
+            Léele las 10 afirmaciones y anota su respuesta en cada una (escala 1-5: 1 ·{' '}
+            {SUS_ESCALA[0]}, 5 · {SUS_ESCALA[4]}).
+          </p>
+          <ol className="small" style={{ margin: 0, paddingLeft: 18 }}>
+            {SUS_ITEMS.map((item, i) => (
+              <li key={i} style={{ marginBottom: 4 }}>
+                {item}
+              </li>
+            ))}
+          </ol>
         </div>
       </Content>
     </Screen>
