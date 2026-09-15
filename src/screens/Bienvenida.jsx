@@ -31,11 +31,17 @@ export default function Bienvenida() {
     localStorage.removeItem('toko.solicitud.v1');
     resetSession({ participante: nombre.trim(), modoSesion });
     track('click', { target: 'iniciar_prueba' });
-    // La prueba arranca aqui mismo: nada de pantalla de intro por tarea, el
-    // escenario de la primera tarea se dice en voz (o se lee en
-    // Instrucciones). El cronometro de la tarea 1 empieza ya.
-    track('task_start', { tarea: ORDEN_GRUPOS[0] });
-    navigate('/inicio');
+    if (modoSesion === 'remota') {
+      // Remota: nadie va a decir el escenario en voz, asi que se muestra
+      // antes de arrancar. El cronometro de la tarea 1 empieza hasta que
+      // el asesor da "Empezar tarea" ahi.
+      navigate(`/tarea/${ORDEN_GRUPOS[0]}`);
+    } else {
+      // Moderada: el facilitador dice el escenario en voz. El cronometro de
+      // la tarea 1 arranca ya, directo al dashboard.
+      track('task_start', { tarea: ORDEN_GRUPOS[0] });
+      navigate('/inicio');
+    }
   };
 
   // Gesto oculto para el moderador: 5 taps rapidos en el titulo -> /moderador

@@ -44,6 +44,9 @@ Datos de Sara:
     // A donde navegar cuando el grupo termina (tras el SEQ en remota, o
     // directo en moderada).
     next: '/solicitud',
+    // A donde navegar al arrancar el grupo (boton "Empezar tarea", solo
+    // remota; en moderada se arranca directo, sin pasar por aqui).
+    entrada: '/inicio',
   },
   {
     id: 'g2_cotizar_info',
@@ -68,6 +71,7 @@ Datos de Sara:
     ],
     bloqueFinal: 'informacion_solicitud',
     next: '/solicitud',
+    entrada: '/solicitud',
   },
   {
     id: 'g3_documentos_cierre',
@@ -89,6 +93,7 @@ Luego envía la solicitud para terminar.`,
     bloqueFinal: 'documentos_envio',
     // Ultimo grupo: en remota pasa por SUS antes de terminar.
     next: '/sus',
+    entrada: '/solicitud',
   },
 ];
 

@@ -22,10 +22,11 @@ export default function SeqScreen() {
   const enviar = () => {
     if (score == null) return;
     track('seq_answer', { tarea, score });
-    // Solo aplica en sesion remota (aqui es donde se llega). Al continuar
-    // arranca el cronometro del siguiente grupo, si hay uno.
-    if (siguienteId) track('task_start', { tarea: siguienteId });
-    navigate(grupo.next, { replace: true });
+    // Si hay una siguiente tarea, se muestra su escenario antes de arrancarla
+    // (aqui nadie lo dice en voz): el cronometro arranca hasta "Empezar
+    // tarea" en esa pantalla, no aqui. Si esta era la ultima, sigue a SUS.
+    if (siguienteId) navigate(`/tarea/${siguienteId}`, { replace: true });
+    else navigate(grupo.next, { replace: true });
   };
 
   return (

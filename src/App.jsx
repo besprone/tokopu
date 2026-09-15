@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import SessionWidgets from './components/SessionWidgets.jsx';
 
 import Bienvenida from './screens/Bienvenida.jsx';
+import IntroTarea from './screens/IntroTarea.jsx';
 import Home from './screens/block1/Home.jsx';
 import Solicitudes from './screens/block1/Solicitudes.jsx';
 import NuevaSolicitud from './screens/block1/NuevaSolicitud.jsx';
@@ -27,6 +28,7 @@ export default function App() {
       <div className="device">
         <Routes>
           <Route path="/" element={<Bienvenida />} />
+          <Route path="/tarea/:id" element={<IntroTarea />} />
           <Route path="/inicio" element={<Home />} />
           <Route path="/solicitudes" element={<Solicitudes />} />
           <Route path="/nueva" element={<NuevaSolicitud />} />
