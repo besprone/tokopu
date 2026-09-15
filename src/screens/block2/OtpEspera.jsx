@@ -28,14 +28,6 @@ export default function OtpEspera({ onManual, onListo, onBack }) {
 
   const [, setTick] = useState(0);
 
-  const modo = (() => {
-    try {
-      return localStorage.getItem('toko.mod') === '1';
-    } catch {
-      return false;
-    }
-  })();
-
   // Arranca el reloj la primera vez que se ve la pantalla.
   useEffect(() => {
     if (!solicitud.auth.authRemotaISO) {
@@ -57,13 +49,6 @@ export default function OtpEspera({ onManual, onListo, onBack }) {
     const id = setInterval(() => setTick((n) => n + 1), 1000);
     return () => clearInterval(id);
   }, [completa]);
-
-  const saltar = () => {
-    track('click', { target: 'otp_espera_saltar_mod' });
-    patch({
-      auth: { authRemotaISO: new Date(Date.now() - OTP_ESPERA_MS - 1000).toISOString() },
-    });
-  };
 
   const hechasVista = completa ? ETAPAS.length : hechas;
 
@@ -133,11 +118,6 @@ export default function OtpEspera({ onManual, onListo, onBack }) {
             <Button variant="ghost" onClick={onManual} track="ident_otp_manual">
               Continuar captura manual
             </Button>
-            {modo && (
-              <button className="btn link" onClick={saltar}>
-                saltar espera (moderador)
-              </button>
-            )}
           </>
         )}
       </FooterActions>

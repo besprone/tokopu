@@ -16,6 +16,7 @@ import {
   flushPendientes,
   enviarParcialAlOcultar,
 } from './track.js';
+import { ORDEN_GRUPOS, GRUPOS_PRUEBA } from '../flow.js';
 
 const MetricsCtx = createContext(null);
 
@@ -65,6 +66,30 @@ export function MetricsProvider({ children }) {
       tareas,
       // Cierra la sesion del participante: la guarda local y la manda al backend.
       finalizarSesion: () => enviarSesion(construirSesion({ completa: true })),
+      // Marca el fin de un grupo de prueba y decide a donde seguir segun el
+      // modo de la sesion:
+      //  - remota: siempre pasa por su SEQ (la propia pantalla de SEQ dispara
+      //    el task_start del siguiente grupo al continuar).
+      //  - moderada: sin SEQ/SUS. Dispara aqui mismo el task_start del
+      //    siguiente grupo (o, si era el ultimo, guarda/envia la sesion y
+      //    manda a "Gracias" sin pasar por SUS).
+      // Devuelve la ruta a la que hay que navegar.
+      completarGrupo: (grupoId, datos = {}) => {
+        track('task_complete', { tarea: grupoId, resultado: 'exito', ...datos });
+        const idx = ORDEN_GRUPOS.indexOf(grupoId);
+        const grupo = GRUPOS_PRUEBA[idx];
+        const siguienteId = ORDEN_GRUPOS[idx + 1] || null;
+        const remota = snapshot.meta?.modoSesion === 'remota';
+
+        if (remota) return `/seq/${grupoId}`;
+
+        if (siguienteId) {
+          track('task_start', { tarea: siguienteId });
+          return grupo.next;
+        }
+        enviarSesion(construirSesion({ completa: true }));
+        return '/gracias';
+      },
     }),
     [snapshot]
   );

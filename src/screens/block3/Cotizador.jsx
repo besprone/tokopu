@@ -59,9 +59,10 @@ export default function Cotizador() {
         },
       },
     });
-    track('task_complete', {
-      tarea: 'seleccionar_oferta',
-      resultado: 'exito',
+    // No es frontera de grupo de prueba (va junto con informacion_solicitud
+    // en el grupo 2): sigue derecho, sin SEQ.
+    track('bloque_completo', {
+      bloque: 'seleccionar_oferta',
       origen,
       monto: m,
       nQuincenas: n,
@@ -69,7 +70,7 @@ export default function Cotizador() {
       totalPagar: resumen.totalPagar,
       catPct: Number((resumen.cat * 100).toFixed(2)),
     });
-    navigate('/seq/seleccionar_oferta', { replace: true });
+    navigate('/informacion', { replace: true });
   };
 
   return (

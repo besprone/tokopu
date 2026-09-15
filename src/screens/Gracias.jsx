@@ -1,9 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, MetaBar, Content, FooterActions, Button } from '../components/ui.jsx';
+import { useMetrics } from '../metrics/MetricsProvider.jsx';
 
 export default function Gracias() {
   const navigate = useNavigate();
+  const { meta } = useMetrics();
+  const remota = meta?.modoSesion === 'remota';
   return (
     <Screen meta>
       <MetaBar label="Prueba de usabilidad" />
@@ -13,8 +16,8 @@ export default function Gracias() {
             <span className="tiny">Listo</span>
             <h1>Gracias por participar</h1>
             <p className="lead">
-              La prueba termino. Tus respuestas y tu recorrido quedaron registrados para el
-              analisis del equipo de UX.
+              La prueba termino. {remota ? 'Tus respuestas y tu recorrido quedaron' : 'Tu recorrido quedo'}{' '}
+              registrados para el analisis del equipo de UX.
             </p>
           </div>
         </div>

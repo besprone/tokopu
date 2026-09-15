@@ -9,15 +9,7 @@ import {
   descargarBlob,
 } from '../../moderador/api.js';
 import { getSesionLocal } from '../../metrics/track.js';
-
-const TAREA_TIT = {
-  iniciar_solicitud: 'Iniciar la solicitud',
-  identificacion: 'Autenticar e identificar al cliente',
-  seleccionar_oferta: 'Configurar la oferta',
-  informacion_solicitud: 'Llenar la informacion y corregir un dato',
-  documentos_envio: 'Documentos y envio',
-};
-const ORDEN = Object.keys(TAREA_TIT);
+import { GRUPOS_PRUEBA, ORDEN_GRUPOS } from '../../flow.js';
 const fecha = (iso) => (iso ? new Date(iso).toLocaleString('es-MX') : '—');
 
 export default function ModDetalle() {
@@ -112,6 +104,8 @@ export default function ModDetalle() {
         <h1>{m.participante || 'sin nombre'}</h1>
         <p className="lead">
           {fecha(m.startedAtISO)} · {(s.eventos || []).length} eventos · ID {String(m.sessionId || '').slice(0, 8)}
+          {' · '}
+          {m.modoSesion === 'remota' ? 'Remota' : 'Moderada'}
         </p>
 
         <div className="card" style={{ textAlign: 'center' }}>
@@ -124,10 +118,10 @@ export default function ModDetalle() {
 
         <h2>SEQ y tiempos por tarea</h2>
         <div className="card">
-          {ORDEN.map((tid) => (
+          {ORDEN_GRUPOS.map((tid, i) => (
             <SummaryRow
               key={tid}
-              k={TAREA_TIT[tid]}
+              k={GRUPOS_PRUEBA[i].titulo}
               v={
                 <>
                   {t[tid]?.seq != null ? `${t[tid].seq}/7` : '—'}

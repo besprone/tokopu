@@ -63,13 +63,12 @@ const SECCIONES = [
 
 export default function ConfirmaDatos() {
   const navigate = useNavigate();
-  const { track } = useMetrics();
+  const { track, completarGrupo } = useMetrics();
   const { solicitud, patch } = useStore();
 
   const confirmar = () => {
     patch({ datosConfirmados: true });
-    track('task_complete', { tarea: 'informacion_solicitud', resultado: 'exito' });
-    navigate('/seq/informacion_solicitud', { replace: true });
+    navigate(completarGrupo('g2_cotizar_info'), { replace: true });
   };
 
   return (

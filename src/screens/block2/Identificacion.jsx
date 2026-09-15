@@ -54,7 +54,7 @@ const DATOS_VACIOS = {
 
 export default function Identificacion() {
   const navigate = useNavigate();
-  const { track } = useMetrics();
+  const { track, completarGrupo } = useMetrics();
   const { solicitud, patch, setTabData, toggleDoc } = useStore();
   const [paso, setPaso] = useState('contacto');
   // Pila de pasos visitados para que "← Regresar" vuelva al paso anterior de
@@ -211,8 +211,7 @@ export default function Identificacion() {
         firmaCliente: solicitud.tipoFirma === 'autografa',
       },
     });
-    track('task_complete', { tarea: 'identificacion', resultado: 'exito' });
-    navigate('/seq/identificacion', { replace: true });
+    navigate(completarGrupo('g1_iniciar_autenticar'), { replace: true });
   };
 
   // ---------- render por paso ----------
@@ -362,8 +361,7 @@ export default function Identificacion() {
           firmaCliente: solicitud.tipoFirma === 'autografa',
         },
       });
-      track('task_complete', { tarea: 'identificacion', resultado: 'exito', via: 'cliente_existente' });
-      navigate('/seq/identificacion', { replace: true });
+      navigate(completarGrupo('g1_iniciar_autenticar', { via: 'cliente_existente' }), { replace: true });
     };
     return (
       <Screen>

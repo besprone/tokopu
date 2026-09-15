@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useMetrics } from '../metrics/MetricsProvider.jsx';
 import { useStore } from '../state/store.jsx';
+import { GRUPOS_PRUEBA, grupoDeRuta, grupoEnCurso } from '../flow.js';
+import TareaProgreso from './TareaProgreso.jsx';
 
 // Icon-button "✕" del topbar en el flujo de solicitud. Al tocarlo abre una
 // alerta (estilo producto) preguntando si guardar antes de salir. La solicitud
@@ -72,13 +74,101 @@ export function CerrarSolicitud() {
   );
 }
 
+const IconInstrucciones = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M9 11h6M9 15h4" />
+    <path d="M7 3h7l5 5v13H7z" />
+    <path d="M14 3v5h5" />
+  </svg>
+);
+
+// La barra de estatus es puramente decorativa (9:41/5G, para que se vea como
+// un telefono real) EXCEPTO mientras hay una tarea de prueba en curso: ahi se
+// convierte en el disparador de "Instrucciones" (antes un FAB flotante que en
+// movil se encimaba con el contenido). Vive en el mismo lugar en todas las
+// pantallas, asi que nunca compite por espacio con botones reales del flujo.
 export function StatusBar() {
+  const location = useLocation();
+  const { solicitud } = useStore();
+  const { track } = useMetrics();
+  const [open, setOpen] = useState(false);
+
+  const modo = (() => {
+    try {
+      return localStorage.getItem('toko.mod') === '1';
+    } catch {
+      return false;
+    }
+  })();
+
+  // Fuera de una ruta de bloque especifica (dashboard, solicitudes, hub) se
+  // usa el grupo en curso: el primero cuyo bloque final aun no esta completo.
+  const enNavegacion = ['/inicio', '/solicitudes', '/solicitud'].includes(location.pathname);
+  const grupoId = grupoDeRuta(location.pathname) || (enNavegacion ? grupoEnCurso(solicitud) : null);
+  const grupo = grupoId ? GRUPOS_PRUEBA.find((g) => g.id === grupoId) : null;
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => e.key === 'Escape' && setOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  if (!grupo) {
+    return (
+      <div className="statusbar">
+        <span>9:41</span>
+        <span className="dots">····</span>
+        <span>5G ▓▓▓</span>
+      </div>
+    );
+  }
+
+  const abrir = () => {
+    setOpen(true);
+    track('sheet_open', { tipo: 'instrucciones', tarea: grupo.id });
+  };
+
   return (
-    <div className="statusbar">
-      <span>9:41</span>
-      <span className="dots">····</span>
-      <span>5G ▓▓▓</span>
-    </div>
+    <>
+      <button
+        type="button"
+        className="statusbar statusbar-btn"
+        onClick={abrir}
+        title="Ver las instrucciones de la tarea"
+      >
+        <IconInstrucciones />
+        Instrucciones
+      </button>
+
+      {open && (
+        <MetaSheet label={`Tarea ${grupo.num} de ${GRUPOS_PRUEBA.length}`} onClose={() => setOpen(false)}>
+          <TareaProgreso currentId={grupo.id} />
+          <h1 style={{ marginTop: 12 }}>{grupo.titulo}</h1>
+          <div className="card">
+            <div className="tiny" style={{ textTransform: 'uppercase', letterSpacing: '.04em' }}>
+              Escenario
+            </div>
+            <p className="small" style={{ margin: '4px 0 0', whiteSpace: 'pre-line' }}>
+              {grupo.escenario}
+            </p>
+          </div>
+
+          {modo && (
+            <div className="card">
+              <div className="tiny" style={{ textTransform: 'uppercase', letterSpacing: '.04em' }}>
+                Que observar (facilitador)
+              </div>
+              <ul className="small" style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+                {grupo.observar.map((o, i) => (
+                  <li key={i}>{o}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </MetaSheet>
+      )}
+    </>
   );
 }
 

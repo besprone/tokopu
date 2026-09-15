@@ -68,14 +68,11 @@ export default function NuevaSolicitud() {
 
   const comenzar = () => {
     patch({ iniciada: true, dependencia: dep, convenio: conv, tipoFirma: firma, creadaISO: new Date().toISOString() });
-    track('task_complete', {
-      tarea: 'iniciar_solicitud',
-      resultado: 'exito',
-      dependencia: dep,
-      convenio: conv,
-      tipoFirma: firma,
-    });
-    navigate('/seq/iniciar_solicitud', { replace: true });
+    // No es frontera de grupo de prueba (va junto con identificacion en el
+    // grupo 1): sigue derecho, sin SEQ. Se deja una marca liviana para poder
+    // ver despues cuanto tardo esta mitad del grupo si hiciera falta.
+    track('bloque_completo', { bloque: 'iniciar_solicitud', dependencia: dep, convenio: conv, tipoFirma: firma });
+    navigate('/identificacion', { replace: true });
   };
 
   return (

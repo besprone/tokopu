@@ -1,145 +1,122 @@
-// Orquestacion de las 5 tareas de la prueba de usabilidad.
-// Escenarios, resultado esperado y "que observar" tomados del guion del
-// facilitador (Anexo A de la propuesta de pruebas). La numeracion de la app
-// (Tarea 1-5) fusiona T2 (autenticar) y T3 (firmar) del plan en una sola.
+// Orquestacion de la prueba de usabilidad.
+//
+// Hay dos capas separadas a proposito:
+//  - "Bloques" de producto (5: iniciar_solicitud, identificacion,
+//    seleccionar_oferta, informacion_solicitud, documentos_envio). Son los
+//    que usa el HUB para su barra de progreso y sus filas independientes
+//    (tareaCompletada() en state/store.jsx). No cambian aqui.
+//  - "Grupos de prueba" (3): la unidad de investigacion — task_start /
+//    task_complete / SEQ. Cada uno agrupa 1-2 bloques de producto. Se
+//    definen en GRUPOS_PRUEBA. El hub y el resto del producto no saben que
+//    existen; solo le importan a la instrumentacion y al panel de
+//    Instrucciones.
+import { tareaCompletada } from './state/store.jsx';
 
-export const TAREAS = {
-  iniciar_solicitud: {
-    id: 'iniciar_solicitud',
+export const GRUPOS_PRUEBA = [
+  {
+    id: 'g1_iniciar_autenticar',
     num: 1,
-    titulo: 'Iniciar la solicitud',
-    nucleo: false,
-    escenario: `Llega Sara a solicitar un crédito. Ábrele una nueva solicitud con sus datos.
+    titulo: 'Iniciar la solicitud y autenticar al cliente',
+    escenario: `Llega Sara a solicitar un crédito. Ábrele una nueva solicitud con sus datos y luego autentícala e identifícala para poder continuar.
 
 Datos de Sara:
 • Nombre: Sara Fernanda Pérez López
 • Puesto: profesora de primaria
 • Dependencia: Secretaría de Educación de Guerrero
 • Convenio: Educación
-• Tipo de firma: autógrafa`,
-    exito:
-      'Llegas al hub de progreso con dependencia = "Secretaria de Educacion - Guerrero", convenio = "Educacion" y tipo de firma = Autografa.',
-    observar: [
-      'Encuentra el boton + desde el dashboard para iniciar la solicitud?',
-      'Elige la dependencia correcta? (hay varias "Secretaria de Educacion -" de distintos estados)',
-      'Distingue "dependencia" de "convenio"?',
-      'Selecciona "Autografa" con seguridad? (es la opcion que abre el flujo largo)',
-    ],
-    next: '/tarea/identificacion',
-  },
-  identificacion: {
-    id: 'identificacion',
-    num: 2,
-    titulo: 'Autenticar e identificar al cliente',
-    nucleo: true,
-    escenario: `Autentica e identifica a Sara para poder continuar. Necesitas:
-• Autenticar su identidad (link por WhatsApp o captura manual)
-• Capturar su identificación (INE frente y reverso)
-• Firmar tu carta de consulta al portal de dependencia
-
-Datos de Sara:
+• Tipo de firma: autógrafa
 • Celular: 55 6209 5585
 • Correo: saraperez@gob.mx`,
     exito:
-      'Pantalla verde "¡Aprobado! Comencemos con una buena oferta", con la INE capturada, los datos del cliente verificados (CURP PEMJ850624MDFRRL09) y tu firma de la carta de consulta registrada. Con firma autografa Sara firma en papel, no en la app.',
+      'Llega a la pantalla verde "¡Aprobado! Comencemos con una buena oferta", con dependencia/convenio/firma correctos, la INE capturada, los datos verificados (CURP PEMJ850624MDFRRL09) y la firma de la carta de consulta registrada.',
     observar: [
-      'Captura el celular con 10 digitos exactos (sin +52) y el correo sin errores de dedo?',
-      'Entiende la liga por WhatsApp y la espera de autenticacion? Es una pausa incomoda?',
-      'Si el movil de Sara NO autentica: encuentra "Continuar captura manual" en el dispositivo del asesor?',
-      'En la captura manual: escanea la INE o teclea los datos? LEE lo que autolleno el escaneo o lo pasa de largo?',
-      'Encuentra "Ver la carta que vas a firmar" antes de firmar?',
-      'Firmar en pantalla es facil?',
+      '¿Encuentra el botón + desde el dashboard para iniciar la solicitud?',
+      '¿Elige la dependencia correcta? (hay varias "Secretaría de Educación -" de distintos estados)',
+      '¿Distingue "dependencia" de "convenio"? ¿Selecciona "Autógrafa" con seguridad?',
+      '¿Captura el celular (10 dígitos, sin +52) y el correo sin errores de dedo?',
+      '¿Entiende la liga por WhatsApp y la espera de autenticación? ¿Es una pausa incómoda?',
+      'Si el móvil de Sara NO autentica: ¿encuentra "Continuar captura manual"?',
+      'En captura manual: ¿escanea la INE o teclea? ¿LEE lo que autollenó el escaneo o lo pasa de largo?',
+      '¿Encuentra "Ver la carta que vas a firmar" antes de firmar? ¿Firmar en pantalla es fácil?',
     ],
-    next: '/tarea/seleccionar_oferta',
+    // Bloque de producto cuya finalizacion marca el fin de este grupo.
+    bloqueFinal: 'identificacion',
+    // A donde navegar cuando el grupo termina (tras el SEQ en remota, o
+    // directo en moderada).
+    next: '/solicitud',
   },
-  seleccionar_oferta: {
-    id: 'seleccionar_oferta',
-    num: 3,
-    titulo: 'Configurar la oferta',
-    nucleo: true,
-    escenario:
-      'Sara quiere $45,000 a 60 quincenas. Configura esa oferta y dile cuánto se le descontará cada quincena.',
-    exito:
-      'Oferta confirmada con monto $45,000 y 60 quincenas; puedes decir el pago quincenal (~$1,235) y ubicar el CAT (~53%).',
-    observar: [
-      'Llega al monto EXACTO de $45,000 con el slider?',
-      'Nota que el plazo no viene preseleccionado y elige 60 quincenas?',
-      'Entiende la "capacidad de pago" (~$1,822) y que el pago debe quedar por debajo?',
-      'Distingue la pestana "Cotizador" de "Ofertas"?',
-      'Encuentra el pago quincenal y el CAT sin salir del flujo?',
-    ],
-    next: '/tarea/informacion_solicitud',
-  },
-  informacion_solicitud: {
-    id: 'informacion_solicitud',
-    num: 4,
-    titulo: 'Llenar la informacion y corregir un dato',
-    nucleo: true,
-    escenario: `Completa la información de la solicitud de Sara y confírmala. Antes de confirmar, Sara te dice: «me cambié de casa, ahora vivo en Av. Reforma 88, Colonia Centro, CP 45010» — corrige el domicilio.
+  {
+    id: 'g2_cotizar_info',
+    num: 2,
+    titulo: 'Cotizar la oferta y capturar la información',
+    escenario: `Sara quiere $45,000 a 60 quincenas. Configura esa oferta y dile cuánto se le descontará cada quincena. Luego completa la información de su solicitud y confírmala.
 
 Datos de Sara:
-• Banco: BBVA
-• CLABE: 012180001234567899
-• Ingreso mensual: $13,500
-• Origen de los recursos: Salario
-• Destino de los recursos: Crédito al consumo
+• Banco: BBVA · CLABE: 012180001234567899
+• Ingreso mensual: $13,500 · Origen: Salario · Destino: Crédito al consumo
 • Liquidación anticipada: No`,
     exito:
-      'Los 5 pasos completos; domicilio corregido (calle, colonia y CP nuevos); CLABE de 18 digitos y banco BBVA capturados; ingreso $13,500; datos confirmados.',
+      'Oferta confirmada ($45,000 / 60 quincenas, pago quincenal ~$1,235, CAT ~53%); los 5 grupos de información completos, CLABE y banco capturados, ingreso $13,500, datos confirmados.',
     observar: [
-      'Verifica los campos autollenados por el OCR o los pasa sin leer? (campo critico)',
-      'Captura la CLABE con 18 digitos exactos? Cuantos intentos? (tiene digito verificador)',
-      'El ingreso mensual queda sin "$" ni comas?',
-      'Al corregir el domicilio actualiza los 3 campos (calle + colonia + CP)?',
-      'Elige bien los combos (Origen = Salario, Destino = Consumo, Liquidacion anticipada = No)?',
-      'El wizard de 5 pasos se siente manejable o agotador? Usa "Atras" o el stepper?',
-      'Encuentra "Editar" por seccion en "Confirma los datos"? Pierde datos al corregir?',
+      '¿Llega al monto exacto con el slider? ¿Nota que el plazo no viene preseleccionado?',
+      '¿Entiende la "capacidad de pago" y que el pago debe quedar por debajo? ¿Distingue "Ofertas" de "Cotizador"?',
+      '¿Encuentra el pago quincenal y el CAT sin salir del flujo?',
+      '¿Verifica los campos autollenados por el OCR o los pasa sin leer?',
+      '¿Navega libremente entre los grupos (chips) o espera un orden fijo? ¿Se da cuenta de cuáles le faltan?',
+      '¿Captura la CLABE con 18 dígitos exactos? ¿Cuántos intentos?',
+      '¿Encuentra "Editar" por sección en "Confirma los datos"? ¿Pierde datos al corregir?',
     ],
-    next: '/tarea/documentos_envio',
+    bloqueFinal: 'informacion_solicitud',
+    next: '/solicitud',
   },
-  documentos_envio: {
-    id: 'documentos_envio',
-    num: 5,
-    titulo: 'Documentos y envio',
-    nucleo: true,
+  {
+    id: 'g3_documentos_cierre',
+    num: 3,
+    titulo: 'Adjuntar documentos y cerrar la solicitud',
     escenario: `Sube los documentos de Sara y envía la solicitud.
-• Adjunta la INE desde los archivos del equipo.
-• Los demás documentos se completan solos (es demo).
+• Adjunta el comprobante de domicilio desde los archivos del equipo.
+• Los demás documentos ya vienen de la identificación o se completan solos (es demo).
 
 Luego envía la solicitud para terminar.`,
     exito:
-      '13 de 13 documentos cargados; vuelve al hub, toca "Enviar solicitud", ve la pantalla "Felicidades / en evaluacion" y termina.',
+      '13 de 13 documentos cargados; vuelve al hub, toca "Enviar solicitud", ve la pantalla "Felicidades / en evaluación" y termina.',
     observar: [
-      'El explorador de archivos del equipo se abre bien?',
-      'Entiende que adjuntar la INE completa los demas documentos?',
-      'La lista larga (13 en autografa) abruma o se entiende por grupos?',
-      'El cierre le da confianza de que la solicitud se envio?',
+      '¿El explorador de archivos del equipo se abre bien?',
+      '¿Entiende que adjuntar el comprobante de domicilio completa los demás documentos?',
+      '¿La lista larga (13 en autógrafa) abruma o se entiende por grupos?',
+      '¿El cierre le da confianza de que la solicitud se envió?',
     ],
+    bloqueFinal: 'documentos_envio',
+    // Ultimo grupo: en remota pasa por SUS antes de terminar.
     next: '/sus',
   },
-};
-
-export const ORDEN_TAREAS = [
-  'iniciar_solicitud',
-  'identificacion',
-  'seleccionar_oferta',
-  'informacion_solicitud',
-  'documentos_envio',
 ];
 
-// A donde lleva "Empezar tarea" desde la intro.
-// - Tarea 1: al dashboard; el asesor tiene que encontrar el boton + y abrir
-//   una nueva solicitud (parte de lo que se observa).
-// - Tareas 2-5: al HUB. El asesor debe identificar en el hub que bloque toca;
-//   ahi se observa si el hub deja claro el siguiente paso. task_start ya se
-//   disparo al pulsar "Empezar", justo antes del hub.
-export const ENTRADA_TAREA = {
-  iniciar_solicitud: '/inicio',
-  identificacion: '/solicitud',
-  seleccionar_oferta: '/solicitud',
-  informacion_solicitud: '/solicitud',
-  documentos_envio: '/solicitud',
-};
+export const ORDEN_GRUPOS = GRUPOS_PRUEBA.map((g) => g.id);
+
+// Bloque de producto -> grupo de prueba al que pertenece.
+export const BLOQUE_A_GRUPO = GRUPOS_PRUEBA.reduce((acc, g) => {
+  if (g.id === 'g1_iniciar_autenticar') {
+    acc.iniciar_solicitud = g.id;
+    acc.identificacion = g.id;
+  } else if (g.id === 'g2_cotizar_info') {
+    acc.seleccionar_oferta = g.id;
+    acc.informacion_solicitud = g.id;
+  } else {
+    acc.documentos_envio = g.id;
+  }
+  return acc;
+}, {});
+
+const ORDEN_BLOQUES = Object.keys(BLOQUE_A_GRUPO);
+
+// Grupo de prueba en curso: el primero cuyo bloque final aun no esta
+// completo. Se usa cuando la ruta actual no es de un bloque especifico
+// (dashboard, solicitudes, hub) para saber que grupo mostrar en Instrucciones.
+export function grupoEnCurso(solicitud) {
+  const bloque = ORDEN_BLOQUES.find((b) => !tareaCompletada(solicitud, b));
+  return bloque ? BLOQUE_A_GRUPO[bloque] : null;
+}
 
 // Bloque real al que lleva cada item del hub (sin intro intermedio).
 export const BLOQUE_TAREA = {
@@ -149,9 +126,8 @@ export const BLOQUE_TAREA = {
   documentos_envio: '/documentos',
 };
 
-// Ruta de pantalla -> tarea activa (solo pantallas reales de tarea; no la
-// intro ni el SEQ). Sirve para la pestana "Escenario", que se oculta fuera
-// de una tarea.
+// Ruta de pantalla -> bloque de producto activo (para el panel de
+// Instrucciones y para saber en que grupo de prueba estamos).
 const RUTA_TAREA = {
   '/nueva': 'iniciar_solicitud',
   '/identificacion': 'identificacion',
@@ -165,6 +141,11 @@ const RUTA_TAREA = {
 
 export function tareaDeRuta(pathname = '') {
   return RUTA_TAREA[pathname] || null;
+}
+
+export function grupoDeRuta(pathname = '') {
+  const bloque = tareaDeRuta(pathname);
+  return bloque ? BLOQUE_A_GRUPO[bloque] : null;
 }
 
 // Items del SUS (adaptacion al espanol del cuestionario de Brooke).

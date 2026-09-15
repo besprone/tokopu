@@ -44,7 +44,7 @@ function Confeti() {
 
 export default function Completada() {
   const navigate = useNavigate();
-  const { track } = useMetrics();
+  const { completarGrupo } = useMetrics();
   const { solicitud, patch } = useStore();
 
   useEffect(() => {
@@ -67,8 +67,7 @@ export default function Completada() {
   const depNombre = solicitud.dependencia || '—';
 
   const terminar = () => {
-    track('task_complete', { tarea: 'documentos_envio', resultado: 'exito' });
-    navigate('/seq/documentos_envio', { replace: true });
+    navigate(completarGrupo('g3_documentos_cierre'), { replace: true });
   };
 
   return (

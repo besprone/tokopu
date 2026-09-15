@@ -1,27 +1,27 @@
 import React from 'react';
-import { ORDEN_TAREAS } from '../flow.js';
+import { GRUPOS_PRUEBA } from '../flow.js';
 import { useStore, tareaCompletada } from '../state/store.jsx';
 
-// Barra lineal de 5 segmentos: tareas de la prueba completadas / actual /
-// pendientes. Se muestra en los modales de tarea (intro e Instrucciones).
-// Solo lee estado que ya existe; no cambia logica.
+// Barra lineal de 3 segmentos: grupos de prueba completados / actual /
+// pendientes. Se muestra en el panel de Instrucciones. Un grupo cuenta como
+// completo cuando su ultimo bloque de producto (bloqueFinal) lo esta.
 export default function TareaProgreso({ currentId }) {
   const { solicitud } = useStore();
-  const hechas = ORDEN_TAREAS.filter((t) => tareaCompletada(solicitud, t)).length;
+  const hechos = GRUPOS_PRUEBA.filter((g) => tareaCompletada(solicitud, g.bloqueFinal)).length;
 
   return (
     <div className="tarea-progreso">
       <div className="tp-track" aria-hidden="true">
-        {ORDEN_TAREAS.map((t) => {
-          const done = tareaCompletada(solicitud, t);
-          const current = t === currentId && !done;
+        {GRUPOS_PRUEBA.map((g) => {
+          const done = tareaCompletada(solicitud, g.bloqueFinal);
+          const current = g.id === currentId && !done;
           return (
-            <span key={t} className={`tp-seg${done ? ' done' : ''}${current ? ' current' : ''}`} />
+            <span key={g.id} className={`tp-seg${done ? ' done' : ''}${current ? ' current' : ''}`} />
           );
         })}
       </div>
       <div className="tp-caption tiny">
-        {hechas} de {ORDEN_TAREAS.length} tareas completadas
+        {hechos} de {GRUPOS_PRUEBA.length} tareas completadas
       </div>
     </div>
   );

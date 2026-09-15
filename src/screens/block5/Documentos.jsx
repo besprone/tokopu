@@ -56,7 +56,7 @@ export default function Documentos() {
     clearTimeout(timers.current.__resto);
     timers.current.__resto = setTimeout(() => {
       pend.forEach((d) =>
-        toggleDoc(d.id, { nombre: 'cargado con la INE', tamKB: 0, tipo: 'demo', demo: true, auto: true })
+        toggleDoc(d.id, { nombre: 'cargado con el comprobante', tamKB: 0, tipo: 'demo', demo: true, auto: true })
       );
       setCargando((c) => {
         const n = { ...c };
@@ -88,7 +88,7 @@ export default function Documentos() {
         tipoArchivo: file.type || 'desconocido',
         tamanoKB: Math.round(file.size / 1024),
       });
-      // Al cargar la INE por primera vez, se completan los demas.
+      // Al cargar el comprobante de domicilio por primera vez, se completan los demas.
       if (d.id === gatilloId && !reemplazo) autocompletarResto();
     }, SIM_CARGA_MS);
   };
@@ -96,7 +96,7 @@ export default function Documentos() {
   const subLinea = (meta, load) => {
     if (load) return 'Cargando…';
     if (!meta) return 'Adjuntar imagen o PDF';
-    if (meta.auto) return 'cargado con la INE';
+    if (meta.auto) return 'cargado con el comprobante';
     if (meta.demo) return meta.nombre;
     return `${meta.nombre}${meta.tamKB ? ` · ${meta.tamKB} KB` : ''}`;
   };

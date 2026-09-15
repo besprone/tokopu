@@ -111,7 +111,12 @@ function redact(datos) {
   return out;
 }
 
-export function initSession({ force = false, moderador = null, participante = null } = {}) {
+export function initSession({
+  force = false,
+  moderador = null,
+  participante = null,
+  modoSesion = 'moderada',
+} = {}) {
   if (events.length === 0 && meta == null) loadFromStorage();
   if (!meta || force) {
     events = [];
@@ -123,6 +128,11 @@ export function initSession({ force = false, moderador = null, participante = nu
       startPerf: now(),
       moderador,
       participante,
+      // 'moderada' (default): el facilitador hace las preguntas en vivo, sin
+      // SEQ/SUS de la app. 'remota': autoadministrada, con SEQ por grupo y
+      // SUS al final. Se fija al iniciar la prueba (Bienvenida) y viaja en
+      // el link remoto como ?modo=remota.
+      modoSesion,
       userAgent: navigator.userAgent,
       idioma: navigator.language,
       viewport: { w: window.innerWidth, h: window.innerHeight },

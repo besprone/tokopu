@@ -1,12 +1,14 @@
 import React, { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MetaSheet } from '../components/ui.jsx';
 import { useMetrics } from '../metrics/MetricsProvider.jsx';
 import { useStore } from '../state/store.jsx';
+import { ORDEN_GRUPOS } from '../flow.js';
 import Home from './block1/Home.jsx';
 
 export default function Bienvenida() {
   const navigate = useNavigate();
+  const [sp] = useSearchParams();
   const { resetSession, track } = useMetrics();
   const { reset } = useStore();
   const [nombre, setNombre] = useState('');
@@ -14,6 +16,9 @@ export default function Bienvenida() {
   const taps = useRef([]);
 
   const valido = nombre.trim().length >= 3;
+  // Sesion moderada por default (el facilitador hace las preguntas en vivo);
+  // para una prueba remota autoadministrada se manda un link con ?modo=remota.
+  const modoSesion = sp.get('modo') === 'remota' ? 'remota' : 'moderada';
 
   const iniciar = () => {
     if (!valido) {
@@ -24,9 +29,13 @@ export default function Bienvenida() {
     // el hub arranque vacio, y la sesion de metricas.
     reset();
     localStorage.removeItem('toko.solicitud.v1');
-    resetSession({ participante: nombre.trim() });
+    resetSession({ participante: nombre.trim(), modoSesion });
     track('click', { target: 'iniciar_prueba' });
-    navigate('/tarea/iniciar_solicitud');
+    // La prueba arranca aqui mismo: nada de pantalla de intro por tarea, el
+    // escenario de la primera tarea se dice en voz (o se lee en
+    // Instrucciones). El cronometro de la tarea 1 empieza ya.
+    track('task_start', { tarea: ORDEN_GRUPOS[0] });
+    navigate('/inicio');
   };
 
   // Gesto oculto para el moderador: 5 taps rapidos en el titulo -> /moderador
@@ -57,8 +66,10 @@ export default function Bienvenida() {
         </p>
         <p className="lead">
           Trabaja como lo harías normalmente y piensa en voz alta: di lo que buscas, lo que
-          esperas que pase y lo que te confunde. Al terminar cada tarea te haremos una
-          pregunta rápida, y al final unas preguntas de cierre.
+          esperas que pase y lo que te confunde.
+          {modoSesion === 'remota'
+            ? ' Al terminar cada tarea te haremos una pregunta rápida, y al final unas preguntas de cierre.'
+            : ' Quien te acompaña te hará algunas preguntas mientras avanzas.'}
         </p>
 
         <div className={`field${tocado && !valido ? ' invalid' : ''}`}>
