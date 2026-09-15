@@ -377,7 +377,7 @@ export default function Identificacion() {
           </p>
           <div className="grow" />
           <Button variant="primary" onClick={finalizar} track="ident_aprobado_interno_terminar">
-            Terminar autenticacion →
+            Continuar →
           </Button>
         </div>
       </Screen>
@@ -768,7 +768,7 @@ export default function Identificacion() {
           </p>
           <div className="grow" />
           <Button variant="dark" onClick={terminar} track="ident_resultado_ok_terminar">
-            Terminar autenticacion →
+            Continuar →
           </Button>
         </div>
       </Screen>

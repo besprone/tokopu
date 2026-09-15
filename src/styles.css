@@ -549,6 +549,10 @@ h2,
 .hub-item[disabled] {
   opacity: 0.5;
 }
+.hub-item.done {
+  border-color: #cfe9d9;
+  background: var(--ok-bg);
+}
 .hub-item .sub {
   font-size: 12px;
   color: var(--ink-3);
@@ -632,6 +636,18 @@ h2,
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+.field select {
+  /* Safari le pone su propio estilo nativo al <select> (relleno y flecha
+     distintos) si no se resetea explicitamente. */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%234a5260' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='5 8 10 13 15 8'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
@@ -662,6 +678,12 @@ h2,
   background: var(--line-2);
   color: var(--ink-3);
   cursor: not-allowed;
+}
+.field select:disabled {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%237b8494' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='5 8 10 13 15 8'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
 }
 
 /* ---------------- Tabs ---------------- */
@@ -736,14 +758,18 @@ h2,
   color: var(--ink-2);
   white-space: nowrap;
 }
-.tab-chip.ok:not(.active) {
+/* Estado del grupo: completo (verde solido, con check) o incompleto (gris
+   neutro, el default de arriba - sin importar si ya lo visitaste o no: eso
+   ya lo dice el texto "Faltan datos obligatorios en..." y los campos en rojo
+   al reentrar). "Activo" (donde estas parado) es un anillo negro que se
+   SUMA al color de arriba, nunca lo reemplaza. */
+.tab-chip.ok {
   border-color: var(--ok);
-  color: var(--ok);
+  background: var(--ok);
+  color: #fff;
 }
 .tab-chip.active {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: #fff;
+  box-shadow: inset 0 0 0 2px var(--ink);
 }
 .tab-chip .chip-check {
   font-size: 11px;
@@ -807,6 +833,10 @@ h2,
   background: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow);
+}
+.segmented button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* ---------------- Slider ---------------- */
@@ -1292,14 +1322,15 @@ input[type='range']::-moz-range-thumb {
   color: var(--ink-3);
 }
 
-/* Promociones */
+/* Promociones. A diferencia de .tab-chips, este carril NO es full-bleed: las
+   tarjetas se quedan dentro del margen normal del contenido, nunca pegadas
+   al borde del telefono. */
 .promo-scroll {
   display: flex;
   gap: 12px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  margin: 0 calc(-1 * var(--pad));
-  padding: 4px var(--pad) 8px;
+  padding: 4px 0 8px;
   scrollbar-width: none;
 }
 .promo-scroll::-webkit-scrollbar {

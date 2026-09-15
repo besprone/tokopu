@@ -1,20 +1,132 @@
 // Catalogos mock y datos simulados de OCR / escaneos.
 
+// Catalogo real de dependencias/convenios (misma fuente que tokocalipso).
+// Cada convenio declara que tipos de firma admite; un convenio sin ninguna
+// firma disponible no permite iniciar la solicitud, y uno con una sola firma
+// disponible la deja fija (sin opcion a elegir la otra).
 export const DEPENDENCIAS = [
-  { id: 'sep-gro', nombre: 'Secretaria de Educacion - Guerrero' },
-  { id: 'sep-oax', nombre: 'Secretaria de Educacion - Oaxaca' },
-  { id: 'sep-nay', nombre: 'Secretaria de Educacion - Nayarit' },
-  { id: 'gob-cdmx', nombre: 'Gobierno de la Ciudad de Mexico' },
-  { id: 'issste', nombre: 'ISSSTE' },
-  { id: 'imss', nombre: 'IMSS' },
+  {
+    nombre: 'Baja California Norte',
+    convenios: [
+      { nombre: 'Educación Baja California', firmaAutografa: true, firmaDigital: true },
+      { nombre: 'Poder Judicial', firmaAutografa: true, firmaDigital: false },
+    ],
+  },
+  {
+    nombre: 'Campeche',
+    convenios: [{ nombre: 'Educación', firmaAutografa: true, firmaDigital: false }],
+  },
+  {
+    nombre: 'CDMX',
+    convenios: [
+      { nombre: 'Gobierno', firmaAutografa: true, firmaDigital: true },
+      { nombre: 'Educación', firmaAutografa: true, firmaDigital: true },
+      { nombre: 'PBI', firmaAutografa: true, firmaDigital: false },
+    ],
+  },
+  {
+    nombre: 'Chihuahua',
+    convenios: [{ nombre: 'Salud', firmaAutografa: false, firmaDigital: false }],
+  },
+  {
+    nombre: 'Estado de México',
+    convenios: [{ nombre: 'Educación', firmaAutografa: true, firmaDigital: false }],
+  },
+  {
+    nombre: 'Guerrero',
+    convenios: [
+      { nombre: 'Educación', firmaAutografa: true, firmaDigital: false },
+      { nombre: 'Salud', firmaAutografa: true, firmaDigital: false },
+    ],
+  },
+  {
+    nombre: 'Hidalgo',
+    convenios: [{ nombre: 'Educación', firmaAutografa: true, firmaDigital: false }],
+  },
+  {
+    nombre: 'Michoacán',
+    convenios: [
+      { nombre: 'Educación', firmaAutografa: true, firmaDigital: true },
+      { nombre: 'Salud', firmaAutografa: true, firmaDigital: false },
+      { nombre: 'Gobierno', firmaAutografa: true, firmaDigital: true },
+      { nombre: 'CECYT', firmaAutografa: false, firmaDigital: false },
+    ],
+  },
+  {
+    nombre: 'Nacional',
+    convenios: [
+      { nombre: 'IPN', firmaAutografa: true, firmaDigital: true },
+      { nombre: 'IMSS Ley', firmaAutografa: false, firmaDigital: true },
+      { nombre: 'IMSS Bienestar', firmaAutografa: true, firmaDigital: false },
+    ],
+  },
+  {
+    nombre: 'Nayarit',
+    convenios: [{ nombre: 'Fiscalía', firmaAutografa: true, firmaDigital: false }],
+  },
+  {
+    nombre: 'Nuevo León',
+    convenios: [{ nombre: 'Gobierno', firmaAutografa: false, firmaDigital: false }],
+  },
+  {
+    nombre: 'Oaxaca',
+    convenios: [
+      { nombre: 'Educación', firmaAutografa: true, firmaDigital: true },
+      { nombre: 'Gobierno', firmaAutografa: true, firmaDigital: false },
+      { nombre: 'Pensiones', firmaAutografa: true, firmaDigital: true },
+    ],
+  },
+  {
+    nombre: 'Puebla',
+    convenios: [
+      { nombre: 'Educación', firmaAutografa: true, firmaDigital: false },
+      { nombre: 'Magisterio', firmaAutografa: false, firmaDigital: false },
+    ],
+  },
+  {
+    nombre: 'Querétaro',
+    convenios: [
+      { nombre: 'Educación', firmaAutografa: true, firmaDigital: false },
+      { nombre: 'Magisterio', firmaAutografa: true, firmaDigital: false },
+      { nombre: 'Gobierno', firmaAutografa: true, firmaDigital: false },
+    ],
+  },
+  {
+    nombre: 'Quintana Roo',
+    convenios: [{ nombre: 'Educación', firmaAutografa: true, firmaDigital: true }],
+  },
+  {
+    nombre: 'San Luis Potosi',
+    convenios: [{ nombre: 'Educación', firmaAutografa: true, firmaDigital: false }],
+  },
+  {
+    nombre: 'Sonora',
+    convenios: [{ nombre: 'Gobierno', firmaAutografa: false, firmaDigital: false }],
+  },
+  {
+    nombre: 'Tabasco',
+    convenios: [
+      { nombre: 'Colegio de Bachilleres', firmaAutografa: true, firmaDigital: false },
+      { nombre: 'Gobierno', firmaAutografa: false, firmaDigital: false },
+    ],
+  },
 ];
 
-export const CONVENIOS = [
-  { id: 'educacion', nombre: 'Educacion' },
-  { id: 'salud', nombre: 'Salud' },
-  { id: 'burocracia', nombre: 'Administracion estatal' },
-  { id: 'pensionados', nombre: 'Pensionados' },
-];
+/** Un convenio sin ninguna firma disponible no permite iniciar solicitud. */
+export function tieneFirmaDisponible(convenio) {
+  return convenio.firmaAutografa || convenio.firmaDigital;
+}
+
+/**
+ * Que firma queda seleccionada al elegir un convenio. Si solo admite una, esa
+ * queda fija; si admite las dos, se propone la autografa y el asesor decide.
+ */
+export function firmaInicial(convenio) {
+  if (convenio.firmaAutografa && convenio.firmaDigital) return 'autografa';
+  if (convenio.firmaAutografa) return 'autografa';
+  if (convenio.firmaDigital) return 'digital';
+  return '';
+}
 
 export const BANCOS = [
   'BBVA',

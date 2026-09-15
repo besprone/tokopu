@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, Button, TopBar } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore } from '../../state/store.jsx';
-import { DEPENDENCIAS } from '../../domain/catalogs.js';
 
 // Feedback tras "Enviar solicitud" en el hub (flujo de FIRMA AUTOGRAFA).
 // El flujo digital se retoma despues. Antes habia tambien una pantalla de
@@ -65,8 +64,7 @@ export default function Completada() {
       .join(' ') || 'el cliente';
   const o = solicitud.oferta || {};
   const tasa = o.resumen?.tasaAnualFija;
-  const depNombre =
-    DEPENDENCIAS.find((d) => d.id === solicitud.dependencia)?.nombre || solicitud.dependencia || '—';
+  const depNombre = solicitud.dependencia || '—';
 
   const terminar = () => {
     track('task_complete', { tarea: 'documentos_envio', resultado: 'exito' });

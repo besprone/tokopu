@@ -242,12 +242,26 @@ export default function InfoSolicitud() {
     if (q && TABS_INFO.includes(q)) return q;
     return TABS_INFO.find((t) => !solicitud.tabsCompletadas[t]) || 'personales';
   });
-  const [forceSig, setForceSig] = useState(0);
   const [scanOpen, setScanOpen] = useState(false);
-  const visitados = useRef(new Set());
+  // Grupos por los que el asesor ya paso (se marcan al SALIR, no al entrar):
+  // el grupo en el que estas parado nunca se marca "visitado" por si mismo,
+  // solo los que ya dejaste atras.
+  const [visitados, setVisitados] = useState(() => new Set());
+  // Si el grupo ACTUAL ya se habia visitado antes, se fuerza la validacion de
+  // sus campos para que se vea lo que falta (en la primera visita se deja
+  // limpio). Se deriva de `visitados` en cada render -no es un contador
+  // global- para que un grupo nunca visitado nunca herede el forzado de otro.
+  const forceValidate = visitados.has(tab) ? 1 : 0;
+  // Al cambiar de grupo, el chip activo se desplaza a la vista dentro de su
+  // carril horizontal (si esta fuera por el scroll).
+  const activeChipRef = useRef(null);
+  useEffect(() => {
+    activeChipRef.current?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+  }, [tab]);
 
   const def = TAB_DEFS[tab];
   const valores = solicitud.datos[tab] || {};
+  const idxTab = TABS_INFO.indexOf(tab);
 
   // Validez de cualquier grupo (no solo el actual): navegacion libre entre
   // chips; solo se puede "Revisar datos" cuando los 5 estan completos.
@@ -271,11 +285,6 @@ export default function InfoSolicitud() {
 
   useEffect(() => {
     setScanOpen(false);
-    // Al RE-entrar a un grupo ya visitado, se fuerza la validacion para que se
-    // vea que le falta (en la primera visita se deja limpio).
-    const yaVisto = visitados.current.has(tab);
-    visitados.current.add(tab);
-    if (yaVisto) setForceSig((n) => n + 1);
     // El celular de contacto viene de la autenticacion (bloque 2) y va bloqueado.
     if (
       tab === 'contacto' &&
@@ -284,6 +293,11 @@ export default function InfoSolicitud() {
     ) {
       setTabData('contacto', { telefonoCelular: solicitud.auth.celular });
     }
+    // Al SALIR de este grupo queda "visitado": su chip puede avisar (warning)
+    // si falta algo, aunque el asesor no vuelva a entrar.
+    return () => {
+      setVisitados((prev) => (prev.has(tab) ? prev : new Set(prev).add(tab)));
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
@@ -312,6 +326,11 @@ export default function InfoSolicitud() {
     track('click', { target: `info_grupo_${t}` });
   };
 
+  const irRelativo = (delta) => {
+    const t = TABS_INFO[idxTab + delta];
+    if (t) irAGrupo(t);
+  };
+
   const revisar = () => {
     if (!todoValido) return;
     TABS_INFO.forEach((t) => markTab(t, true));
@@ -328,17 +347,21 @@ export default function InfoSolicitud() {
           {TABS_INFO.map((t, i) => {
             const activo = t === tab;
             const ok = validez[i];
+            const cls = ['tab-chip'];
+            if (ok) cls.push('ok');
+            if (activo) cls.push('active');
             return (
               <button
                 key={t}
+                ref={activo ? activeChipRef : null}
                 type="button"
                 role="tab"
                 aria-selected={activo}
-                className={`tab-chip${activo ? ' active' : ''}${ok ? ' ok' : ''}`}
+                className={cls.join(' ')}
                 onClick={() => irAGrupo(t)}
               >
                 {TAB_LABEL[t]}
-                {ok && !activo && (
+                {ok && (
                   <span className="chip-check" aria-hidden="true">
                     ✓
                   </span>
@@ -416,7 +439,7 @@ export default function InfoSolicitud() {
             }
             value={valores[c.name] ?? ''}
             validate={c.validate}
-            forceValidateSignal={forceSig}
+            forceValidateSignal={forceValidate}
             onChange={(v) => setTabData(tab, { [c.name]: v })}
           />
         ))}
@@ -427,14 +450,33 @@ export default function InfoSolicitud() {
             Faltan datos obligatorios en: {gruposFaltantes.map((t) => TAB_LABEL[t]).join(', ')}
           </p>
         )}
-        <Button
-          variant="primary"
-          disabled={!todoValido}
-          onClick={revisar}
-          track="info_revisar_datos"
-        >
-          Revisar datos →
-        </Button>
+        <div className="row">
+          {idxTab > 0 && (
+            <Button variant="ghost" className="grow" onClick={() => irRelativo(-1)} track="info_atras">
+              ← Atrás
+            </Button>
+          )}
+          {idxTab < TABS_INFO.length - 1 ? (
+            <Button
+              variant="primary"
+              className="grow"
+              onClick={() => irRelativo(1)}
+              track="info_continuar_grupo"
+            >
+              Continuar →
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              className="grow"
+              disabled={!todoValido}
+              onClick={revisar}
+              track="info_revisar_datos"
+            >
+              Revisar datos →
+            </Button>
+          )}
+        </div>
       </FooterActions>
       {scanOpen && escaneoCfg && (
         <DocScanSheet cfg={escaneoCfg} onAceptar={aceptarEscaneo} onClose={() => setScanOpen(false)} />

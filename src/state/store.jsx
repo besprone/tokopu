@@ -249,7 +249,7 @@ export const FIRMA_DIGITAL_ETAPAS = [
   { id: 'celular', label: 'Verificacion de celular', corto: 'Verificando celular', desc: 'Codigo de 6 digitos' },
   { id: 'selfie', label: 'Selfie', corto: 'Selfie', desc: 'Fotografia del rostro' },
   { id: 'ine', label: 'Captura de INE', corto: 'Capturando INE', desc: 'Frente y reverso' },
-  { id: 'firma', label: 'Firma de la carta de consulta', corto: 'Firmando la carta', desc: 'Firma en pantalla' },
+  { id: 'firma', label: 'Firma de contrato', corto: 'Firmando el contrato', desc: 'Firma en pantalla' },
 ];
 
 // Avance del proceso derivado del tiempo transcurrido desde que se envio el

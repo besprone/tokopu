@@ -41,6 +41,23 @@ export default function Field({
     }
   }, [forceValidateSignal]); // eslint-disable-line
 
+  // Si el valor cambia desde afuera (autollenado por escaneo, datos que
+  // llegan de otra pantalla, etc.) el campo no pasa por handleChange: sin
+  // esto el error quedaria pegado aunque el valor ya sea valido.
+  useEffect(() => {
+    if (!touched) return;
+    const err = runValidate(value);
+    setError(err);
+    if (err && !hadError.current) {
+      hadError.current = true;
+      track('field_error', { campo: name, tab, regla: err });
+    } else if (!err && hadError.current) {
+      hadError.current = false;
+      track('field_corrected', { campo: name, tab });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
   const handleChange = (raw) => {
     changeCount.current += 1;
     onChange?.(raw);
@@ -50,14 +67,8 @@ export default function Field({
       valor: raw,
       nCambio: changeCount.current,
     });
-    if (touched) {
-      const err = runValidate(raw);
-      setError(err);
-      if (!err && hadError.current) {
-        hadError.current = false;
-        track('field_corrected', { campo: name, tab });
-      }
-    }
+    // La revalidacion mientras esta tocado la hace el efecto de [value]
+    // arriba, una vez que el valor nuevo llega por props.
   };
 
   const handleBlur = () => {
@@ -100,7 +111,7 @@ export default function Field({
             const val = typeof o === 'string' ? o : o.value ?? o.id ?? o.nombre;
             const lab = typeof o === 'string' ? o : o.nombre ?? o.label ?? val;
             return (
-              <option key={val} value={val}>
+              <option key={val} value={val} disabled={!!o?.disabled}>
                 {lab}
               </option>
             );

@@ -25,14 +25,16 @@ export default function Cotizador() {
     [ingreso]
   );
 
-  const [tab, setTab] = useState('cotizador');
+  const [tab, setTab] = useState('ofertas');
   const [monto, setMonto] = useState(solicitud.oferta?.monto || FIN_CONFIG.montoMin);
   // El plazo NO viene preseleccionado: el asesor debe elegirlo (se le indica cual).
   const [plazo, setPlazo] = useState(solicitud.oferta?.nQuincenas ?? null);
-  const [ofertaSel, setOfertaSel] = useState(null);
 
   const r = useMemo(() => (plazo ? cotizar(monto, plazo) : null), [monto, plazo]);
   const ofertas = useMemo(() => generarOfertas(capacidad), [capacidad]);
+  // La primera oferta viene preseleccionada: siempre hay al menos una.
+  const [ofertaSel, setOfertaSel] = useState(null);
+  const ofertaSelActual = ofertaSel ?? ofertas[0]?.id ?? null;
 
   const excede = !!r && r.pagoQuincenal > capacidad;
   const usoPct = r ? Math.min(100, Math.round((r.pagoQuincenal / capacidad) * 100)) : 0;
@@ -77,15 +79,6 @@ export default function Cotizador() {
       <Content>
         <div className="segmented" style={{ marginBottom: 16 }}>
           <button
-            className={tab === 'cotizador' ? 'active' : ''}
-            onClick={() => {
-              setTab('cotizador');
-              track('click', { target: 'tab_cotizador' });
-            }}
-          >
-            Cotizador
-          </button>
-          <button
             className={tab === 'ofertas' ? 'active' : ''}
             onClick={() => {
               setTab('ofertas');
@@ -93,6 +86,15 @@ export default function Cotizador() {
             }}
           >
             Ofertas
+          </button>
+          <button
+            className={tab === 'cotizador' ? 'active' : ''}
+            onClick={() => {
+              setTab('cotizador');
+              track('click', { target: 'tab_cotizador' });
+            }}
+          >
+            Cotizador
           </button>
         </div>
 
@@ -200,7 +202,7 @@ export default function Cotizador() {
             </div>
             <div className="stack">
               {ofertas.map((o) => {
-                const sel = ofertaSel === o.id;
+                const sel = ofertaSelActual === o.id;
                 return (
                   <button
                     key={o.id}
@@ -254,9 +256,9 @@ export default function Cotizador() {
         ) : (
           <Button
             variant="primary"
-            disabled={!ofertaSel}
+            disabled={!ofertaSelActual}
             onClick={() => {
-              const o = ofertas.find((x) => x.id === ofertaSel);
+              const o = ofertas.find((x) => x.id === ofertaSelActual);
               confirmar(`oferta:${o.id}`, o, o.monto, o.nQuincenas);
             }}
             track="confirmar_oferta_seleccionada"

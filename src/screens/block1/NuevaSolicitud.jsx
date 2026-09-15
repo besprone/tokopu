@@ -4,7 +4,7 @@ import { Screen, StatusBar, Content, FooterActions, Button, TopBar } from '../..
 import Field from '../../components/Field.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore, tareaCompletada } from '../../state/store.jsx';
-import { DEPENDENCIAS, CONVENIOS } from '../../domain/catalogs.js';
+import { DEPENDENCIAS, tieneFirmaDisponible, firmaInicial } from '../../domain/catalogs.js';
 import { req } from '../../domain/validators.js';
 
 export default function NuevaSolicitud() {
@@ -20,7 +20,51 @@ export default function NuevaSolicitud() {
     return <Navigate to="/solicitud" replace />;
   }
 
-  const puede = dep && conv && firma;
+  const dependenciaElegida = DEPENDENCIAS.find((d) => d.nombre === dep);
+  const convenioElegido = dependenciaElegida?.convenios.find((c) => c.nombre === conv);
+
+  // Los convenios sin ninguna firma disponible se listan, pero deshabilitados.
+  const opcionesConvenio =
+    dependenciaElegida?.convenios.map((c) => ({
+      nombre: c.nombre,
+      disabled: !tieneFirmaDisponible(c),
+    })) ?? [];
+
+  const elegirDependencia = (valor) => {
+    const d = DEPENDENCIAS.find((x) => x.nombre === valor);
+    // Con un solo convenio no hay nada que elegir: se preselecciona aunque no
+    // tenga firma disponible, para que el callejon sin salida se vea en vez
+    // de dejar el campo vacio sin explicar por que no avanza.
+    const unico = d?.convenios.length === 1 ? d.convenios[0] : undefined;
+    setDep(valor);
+    setConv(unico?.nombre ?? '');
+    setFirma(unico ? firmaInicial(unico) : '');
+    track('field_change', { campo: 'dependencia', valor });
+  };
+
+  const elegirConvenio = (valor) => {
+    const c = dependenciaElegida?.convenios.find((x) => x.nombre === valor);
+    setConv(valor);
+    if (!c) {
+      setFirma('');
+      return;
+    }
+    // Si lo que ya venia marcado sigue siendo valido, se respeta.
+    const sigueValiendo =
+      (firma === 'autografa' && c.firmaAutografa) || (firma === 'digital' && c.firmaDigital);
+    setFirma(sigueValiendo ? firma : firmaInicial(c));
+    track('field_change', { campo: 'convenio', valor });
+  };
+
+  /**
+   * Solo se bloquea el segmentado cuando YA hay convenio y ese convenio
+   * admite una sola firma: ahi no hay nada que elegir. Mientras no hay
+   * convenio el campo se ve normal, con la propuesta marcada.
+   */
+  const firmaDeterminada =
+    convenioElegido != null && !(convenioElegido.firmaAutografa && convenioElegido.firmaDigital);
+
+  const puede = convenioElegido != null && firma !== '';
 
   const comenzar = () => {
     patch({ iniciada: true, dependencia: dep, convenio: conv, tipoFirma: firma, creadaISO: new Date().toISOString() });
@@ -49,7 +93,7 @@ export default function NuevaSolicitud() {
           name="dependencia"
           label="Dependencia"
           value={dep}
-          onChange={setDep}
+          onChange={elegirDependencia}
           options={DEPENDENCIAS}
           validate={req}
         />
@@ -57,8 +101,9 @@ export default function NuevaSolicitud() {
           name="convenio"
           label="Convenio"
           value={conv}
-          onChange={setConv}
-          options={CONVENIOS}
+          onChange={elegirConvenio}
+          options={opcionesConvenio}
+          disabled={!dependenciaElegida}
           validate={req}
         />
 
@@ -66,6 +111,7 @@ export default function NuevaSolicitud() {
           <label>Tipo de firma</label>
           <div className="segmented">
             <button
+              disabled={firmaDeterminada}
               className={firma === 'autografa' ? 'active' : ''}
               onClick={() => {
                 setFirma('autografa');
@@ -75,6 +121,7 @@ export default function NuevaSolicitud() {
               Firma autografa
             </button>
             <button
+              disabled={firmaDeterminada}
               className={firma === 'digital' ? 'active' : ''}
               onClick={() => {
                 setFirma('digital');
