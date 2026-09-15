@@ -1,11 +1,9 @@
 // Formateadores para exportar sesiones (servidor).
 
 const TAREA_TITULOS = {
-  iniciar_solicitud: 'Iniciar la solicitud',
-  identificacion: 'Autenticar e identificar al cliente',
-  seleccionar_oferta: 'Configurar la oferta',
-  informacion_solicitud: 'Llenar la informacion y corregir un dato',
-  documentos_envio: 'Documentos y envio',
+  g1_iniciar_autenticar: 'Iniciar la solicitud y autenticar al cliente',
+  g2_cotizar_info: 'Cotizar la oferta y capturar la informacion',
+  g3_documentos_cierre: 'Adjuntar documentos y cerrar la solicitud',
 };
 
 export function sesionMarkdown(s) {
