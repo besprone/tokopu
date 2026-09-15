@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import SessionWidgets from './components/SessionWidgets.jsx';
 
 import Bienvenida from './screens/Bienvenida.jsx';
+import Guion from './screens/Guion.jsx';
 import IntroTarea from './screens/IntroTarea.jsx';
 import Home from './screens/block1/Home.jsx';
 import Solicitudes from './screens/block1/Solicitudes.jsx';
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/moderador" element={<ModLogin />} />
           <Route path="/moderador/sesiones" element={<ModSesiones />} />
           <Route path="/moderador/sesion/:id" element={<ModDetalle />} />
+          <Route path="/guion" element={<Guion />} />
           <Route path="/resultados" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
