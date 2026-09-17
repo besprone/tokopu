@@ -10,13 +10,14 @@ import { Button } from './ui.jsx';
 // un documento (bloque 2: INE manual; bloque 4: talon/estado de cuenta;
 // bloque 5: los 13 documentos).
 //
-// Dos modos de uso:
-//  - `trigger`: si se pasa, el componente le entrega la funcion `abrir()`
-//    para que el llamador dibuje su propio boton/fila (Documentos.jsx,
-//    DocScanSheet).
-//  - sin `trigger`: se abre solo al montar (util quiando el llamador ya
-//    tiene su propio boton visible y solo quiere encadenar una captura,
-//    como el frente/reverso de la INE).
+// IMPORTANTE: `input.click()` solo abre el selector si el navegador lo
+// considera resultado DIRECTO de un toque del usuario (esto es real sobre
+// todo en iOS Safari). Por eso `trigger` es obligatorio -el llamador debe
+// dibujar su propio boton visible y llamar a `abrir()` ahi mismo, dentro de
+// su propio onClick- y por lo que "Escanea de nuevo" llama a `abrir()` de
+// forma sincrona, nunca desde un setTimeout/efecto. Encadenar una segunda
+// captura (p. ej. frente -> reverso de la INE) tampoco puede auto-abrirse
+// sola: hace falta un boton visible para el segundo toque tambien.
 export default function CapturaDocumento({
   titulo,
   subtitulo,
@@ -29,20 +30,21 @@ export default function CapturaDocumento({
   const [archivo, setArchivo] = useState(null); // { file, url }
   const [zoom, setZoom] = useState(false);
   const lastTapRef = useRef(0);
-
-  const abrir = () => inputRef.current?.click();
+  const archivoRef = useRef(null);
 
   useEffect(() => {
-    if (!trigger) abrir();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    archivoRef.current = archivo;
+  }, [archivo]);
 
+  // Revoca el object URL si el componente se desmonta con una revision
+  // abierta (p. ej. el asesor navega a otro lado a mitad de la revision).
   useEffect(() => {
     return () => {
-      if (archivo) URL.revokeObjectURL(archivo.url);
+      if (archivoRef.current) URL.revokeObjectURL(archivoRef.current.url);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const abrir = () => inputRef.current?.click();
 
   const onChangeInput = (e) => {
     const file = e.target.files?.[0];
@@ -66,9 +68,11 @@ export default function CapturaDocumento({
     onCancelar?.();
   };
 
+  // Sincrono a proposito: si esto se retrasara (setTimeout, efecto, promesa)
+  // el navegador ya no lo trata como un toque directo y puede no abrir nada.
   const reintentar = () => {
     cerrar();
-    setTimeout(abrir, 0);
+    abrir();
   };
 
   const aceptar = () => {
@@ -86,7 +90,7 @@ export default function CapturaDocumento({
   return (
     <>
       <input ref={inputRef} type="file" accept={accept} hidden onChange={onChangeInput} />
-      {trigger?.(abrir)}
+      {trigger(abrir)}
 
       {archivo && (
         <div className="carta-sheet-backdrop" onClick={cancelar}>

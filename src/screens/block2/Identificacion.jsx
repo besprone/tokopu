@@ -67,10 +67,11 @@ export default function Identificacion() {
   // Captura manual de datos del cliente (paso 'datos_captura').
   const [datos, setDatos] = useState(DATOS_VACIOS);
   const [ineEscaneada, setIneEscaneada] = useState(false);
-  // Captura manual de la INE desde 'datos_captura': null | 'frente' | 'reverso'.
-  // No usa el paso simulado 'ine_frente'/'ine_reverso' (ese se deja intacto
-  // para cuando retomemos la simulacion de camara real, colgada de 'selfie').
-  const [capturaIne, setCapturaIne] = useState(null);
+  // Captura manual de la INE desde 'datos_captura': tras aceptar el frente se
+  // revela el boton (explicito) para escanear el reverso. No usa el paso
+  // simulado 'ine_frente'/'ine_reverso' (ese se deja intacto para cuando
+  // retomemos la simulacion de camara real, colgada de 'selfie').
+  const [frenteListo, setFrenteListo] = useState(false);
   const setDato = (k) => (v) => setDatos((d) => ({ ...d, [k]: v }));
   const [firmaAsesorOk, setFirmaAsesorOk] = useState(false);
   const [guardarFirma, setGuardarFirma] = useState(true);
@@ -434,43 +435,49 @@ export default function Identificacion() {
           </p>
 
           <div className="sec-label">Escaneo</div>
-          <button
-            type="button"
-            className={`scan-ine${ineEscaneada ? ' done' : ''}`}
-            onClick={() => {
-              track('click', { target: 'ident_datos_escanear_ine' });
-              setCapturaIne('frente');
-            }}
-          >
-            <span>{ineEscaneada ? 'INE escaneada' : 'Escanear INE'}</span>
-            <span className="scan-ico" aria-hidden="true">
-              {ineEscaneada ? '✓' : '↑'}
-            </span>
-          </button>
-          {ineEscaneada && (
+          <CapturaDocumento
+            titulo="Capturar el frente de la INE"
+            subtitulo="Coloca la parte frontal de la INE del cliente."
+            onAceptar={() => setFrenteListo(true)}
+            onCancelar={() => setFrenteListo(false)}
+            trigger={(abrir) => (
+              <button
+                type="button"
+                className={`scan-ine${ineEscaneada ? ' done' : ''}`}
+                onClick={() => {
+                  track('click', { target: 'ident_datos_escanear_ine' });
+                  abrir();
+                }}
+              >
+                <span>{ineEscaneada ? 'INE escaneada' : 'Escanear INE'}</span>
+                <span className="scan-ico" aria-hidden="true">
+                  {ineEscaneada ? '✓' : '↑'}
+                </span>
+              </button>
+            )}
+          />
+          {ineEscaneada && !frenteListo && (
             <p className="tiny scan-hint">
               Ya esta agregada a la lista de documentos. Toca para volver a escanearla si es
               necesario.
               {autVia === 'remoto' && ' El cliente completo su identificacion desde el link.'}
             </p>
           )}
-          {capturaIne === 'frente' && (
-            <CapturaDocumento
-              titulo="Capturar el frente de la INE"
-              subtitulo="Coloca la parte frontal de la INE del cliente."
-              onAceptar={() => setCapturaIne('reverso')}
-              onCancelar={() => setCapturaIne(null)}
-            />
-          )}
-          {capturaIne === 'reverso' && (
+          {frenteListo && (
             <CapturaDocumento
               titulo="Capturar el reverso de la INE"
               subtitulo="Ahora la parte trasera de la INE del cliente."
               onAceptar={() => {
                 llenarDesdeINE();
-                setCapturaIne(null);
+                setFrenteListo(false);
               }}
-              onCancelar={() => setCapturaIne(null)}
+              onCancelar={() => setFrenteListo(false)}
+              trigger={(abrir) => (
+                <button type="button" className="scan-ine" onClick={abrir}>
+                  <span>Escanear el reverso de la INE</span>
+                  <span className="scan-ico" aria-hidden="true">↑</span>
+                </button>
+              )}
             />
           )}
 
