@@ -67,11 +67,17 @@ export default function Identificacion() {
   // Captura manual de datos del cliente (paso 'datos_captura').
   const [datos, setDatos] = useState(DATOS_VACIOS);
   const [ineEscaneada, setIneEscaneada] = useState(false);
-  // Captura manual de la INE desde 'datos_captura': tras aceptar el frente se
-  // revela el boton (explicito) para escanear el reverso. No usa el paso
+  // Captura manual de la INE desde 'datos_captura': un solo boton que va
+  // cambiando de estado (Escanear INE -> Escanear el reverso -> INE
+  // escaneada), nunca dos botones de captura a la vez. No usa el paso
   // simulado 'ine_frente'/'ine_reverso' (ese se deja intacto para cuando
   // retomemos la simulacion de camara real, colgada de 'selfie').
   const [frenteListo, setFrenteListo] = useState(false);
+  const [frenteArchivo, setFrenteArchivo] = useState(null);
+  // Archivos reales del frente/reverso ya aceptados, para registrar el
+  // documento "INE" (bloque 5) con su nombre/tamano/tipo reales en vez de
+  // un valor de demostracion.
+  const [ineArchivos, setIneArchivos] = useState(null);
   const setDato = (k) => (v) => setDatos((d) => ({ ...d, [k]: v }));
   const [firmaAsesorOk, setFirmaAsesorOk] = useState(false);
   const [guardarFirma, setGuardarFirma] = useState(true);
@@ -109,7 +115,7 @@ export default function Identificacion() {
   // Captura manual: al volver del escaneo de INE se autollenan los campos de
   // identidad de 'datos_captura' con lo que "detecto" el OCR (los datos
   // laborales / ingresos NO: esos vienen del talon en el bloque 4).
-  const llenarDesdeINE = () => {
+  const llenarDesdeINE = (archivos) => {
     setDatos({
       curp: OCR_MOCK.curp,
       rfc: OCR_MOCK.rfc,
@@ -120,6 +126,7 @@ export default function Identificacion() {
       fechaNacimiento: OCR_MOCK.fechaNacimiento,
     });
     setIneEscaneada(true);
+    setIneArchivos(archivos || null);
   };
 
   // "Continuar" desde 'datos_captura': vuelca los datos de IDENTIDAD al bloque
@@ -153,7 +160,15 @@ export default function Identificacion() {
       },
     });
     if (ineEscaneada) {
-      toggleDoc('ine', { nombre: 'Capturada en la identificacion', demo: true });
+      if (ineArchivos?.frente && ineArchivos?.reverso) {
+        toggleDoc('ine', {
+          nombre: `Frente: ${ineArchivos.frente.name} · Reverso: ${ineArchivos.reverso.name}`,
+          tamKB: Math.max(1, Math.round((ineArchivos.frente.size + ineArchivos.reverso.size) / 1024)),
+          tipo: ineArchivos.frente.type || 'desconocido',
+        });
+      } else {
+        toggleDoc('ine', { nombre: 'Capturada en la identificacion', demo: true });
+      }
     }
     track('click', {
       target: 'ident_datos_captura_continuar',
@@ -435,40 +450,39 @@ export default function Identificacion() {
           </p>
 
           <div className="sec-label">Escaneo</div>
-          <CapturaDocumento
-            titulo="Capturar el frente de la INE"
-            subtitulo="Coloca la parte frontal de la INE del cliente."
-            onAceptar={() => setFrenteListo(true)}
-            onCancelar={() => setFrenteListo(false)}
-            trigger={(abrir) => (
-              <button
-                type="button"
-                className={`scan-ine${ineEscaneada ? ' done' : ''}`}
-                onClick={() => {
-                  track('click', { target: 'ident_datos_escanear_ine' });
-                  abrir();
-                }}
-              >
-                <span>{ineEscaneada ? 'INE escaneada' : 'Escanear INE'}</span>
-                <span className="scan-ico" aria-hidden="true">
-                  {ineEscaneada ? '✓' : '↑'}
-                </span>
-              </button>
-            )}
-          />
-          {ineEscaneada && !frenteListo && (
-            <p className="tiny scan-hint">
-              Ya esta agregada a la lista de documentos. Toca para volver a escanearla si es
-              necesario.
-              {autVia === 'remoto' && ' El cliente completo su identificacion desde el link.'}
-            </p>
-          )}
-          {frenteListo && (
+          {/* Un solo boton de captura a la vez: primero el frente, y al
+              aceptarlo el MISMO lugar pasa a pedir el reverso. Nunca se
+              muestran dos componentes de adjuntar juntos. */}
+          {!frenteListo ? (
+            <CapturaDocumento
+              titulo="Capturar el frente de la INE"
+              subtitulo="Coloca la parte frontal de la INE del cliente."
+              onAceptar={(file) => {
+                setFrenteArchivo(file);
+                setFrenteListo(true);
+              }}
+              trigger={(abrir) => (
+                <button
+                  type="button"
+                  className={`scan-ine${ineEscaneada ? ' done' : ''}`}
+                  onClick={() => {
+                    track('click', { target: 'ident_datos_escanear_ine' });
+                    abrir();
+                  }}
+                >
+                  <span>{ineEscaneada ? 'INE escaneada' : 'Escanear INE'}</span>
+                  <span className="scan-ico" aria-hidden="true">
+                    {ineEscaneada ? '✓' : '↑'}
+                  </span>
+                </button>
+              )}
+            />
+          ) : (
             <CapturaDocumento
               titulo="Capturar el reverso de la INE"
               subtitulo="Ahora la parte trasera de la INE del cliente."
-              onAceptar={() => {
-                llenarDesdeINE();
+              onAceptar={(file) => {
+                llenarDesdeINE({ frente: frenteArchivo, reverso: file });
                 setFrenteListo(false);
               }}
               onCancelar={() => setFrenteListo(false)}
@@ -479,6 +493,13 @@ export default function Identificacion() {
                 </button>
               )}
             />
+          )}
+          {ineEscaneada && !frenteListo && (
+            <p className="tiny scan-hint">
+              Ya esta agregada a la lista de documentos. Toca para volver a escanearla si es
+              necesario.
+              {autVia === 'remoto' && ' El cliente completo su identificacion desde el link.'}
+            </p>
           )}
 
           <div className="sec-label">
