@@ -25,6 +25,7 @@ export default function CapturaDocumento({
   trigger,
   onAceptar,
   onCancelar,
+  consejos,
 }) {
   const inputRef = useRef(null);
   const [archivo, setArchivo] = useState(null); // { file, url }
@@ -118,6 +119,18 @@ export default function CapturaDocumento({
               <p className="tiny" style={{ textAlign: 'center', marginTop: 6 }}>
                 Doble tap para {zoom ? 'alejar' : 'acercar'} y verificar que se lea bien
               </p>
+              {consejos?.length > 0 && (
+                <>
+                  <div className="sec-label" style={{ borderBottom: 'none', margin: '14px 0 2px' }}>
+                    Consejos
+                  </div>
+                  <ul className="consejos tiny">
+                    {consejos.map((c, i) => (
+                      <li key={i}>{c}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </div>
             <div className="docscan-actions">
               <Button variant="ghost" onClick={reintentar} track="docscan_reintentar">

@@ -36,7 +36,9 @@ const PASOS = [
   'resultado_ok',
 ];
 
-// Tips de encuadre (pantalla de captura de INE).
+// Tips de encuadre para la captura de la INE. Se muestran en la sheet de
+// revision de CapturaDocumento (frente y reverso) y tambien en la pantalla
+// de camara simulada del paso 'ine_frente'/'ine_reverso' (dead code).
 const CONSEJOS_INE = [
   'Consigue que el documento entre completamente en la pantalla.',
   'Asegurate de no moverte en el momento de la fotografia.',
@@ -457,6 +459,7 @@ export default function Identificacion() {
             <CapturaDocumento
               titulo="Capturar el frente de la INE"
               subtitulo="Coloca la parte frontal de la INE del cliente."
+              consejos={CONSEJOS_INE}
               onAceptar={(file) => {
                 setFrenteArchivo(file);
                 setFrenteListo(true);
@@ -481,6 +484,7 @@ export default function Identificacion() {
             <CapturaDocumento
               titulo="Capturar el reverso de la INE"
               subtitulo="Ahora la parte trasera de la INE del cliente."
+              consejos={CONSEJOS_INE}
               onAceptar={(file) => {
                 llenarDesdeINE({ frente: frenteArchivo, reverso: file });
                 setFrenteListo(false);
