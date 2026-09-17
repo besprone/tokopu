@@ -487,10 +487,38 @@ export default function Identificacion() {
               }}
               onCancelar={() => setFrenteListo(false)}
               trigger={(abrir) => (
-                <button type="button" className="scan-ine" onClick={abrir}>
-                  <span>Escanear el reverso de la INE</span>
-                  <span className="scan-ico" aria-hidden="true">↑</span>
-                </button>
+                // Sheet flotante (no un boton en la pagina de fondo): el
+                // flujo queda conectado de principio a fin, como en el
+                // diseno original, aunque el paso a reverso siga
+                // necesitando un toque explicito del asesor (el navegador
+                // no abre el selector de archivos si no viene de un toque
+                // directo).
+                <div className="carta-sheet-backdrop">
+                  <div
+                    className="carta-sheet docscan-sheet"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Capturar el reverso de la INE"
+                  >
+                    <button
+                      type="button"
+                      className="carta-sheet-close"
+                      aria-label="Cerrar"
+                      onClick={() => setFrenteListo(false)}
+                    >
+                      ✕
+                    </button>
+                    <div className="docscan-body">
+                      <h2>Frente capturado ✓</h2>
+                      <p className="lead">Ahora captura el reverso de la INE del cliente.</p>
+                    </div>
+                    <div className="docscan-actions">
+                      <Button variant="dark" onClick={abrir} track="ident_ine_reverso_continuar">
+                        Escanear el reverso →
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               )}
             />
           )}
