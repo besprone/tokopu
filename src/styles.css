@@ -1534,11 +1534,19 @@ input[type='range']::-moz-range-thumb {
   border-radius: var(--radius);
   padding: 12px;
   background: #fff;
+  overflow: auto;
+  max-height: 55vh;
+  -webkit-overflow-scrolling: touch;
 }
 .docscan-shot {
   display: block;
   width: 100%;
   border-radius: 4px;
+  transition: width 0.15s ease;
+}
+.docscan-shot.zoomed {
+  width: 220%;
+  max-width: 220%;
 }
 .docscan-shot--mock {
   aspect-ratio: 3 / 4;
@@ -1570,12 +1578,9 @@ input[type='range']::-moz-range-thumb {
   margin: 16px 0 4px;
 }
 
-/* Fila de documento: item-list estilo hub, con input de archivo real */
+/* Fila de documento: item-list estilo hub, dispara CapturaDocumento */
 .doc-item {
   cursor: pointer;
-}
-.doc-item input[type='file'] {
-  display: none;
 }
 .doc-item .sub {
   overflow: hidden;

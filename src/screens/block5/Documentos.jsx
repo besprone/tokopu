@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud } from '../../components/ui.jsx';
+import CapturaDocumento from '../../components/CapturaDocumento.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore, DOCS_AUTOGRAFA, DOCS_DIGITAL } from '../../state/store.jsx';
 
@@ -67,10 +68,7 @@ export default function Documentos() {
     }, 800);
   };
 
-  const seleccionar = (d, e) => {
-    const file = e.target.files?.[0];
-    e.target.value = ''; // permite reelegir el mismo archivo
-    if (!file) return;
+  const confirmarCaptura = (d, file) => {
     const reemplazo = !!solicitud.documentos[d.id];
     setCargando((c) => ({ ...c, [d.id]: true }));
     clearTimeout(timers.current[d.id]);
@@ -121,31 +119,38 @@ export default function Documentos() {
                 const load = !!cargando[d.id];
                 const done = !!meta && !load;
                 return (
-                  <label key={d.id} className={`hub-item doc-item${done ? ' done' : ''}`}>
-                    <input
-                      type="file"
-                      accept="image/*,application/pdf"
-                      disabled={load}
-                      onChange={(e) => seleccionar(d, e)}
-                    />
-                    <span className="grow" style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 600 }}>{d.nombre}</div>
-                      <div className="sub">{subLinea(meta, load)}</div>
-                    </span>
-                    <span className="doc-trailing">
-                      {load ? (
-                        <span className="spin-sm" aria-label="Cargando" />
-                      ) : done ? (
-                        <span className="doc-ic ok">
-                          <IconCheck />
+                  <CapturaDocumento
+                    key={d.id}
+                    titulo={d.nombre}
+                    subtitulo="Verifica que se lea bien antes de aceptar."
+                    onAceptar={(file) => confirmarCaptura(d, file)}
+                    trigger={(abrir) => (
+                      <button
+                        type="button"
+                        className={`hub-item doc-item${done ? ' done' : ''}`}
+                        disabled={load}
+                        onClick={abrir}
+                      >
+                        <span className="grow" style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 600 }}>{d.nombre}</div>
+                          <div className="sub">{subLinea(meta, load)}</div>
                         </span>
-                      ) : (
-                        <span className="doc-ic">
-                          <IconUpload />
+                        <span className="doc-trailing">
+                          {load ? (
+                            <span className="spin-sm" aria-label="Cargando" />
+                          ) : done ? (
+                            <span className="doc-ic ok">
+                              <IconCheck />
+                            </span>
+                          ) : (
+                            <span className="doc-ic">
+                              <IconUpload />
+                            </span>
+                          )}
                         </span>
-                      )}
-                    </span>
-                  </label>
+                      </button>
+                    )}
+                  />
                 );
               })}
             </div>

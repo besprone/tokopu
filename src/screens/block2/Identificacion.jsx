@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, Content, FooterActions, Button, TopBar, Callout, CerrarSolicitud } from '../../components/ui.jsx';
 import Field from '../../components/Field.jsx';
 import SignaturePad from '../../components/SignaturePad.jsx';
+import CapturaDocumento from '../../components/CapturaDocumento.jsx';
 import OtpEspera from './OtpEspera.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore } from '../../state/store.jsx';
@@ -66,6 +67,10 @@ export default function Identificacion() {
   // Captura manual de datos del cliente (paso 'datos_captura').
   const [datos, setDatos] = useState(DATOS_VACIOS);
   const [ineEscaneada, setIneEscaneada] = useState(false);
+  // Captura manual de la INE desde 'datos_captura': null | 'frente' | 'reverso'.
+  // No usa el paso simulado 'ine_frente'/'ine_reverso' (ese se deja intacto
+  // para cuando retomemos la simulacion de camara real, colgada de 'selfie').
+  const [capturaIne, setCapturaIne] = useState(null);
   const setDato = (k) => (v) => setDatos((d) => ({ ...d, [k]: v }));
   const [firmaAsesorOk, setFirmaAsesorOk] = useState(false);
   const [guardarFirma, setGuardarFirma] = useState(true);
@@ -435,7 +440,7 @@ export default function Identificacion() {
             onClick={() => {
               if (ineEscaneada) return;
               track('click', { target: 'ident_datos_escanear_ine' });
-              ir('ine_frente');
+              setCapturaIne('frente');
             }}
           >
             <span>Escanear INE</span>
@@ -448,6 +453,25 @@ export default function Identificacion() {
               La INE ya esta agregada a la lista de documentos.
               {autVia === 'remoto' && ' El cliente completo su identificacion desde el link.'}
             </p>
+          )}
+          {capturaIne === 'frente' && (
+            <CapturaDocumento
+              titulo="Capturar el frente de la INE"
+              subtitulo="Coloca la parte frontal de la INE del cliente."
+              onAceptar={() => setCapturaIne('reverso')}
+              onCancelar={() => setCapturaIne(null)}
+            />
+          )}
+          {capturaIne === 'reverso' && (
+            <CapturaDocumento
+              titulo="Capturar el reverso de la INE"
+              subtitulo="Ahora la parte trasera de la INE del cliente."
+              onAceptar={() => {
+                llenarDesdeINE();
+                setCapturaIne(null);
+              }}
+              onCancelar={() => setCapturaIne(null)}
+            />
           )}
 
           <div className="sec-label">

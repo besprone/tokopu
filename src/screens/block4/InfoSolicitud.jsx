@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud } from '../../components/ui.jsx';
 import Field from '../../components/Field.jsx';
+import CapturaDocumento from '../../components/CapturaDocumento.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore, TABS_INFO } from '../../state/store.jsx';
 import * as V from '../../domain/validators.js';
@@ -18,21 +19,14 @@ import {
 
 const OPCIONAL = { required: false };
 
-// Tabs que permiten escanear un documento para autollenar sus campos, con el
-// mismo patron que el OCR de la INE en el bloque 2.
-const CONSEJOS_CAPTURA = [
-  'Consigue que el documento entre completamente en la pantalla.',
-  'Asegurate de no moverte en el momento de la fotografia.',
-  'Evita reflejos y luces directas. Un lugar con luz de dia o cerca de una ventana suele dar mejor resultado.',
-];
-
+// Tabs que permiten adjuntar un documento para autollenar sus campos, con el
+// mismo componente de captura (CapturaDocumento) que usan los bloques 2 y 5.
 const ESCANEO_TAB = {
   laborales: {
     doc: 'talon-1',
     label: 'Talon de pagos',
     titulo: 'Capturar del recibo de nomina',
     subtitulo: 'Por favor, captura el recibo de nomina del cliente.',
-    img: '/talon/talon',
     campos: {
       numSegSocial: TALON_MOCK.numSegSocial,
       entidadFederativa: TALON_MOCK.entidadFederativa,
@@ -53,116 +47,12 @@ const ESCANEO_TAB = {
     label: 'Estado de cuenta',
     titulo: 'Capturar el estado de cuenta',
     subtitulo: 'Por favor, captura la caratula del estado de cuenta del cliente.',
-    img: '/estado_cuenta/edocuenta',
     campos: {
       banco: CUENTA_MOCK.banco,
       cuentaClabe: CUENTA_MOCK.cuentaClabe,
     },
   },
 };
-
-const DOC_EXTS = ['webp', 'png', 'jpg', 'jpeg'];
-
-// Foto "capturada" del documento. Usa /public/<img>.<ext> y si no existe
-// ninguna extension cae a un recuadro simulado.
-function DocShot({ src, alt }) {
-  const [i, setI] = useState(0);
-  if (i >= DOC_EXTS.length) {
-    return (
-      <div className="docscan-shot docscan-shot--mock">
-        <span aria-hidden="true">📄</span>
-        <span className="tiny">{alt}</span>
-      </div>
-    );
-  }
-  return (
-    <img
-      className="docscan-shot"
-      src={`${src}.${DOC_EXTS[i]}`}
-      alt={alt}
-      onError={() => setI((n) => n + 1)}
-    />
-  );
-}
-
-// Flujo de captura de un documento: encuadre + consejos -> revision de la foto.
-// Vive dentro del marco (.screen) y sube desde abajo, igual que CartaSheet.
-function DocScanSheet({ cfg, onAceptar, onClose }) {
-  const [fase, setFase] = useState('captura');
-  useEffect(() => {
-    document.body.classList.add('carta-abierta');
-    const onKey = (e) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => {
-      document.body.classList.remove('carta-abierta');
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [onClose]);
-
-  return (
-    <div className="carta-sheet-backdrop" onClick={onClose}>
-      <div
-        className="carta-sheet docscan-sheet"
-        role="dialog"
-        aria-modal="true"
-        aria-label={cfg.titulo}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button type="button" className="carta-sheet-close" aria-label="Cerrar" onClick={onClose}>
-          ✕
-        </button>
-
-        <div className="docscan-body">
-          <h2>{cfg.titulo}</h2>
-          <p className="lead">{cfg.subtitulo}</p>
-
-          {fase === 'captura' ? (
-            <>
-              <div className="docscan-frame">
-                <span className="docscan-frame-ico" aria-hidden="true">📄</span>
-                <span className="tiny">Encuadra el documento</span>
-              </div>
-              <div className="sec-label" style={{ borderBottom: 'none', margin: '14px 0 2px' }}>
-                Consejos
-              </div>
-              <ul className="consejos tiny">
-                {CONSEJOS_CAPTURA.map((c, i) => (
-                  <li key={i}>{c}</li>
-                ))}
-              </ul>
-            </>
-          ) : (
-            <div className="docscan-doc">
-              <DocShot src={cfg.img} alt={`${cfg.label} capturado`} />
-            </div>
-          )}
-        </div>
-
-        <div className="docscan-actions">
-          {fase === 'captura' ? (
-            <>
-              <Button variant="ghost" onClick={() => setFase('revision')} track="docscan_carrete">
-                Desde carrete
-              </Button>
-              <Button variant="dark" onClick={() => setFase('revision')} track="docscan_capturar">
-                Capturar
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" onClick={() => setFase('captura')} track="docscan_reintentar">
-                Escanea de nuevo
-              </Button>
-              <Button variant="dark" onClick={onAceptar} track="docscan_aceptar">
-                Aceptar captura ✓
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 const TAB_LABEL = {
   personales: 'Personales',
@@ -242,7 +132,6 @@ export default function InfoSolicitud() {
     if (q && TABS_INFO.includes(q)) return q;
     return TABS_INFO.find((t) => !solicitud.tabsCompletadas[t]) || 'personales';
   });
-  const [scanOpen, setScanOpen] = useState(false);
   // Grupos por los que el asesor ya paso (se marcan al SALIR, no al entrar):
   // el grupo en el que estas parado nunca se marca "visitado" por si mismo,
   // solo los que ya dejaste atras.
@@ -284,7 +173,6 @@ export default function InfoSolicitud() {
   const camposEscaneo = escaneoCfg ? Object.keys(escaneoCfg.campos) : [];
 
   useEffect(() => {
-    setScanOpen(false);
     // El celular de contacto viene de la autenticacion (bloque 2) y va bloqueado.
     if (
       tab === 'contacto' &&
@@ -301,15 +189,18 @@ export default function InfoSolicitud() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  const aceptarEscaneo = () => {
+  const aceptarEscaneo = (file) => {
     setTabData(tab, { ...escaneoCfg.campos });
     // Un documento puede autollenar campos de otros tabs (el talon trae el sueldo).
     for (const [t, vals] of Object.entries(escaneoCfg.camposExtra || {})) {
       setTabData(t, vals);
     }
-    toggleDoc(escaneoCfg.doc, { nombre: 'Cargado en la captura de la solicitud', demo: true });
+    toggleDoc(escaneoCfg.doc, {
+      nombre: file?.name || 'Cargado en la captura de la solicitud',
+      tamKB: file ? Math.max(1, Math.round(file.size / 1024)) : 0,
+      tipo: file?.type || 'desconocido',
+    });
     track('click', { target: `info_${tab}_escaneo_aceptado`, doc: escaneoCfg.doc });
-    setScanOpen(false);
   };
 
   // Mantiene tabsCompletadas = validez de cada grupo (para el progreso del hub).
@@ -390,19 +281,26 @@ export default function InfoSolicitud() {
             <div className="sec-label" style={{ marginTop: 4 }}>
               Escaneo
             </div>
-            <button
-              type="button"
-              className={`scan-ine${escaneado ? ' done' : ''}`}
-              onClick={() => {
-                track('click', { target: `info_${tab}_escanear` });
-                setScanOpen(true);
-              }}
-            >
-              <span>{escaneoCfg.label}</span>
-              <span className="scan-ico" aria-hidden="true">
-                {escaneado ? '✓' : '↑'}
-              </span>
-            </button>
+            <CapturaDocumento
+              titulo={escaneoCfg.titulo}
+              subtitulo={escaneoCfg.subtitulo}
+              onAceptar={aceptarEscaneo}
+              trigger={(abrir) => (
+                <button
+                  type="button"
+                  className={`scan-ine${escaneado ? ' done' : ''}`}
+                  onClick={() => {
+                    track('click', { target: `info_${tab}_escanear` });
+                    abrir();
+                  }}
+                >
+                  <span>{escaneoCfg.label}</span>
+                  <span className="scan-ico" aria-hidden="true">
+                    {escaneado ? '✓' : '↑'}
+                  </span>
+                </button>
+              )}
+            />
             {escaneado ? (
               <p className="tiny scan-hint">
                 El {escaneoCfg.label} ha sido escaneado y agregado a la lista de documentos.
@@ -478,9 +376,6 @@ export default function InfoSolicitud() {
           )}
         </div>
       </FooterActions>
-      {scanOpen && escaneoCfg && (
-        <DocScanSheet cfg={escaneoCfg} onAceptar={aceptarEscaneo} onClose={() => setScanOpen(false)} />
-      )}
     </Screen>
   );
 }
