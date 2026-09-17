@@ -132,6 +132,12 @@ export default function InfoSolicitud() {
     if (q && TABS_INFO.includes(q)) return q;
     return TABS_INFO.find((t) => !solicitud.tabsCompletadas[t]) || 'personales';
   });
+  // Se llego aqui desde un "Editar" en Confirma los datos (unico lugar que
+  // manda ?tab=): en vez del Atras/Continuar secuencial, el pie muestra un
+  // atajo directo de vuelta a Confirmar. Se fija una sola vez al montar -no
+  // se recalcula- para que se mantenga aunque el asesor cambie de grupo con
+  // los chips.
+  const [vengoDeConfirmar] = useState(() => !!sp.get('tab'));
   // Grupos por los que el asesor ya paso (se marcan al SALIR, no al entrar):
   // el grupo en el que estas parado nunca se marca "visitado" por si mismo,
   // solo los que ya dejaste atras.
@@ -294,7 +300,7 @@ export default function InfoSolicitud() {
                     abrir();
                   }}
                 >
-                  <span>{escaneoCfg.label}</span>
+                  <span>{escaneado ? `${escaneoCfg.label} escaneado` : escaneoCfg.label}</span>
                   <span className="scan-ico" aria-hidden="true">
                     {escaneado ? '✓' : '↑'}
                   </span>
@@ -303,7 +309,8 @@ export default function InfoSolicitud() {
             />
             {escaneado ? (
               <p className="tiny scan-hint">
-                El {escaneoCfg.label} ha sido escaneado y agregado a la lista de documentos.
+                Ya fue agregado a la lista de documentos. Toca para volver a escanearlo si es
+                necesario.
               </p>
             ) : (
               <p className="tiny scan-hint">
@@ -348,33 +355,56 @@ export default function InfoSolicitud() {
             Faltan datos obligatorios en: {gruposFaltantes.map((t) => TAB_LABEL[t]).join(', ')}
           </p>
         )}
-        <div className="row">
-          {idxTab > 0 && (
-            <Button variant="ghost" className="grow" onClick={() => irRelativo(-1)} track="info_atras">
-              ← Atrás
-            </Button>
-          )}
-          {idxTab < TABS_INFO.length - 1 ? (
-            <Button
-              variant="primary"
-              className="grow"
-              onClick={() => irRelativo(1)}
-              track="info_continuar_grupo"
-            >
-              Continuar →
-            </Button>
-          ) : (
-            <Button
-              variant="primary"
-              className="grow"
-              disabled={!todoValido}
-              onClick={revisar}
-              track="info_revisar_datos"
-            >
-              Revisar datos →
-            </Button>
-          )}
-        </div>
+        {vengoDeConfirmar ? (
+          // Edicion puntual desde "Confirma los datos": los chips siguen
+          // libres por si hay que tocar otra seccion, pero el CTA regresa
+          // derecho a confirmar en vez de obligar a recorrer los demas
+          // grupos en orden.
+          <Button
+            variant="primary"
+            disabled={!todoValido}
+            onClick={() => navigate('/informacion/confirmar')}
+            track="info_volver_confirmar"
+          >
+            Guardar y volver a confirmar →
+          </Button>
+        ) : (
+          <div className="row">
+            {idxTab > 0 && (
+              <Button variant="ghost" className="grow" onClick={() => irRelativo(-1)} track="info_atras">
+                ← Atrás
+              </Button>
+            )}
+            {idxTab < TABS_INFO.length - 1 ? (
+              <Button
+                variant="primary"
+                className="grow"
+                onClick={() => irRelativo(1)}
+                track="info_continuar_grupo"
+              >
+                Continuar →
+              </Button>
+            ) : todoValido ? (
+              <Button
+                variant="primary"
+                className="grow"
+                onClick={revisar}
+                track="info_revisar_datos"
+              >
+                Revisar datos →
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                className="grow"
+                onClick={() => irAGrupo(gruposFaltantes[0])}
+                track="info_continuar_a_faltante"
+              >
+                Continuar →
+              </Button>
+            )}
+          </div>
+        )}
       </FooterActions>
     </Screen>
   );

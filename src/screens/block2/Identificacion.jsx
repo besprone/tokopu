@@ -438,19 +438,19 @@ export default function Identificacion() {
             type="button"
             className={`scan-ine${ineEscaneada ? ' done' : ''}`}
             onClick={() => {
-              if (ineEscaneada) return;
               track('click', { target: 'ident_datos_escanear_ine' });
               setCapturaIne('frente');
             }}
           >
-            <span>Escanear INE</span>
+            <span>{ineEscaneada ? 'INE escaneada' : 'Escanear INE'}</span>
             <span className="scan-ico" aria-hidden="true">
               {ineEscaneada ? '✓' : '↑'}
             </span>
           </button>
           {ineEscaneada && (
             <p className="tiny scan-hint">
-              La INE ya esta agregada a la lista de documentos.
+              Ya esta agregada a la lista de documentos. Toca para volver a escanearla si es
+              necesario.
               {autVia === 'remoto' && ' El cliente completo su identificacion desde el link.'}
             </p>
           )}
