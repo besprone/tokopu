@@ -1537,12 +1537,17 @@ input[type='range']::-moz-range-thumb {
   overflow: auto;
   max-height: 55vh;
   -webkit-overflow-scrolling: touch;
+  /* Sin esto, el navegador movil interpreta el doble tap de la imagen como
+     su propio gesto de zoom de pagina (no el nuestro): desplaza el layout y
+     el siguiente toque cae en otro elemento. */
+  touch-action: manipulation;
 }
 .docscan-shot {
   display: block;
   width: 100%;
   border-radius: 4px;
   transition: width 0.15s ease;
+  touch-action: manipulation;
 }
 .docscan-shot.zoomed {
   width: 220%;
