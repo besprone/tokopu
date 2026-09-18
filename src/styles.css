@@ -741,16 +741,26 @@ h2,
   background: var(--ok);
 }
 
-/* Bloque 4: chips de grupos (navegacion libre, no wizard) */
+/* Bloque 4: chips de grupos (navegacion libre, no wizard). Sticky: al ser el
+   primer hijo de .content (el contenedor con scroll), se queda pegado
+   arriba mientras se hace scroll en formularios largos (p. ej. Personales).
+   El espacio que antes era margin-top/bottom pasa a padding para que quede
+   dentro de la caja opaca -si no, el contenido se alcanza a ver un
+   instante justo arriba/abajo de los chips al hacer scroll. */
 .tab-chips {
   display: flex;
   gap: 8px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line-2);
   /* full-bleed: el carril de scroll llega al borde del marco; el padding
      interno vuelve a alinear el primer/ultimo chip con el contenido */
-  margin: 6px calc(var(--pad) * -1) 14px;
-  padding: 0 var(--pad) 4px;
+  margin: 0 calc(var(--pad) * -1) 14px;
+  padding: 6px var(--pad) 8px;
   scrollbar-width: none;
 }
 .tab-chips::-webkit-scrollbar {
