@@ -19,6 +19,11 @@ import {
 
 const OPCIONAL = { required: false };
 
+// Carga simulada del talon/estado de cuenta (misma duracion que en la
+// captura de documentos del bloque 5), para no dar por hecho que en la
+// vida real la subida es instantanea.
+const SIM_CARGA_MS = 1200;
+
 // Tabs que permiten adjuntar un documento para autollenar sus campos, con el
 // mismo componente de captura (CapturaDocumento) que usan los bloques 2 y 5.
 const ESCANEO_TAB = {
@@ -146,6 +151,9 @@ export default function InfoSolicitud() {
   // sesion: permiten volver a mostrar la revision de lo ya cargado en vez
   // de abrir la camara/administrador de archivos de nuevo.
   const [archivosEscaneo, setArchivosEscaneo] = useState({});
+  const [cargandoEscaneo, setCargandoEscaneo] = useState(false);
+  const timerEscaneo = useRef(null);
+  useEffect(() => () => clearTimeout(timerEscaneo.current), []);
   // Si el grupo ACTUAL ya se habia visitado antes, se fuerza la validacion de
   // sus campos para que se vea lo que falta (en la primera visita se deja
   // limpio). Se deriva de `visitados` en cada render -no es un contador
@@ -182,7 +190,9 @@ export default function InfoSolicitud() {
   const escaneado = escaneoCfg ? !!solicitud.documentos[escaneoCfg.doc] : false;
   const camposEscaneo = escaneoCfg ? Object.keys(escaneoCfg.campos) : [];
   const metaEscaneo = escaneoCfg ? solicitud.documentos[escaneoCfg.doc] : null;
-  const subEscaneo = escaneado
+  const subEscaneo = cargandoEscaneo
+    ? 'Cargando…'
+    : escaneado
     ? `${metaEscaneo?.nombre || ''}${metaEscaneo?.tamKB ? ` · ${metaEscaneo.tamKB} KB` : ''}`
     : escaneoCfg && `Escanea el ${escaneoCfg.label.toLowerCase()} para autollenar los campos, o capturalos a mano.`;
 
@@ -204,18 +214,25 @@ export default function InfoSolicitud() {
   }, [tab]);
 
   const aceptarEscaneo = (file) => {
-    setArchivosEscaneo((a) => ({ ...a, [escaneoCfg.doc]: file }));
-    setTabData(tab, { ...escaneoCfg.campos });
-    // Un documento puede autollenar campos de otros tabs (el talon trae el sueldo).
-    for (const [t, vals] of Object.entries(escaneoCfg.camposExtra || {})) {
-      setTabData(t, vals);
-    }
-    toggleDoc(escaneoCfg.doc, {
-      nombre: file?.name || 'Cargado en la captura de la solicitud',
-      tamKB: file ? Math.max(1, Math.round(file.size / 1024)) : 0,
-      tipo: file?.type || 'desconocido',
-    });
-    track('click', { target: `info_${tab}_escaneo_aceptado`, doc: escaneoCfg.doc });
+    const tabDeEscaneo = tab;
+    const cfg = escaneoCfg;
+    setArchivosEscaneo((a) => ({ ...a, [cfg.doc]: file }));
+    setCargandoEscaneo(true);
+    clearTimeout(timerEscaneo.current);
+    timerEscaneo.current = setTimeout(() => {
+      setTabData(tabDeEscaneo, { ...cfg.campos });
+      // Un documento puede autollenar campos de otros tabs (el talon trae el sueldo).
+      for (const [t, vals] of Object.entries(cfg.camposExtra || {})) {
+        setTabData(t, vals);
+      }
+      toggleDoc(cfg.doc, {
+        nombre: file?.name || 'Cargado en la captura de la solicitud',
+        tamKB: file ? Math.max(1, Math.round(file.size / 1024)) : 0,
+        tipo: file?.type || 'desconocido',
+      });
+      setCargandoEscaneo(false);
+      track('click', { target: `info_${tabDeEscaneo}_escaneo_aceptado`, doc: cfg.doc });
+    }, SIM_CARGA_MS);
   };
 
   // Mantiene tabsCompletadas = validez de cada grupo (para el progreso del hub).
@@ -304,6 +321,8 @@ export default function InfoSolicitud() {
                   nombre={escaneoCfg.label}
                   sub={subEscaneo}
                   done={escaneado}
+                  load={cargandoEscaneo}
+                  disabled={cargandoEscaneo}
                   onClick={() => {
                     track('click', { target: `info_${tab}_escanear` });
                     const previo = archivosEscaneo[escaneoCfg.doc];

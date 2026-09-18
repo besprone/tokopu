@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, Content, FooterActions, Button, TopBar, Callout, CerrarSolicitud, DocTrigger } from '../../components/ui.jsx';
@@ -11,6 +11,11 @@ import { useStore } from '../../state/store.jsx';
 import { email as vEmail, telefono as vTel } from '../../domain/validators.js';
 import { OCR_MOCK, TALON_MOCK, CLIENTE_EXISTENTE_MOCK, AUTENTICACION_REMOTA } from '../../domain/catalogs.js';
 import { capacidadPagoQuincenal, mxn } from '../../domain/finance.js';
+
+// Carga simulada de la INE (misma duracion que las demas capturas de
+// documentos), para no dar por hecho que en la vida real la subida es
+// instantanea.
+const SIM_CARGA_MS = 1200;
 
 // Bloque 2: pantallas simuladas (camara, OTP y OCR). Sin logging fino:
 // solo se registran las transiciones de paso como `click`.
@@ -81,6 +86,11 @@ export default function Identificacion() {
   // documento "INE" (bloque 5) con su nombre/tamano/tipo reales en vez de
   // un valor de demostracion.
   const [ineArchivos, setIneArchivos] = useState(null);
+  // Simula el tiempo de "subida" al aceptar el reverso (momento en que la
+  // INE queda guardada), igual que en el resto de capturas de documentos.
+  const [cargandoIne, setCargandoIne] = useState(false);
+  const timerIne = useRef(null);
+  useEffect(() => () => clearTimeout(timerIne.current), []);
   const setDato = (k) => (v) => setDatos((d) => ({ ...d, [k]: v }));
   const [firmaAsesorOk, setFirmaAsesorOk] = useState(false);
   const [guardarFirma, setGuardarFirma] = useState(true);
@@ -470,12 +480,16 @@ export default function Identificacion() {
                 <DocTrigger
                   nombre="INE"
                   sub={
-                    ineEscaneada
+                    cargandoIne
+                      ? 'Cargando…'
+                      : ineEscaneada
                       ? 'Frente y reverso cargados' +
                         (autVia === 'remoto' ? ' · el cliente los cargo desde el link' : '')
                       : 'Adjuntar imagen o PDF'
                   }
                   done={ineEscaneada}
+                  load={cargandoIne}
+                  disabled={cargandoIne}
                   onClick={() => {
                     track('click', { target: 'ident_datos_escanear_ine' });
                     if (ineEscaneada && frenteArchivo) mostrar(frenteArchivo);
@@ -492,8 +506,13 @@ export default function Identificacion() {
               consejos={CONSEJOS_INE}
               autoMostrar={ineArchivos?.reverso}
               onAceptar={(file) => {
-                llenarDesdeINE({ frente: frenteArchivo, reverso: file });
                 setFrenteListo(false);
+                setCargandoIne(true);
+                clearTimeout(timerIne.current);
+                timerIne.current = setTimeout(() => {
+                  llenarDesdeINE({ frente: frenteArchivo, reverso: file });
+                  setCargandoIne(false);
+                }, SIM_CARGA_MS);
               }}
               onCancelar={() => setFrenteListo(false)}
               trigger={(abrir) =>
