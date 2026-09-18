@@ -185,7 +185,7 @@ export default function Documentos() {
                     }}
                     track="doc_demo_adjuntar"
                   >
-                    Adjuntar mi propio archivo →
+                    Escanea de nuevo
                   </Button>
                 </div>
               </div>
