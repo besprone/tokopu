@@ -272,12 +272,16 @@ input[type='radio'] {
   background: rgba(255, 255, 255, 0.06);
 }
 /* El gris de disabled es claro por diseno (calca --line-2/--ink-3), pero eso
-   se ve fuera de lugar sobre el fondo oscuro de las pantallas meta -aqui se
-   adapta a su propia paleta oscura en vez de la clara. */
-.screen.meta .btn:disabled {
-  background: var(--meta-line);
-  border-color: var(--meta-line);
-  color: var(--meta-ink-2);
+   se ve fuera de lugar sobre fondo oscuro: un solido como --meta-line queda
+   casi tan visible como un boton habilitado. Se usa transparencia (blanco a
+   baja opacidad) para que se note "apagado" sin importar que tan oscura sea
+   la superficie de fondo -mismo criterio para .screen.meta y .flowsheet
+   (MetaSheet/Instrucciones), las dos superficies oscuras del sistema. */
+.screen.meta .btn:disabled,
+.flowsheet .btn:disabled {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.35);
 }
 .screen.meta .btn.link {
   color: var(--brand);
