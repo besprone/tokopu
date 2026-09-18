@@ -937,7 +937,7 @@ function CartaSheet({ onClose }) {
     };
   }, [onClose]);
 
-  return (
+  return createPortal(
     <div className="carta-sheet-backdrop" onClick={onClose}>
       <div
         className="carta-sheet"
@@ -955,7 +955,8 @@ function CartaSheet({ onClose }) {
           <img src="/carta_dependencia/carta.webp" alt="Carta de consulta al portal de dependencia" />
         </div>
       </div>
-    </div>
+    </div>,
+    document.getElementById('sheet-portal-root') || document.body
   );
 }
 
