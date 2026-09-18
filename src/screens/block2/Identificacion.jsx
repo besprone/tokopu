@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Screen, StatusBar, Content, FooterActions, Button, TopBar, Callout, CerrarSolicitud } from '../../components/ui.jsx';
+import { Screen, StatusBar, Content, FooterActions, Button, TopBar, Callout, CerrarSolicitud, DocTrigger } from '../../components/ui.jsx';
 import Field from '../../components/Field.jsx';
 import SignaturePad from '../../components/SignaturePad.jsx';
 import CapturaDocumento from '../../components/CapturaDocumento.jsx';
@@ -458,6 +458,7 @@ export default function Identificacion() {
               muestran dos componentes de adjuntar juntos. */}
           {!frenteListo ? (
             <CapturaDocumento
+              key="ine-frente"
               titulo="Capturar el frente de la INE"
               subtitulo="Coloca la parte frontal de la INE del cliente."
               consejos={CONSEJOS_INE}
@@ -466,33 +467,36 @@ export default function Identificacion() {
                 setFrenteListo(true);
               }}
               trigger={(abrir, mostrar) => (
-                <button
-                  type="button"
-                  className={`scan-ine${ineEscaneada ? ' done' : ''}`}
+                <DocTrigger
+                  nombre="INE"
+                  sub={
+                    ineEscaneada
+                      ? 'Frente y reverso cargados' +
+                        (autVia === 'remoto' ? ' · el cliente los cargo desde el link' : '')
+                      : 'Adjuntar imagen o PDF'
+                  }
+                  done={ineEscaneada}
                   onClick={() => {
                     track('click', { target: 'ident_datos_escanear_ine' });
                     if (ineEscaneada && frenteArchivo) mostrar(frenteArchivo);
                     else abrir();
                   }}
-                >
-                  <span>{ineEscaneada ? 'INE escaneada' : 'Escanear INE'}</span>
-                  <span className="scan-ico" aria-hidden="true">
-                    {ineEscaneada ? '✓' : '↑'}
-                  </span>
-                </button>
+                />
               )}
             />
           ) : (
             <CapturaDocumento
+              key="ine-reverso"
               titulo="Capturar el reverso de la INE"
               subtitulo="Ahora la parte trasera de la INE del cliente."
               consejos={CONSEJOS_INE}
+              autoMostrar={ineArchivos?.reverso}
               onAceptar={(file) => {
                 llenarDesdeINE({ frente: frenteArchivo, reverso: file });
                 setFrenteListo(false);
               }}
               onCancelar={() => setFrenteListo(false)}
-              trigger={(abrir, mostrar) => {
+              trigger={(abrir) =>
                 // Sheet flotante (no un boton en la pagina de fondo): el
                 // flujo queda conectado de principio a fin, como en el
                 // diseno original, aunque el paso a reverso siga
@@ -502,8 +506,12 @@ export default function Identificacion() {
                 // que CapturaDocumento: si se queda dentro de <Content> (que
                 // tiene -webkit-overflow-scrolling:touch) Safari en iOS la
                 // confina y sus botones se encimen con los de FooterActions.
-                const reversoPrevio = ineArchivos?.reverso;
-                return createPortal(
+                //
+                // Si ya hay un reverso guardado (ineArchivos.reverso),
+                // CapturaDocumento usa `autoMostrar` y esta sheet nunca
+                // llega a verse -se salta directo a la revision del
+                // reverso, sin este paso intermedio.
+                createPortal(
                   <div className="carta-sheet-backdrop">
                     <div
                       className="carta-sheet docscan-sheet"
@@ -524,27 +532,16 @@ export default function Identificacion() {
                         <p className="lead">Ahora captura el reverso de la INE del cliente.</p>
                       </div>
                       <div className="docscan-actions">
-                        <Button
-                          variant="dark"
-                          onClick={() => (reversoPrevio ? mostrar(reversoPrevio) : abrir())}
-                          track="ident_ine_reverso_continuar"
-                        >
-                          {reversoPrevio ? 'Ver el reverso ya cargado →' : 'Escanear el reverso →'}
+                        <Button variant="dark" onClick={abrir} track="ident_ine_reverso_continuar">
+                          Escanear el reverso →
                         </Button>
                       </div>
                     </div>
                   </div>,
                   document.getElementById('sheet-portal-root') || document.body
-                );
-              }}
+                )
+              }
             />
-          )}
-          {ineEscaneada && !frenteListo && (
-            <p className="tiny scan-hint">
-              Ya esta agregada a la lista de documentos. Toca para volver a escanearla si es
-              necesario.
-              {autVia === 'remoto' && ' El cliente completo su identificacion desde el link.'}
-            </p>
           )}
 
           <div className="sec-label">

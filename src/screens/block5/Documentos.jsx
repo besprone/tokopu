@@ -1,25 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud } from '../../components/ui.jsx';
+import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud, DocTrigger } from '../../components/ui.jsx';
 import CapturaDocumento from '../../components/CapturaDocumento.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore, DOCS_AUTOGRAFA, DOCS_DIGITAL } from '../../state/store.jsx';
 
 // Carga simulada: tiempo de "subida" antes de marcar el documento como listo.
 const SIM_CARGA_MS = 1200;
-
-const IconUpload = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 15V4" />
-    <path d="M7.5 8.5 12 4l4.5 4.5" />
-    <path d="M5 20h14" />
-  </svg>
-);
-const IconCheck = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M5 13l4 4L19 7" />
-  </svg>
-);
 
 export default function Documentos() {
   const navigate = useNavigate();
@@ -130,30 +117,14 @@ export default function Documentos() {
                     subtitulo="Verifica que se lea bien antes de aceptar."
                     onAceptar={(file) => confirmarCaptura(d, file)}
                     trigger={(abrir, mostrar) => (
-                      <button
-                        type="button"
-                        className={`hub-item doc-item${done ? ' done' : ''}`}
+                      <DocTrigger
+                        nombre={d.nombre}
+                        sub={subLinea(meta, load)}
+                        done={done}
+                        load={load}
                         disabled={load}
                         onClick={() => (done && archivos[d.id] ? mostrar(archivos[d.id]) : abrir())}
-                      >
-                        <span className="grow" style={{ minWidth: 0 }}>
-                          <div style={{ fontWeight: 600 }}>{d.nombre}</div>
-                          <div className="sub">{subLinea(meta, load)}</div>
-                        </span>
-                        <span className="doc-trailing">
-                          {load ? (
-                            <span className="spin-sm" aria-label="Cargando" />
-                          ) : done ? (
-                            <span className="doc-ic ok">
-                              <IconCheck />
-                            </span>
-                          ) : (
-                            <span className="doc-ic">
-                              <IconUpload />
-                            </span>
-                          )}
-                        </span>
-                      </button>
+                      />
                     )}
                   />
                 );

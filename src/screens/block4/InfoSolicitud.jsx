@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud } from '../../components/ui.jsx';
+import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud, DocTrigger } from '../../components/ui.jsx';
 import Field from '../../components/Field.jsx';
 import CapturaDocumento from '../../components/CapturaDocumento.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
@@ -181,6 +181,10 @@ export default function InfoSolicitud() {
   const escaneoCfg = ESCANEO_TAB[tab] || null;
   const escaneado = escaneoCfg ? !!solicitud.documentos[escaneoCfg.doc] : false;
   const camposEscaneo = escaneoCfg ? Object.keys(escaneoCfg.campos) : [];
+  const metaEscaneo = escaneoCfg ? solicitud.documentos[escaneoCfg.doc] : null;
+  const subEscaneo = escaneado
+    ? `${metaEscaneo?.nombre || ''}${metaEscaneo?.tamKB ? ` · ${metaEscaneo.tamKB} KB` : ''}`
+    : escaneoCfg && `Escanea el ${escaneoCfg.label.toLowerCase()} para autollenar los campos, o capturalos a mano.`;
 
   useEffect(() => {
     // El celular de contacto viene de la autenticacion (bloque 2) y va bloqueado.
@@ -297,34 +301,19 @@ export default function InfoSolicitud() {
               subtitulo={escaneoCfg.subtitulo}
               onAceptar={aceptarEscaneo}
               trigger={(abrir, mostrar) => (
-                <button
-                  type="button"
-                  className={`scan-ine${escaneado ? ' done' : ''}`}
+                <DocTrigger
+                  nombre={escaneoCfg.label}
+                  sub={subEscaneo}
+                  done={escaneado}
                   onClick={() => {
                     track('click', { target: `info_${tab}_escanear` });
                     const previo = archivosEscaneo[escaneoCfg.doc];
                     if (escaneado && previo) mostrar(previo);
                     else abrir();
                   }}
-                >
-                  <span>{escaneado ? `${escaneoCfg.label} escaneado` : escaneoCfg.label}</span>
-                  <span className="scan-ico" aria-hidden="true">
-                    {escaneado ? '✓' : '↑'}
-                  </span>
-                </button>
+                />
               )}
             />
-            {escaneado ? (
-              <p className="tiny scan-hint">
-                Ya fue agregado a la lista de documentos. Toca para volver a escanearlo si es
-                necesario.
-              </p>
-            ) : (
-              <p className="tiny scan-hint">
-                Escanea el {escaneoCfg.label.toLowerCase()} para autollenar los campos, o
-                capturalos a mano.
-              </p>
-            )}
             <div className="sec-label">{def.titulo}</div>
           </>
         )}

@@ -250,6 +250,51 @@ const IconHelp = () => (
   </svg>
 );
 
+const IconUpload = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 15V4" />
+    <path d="M7.5 8.5 12 4l4.5 4.5" />
+    <path d="M5 20h14" />
+  </svg>
+);
+const IconCheck = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 13l4 4L19 7" />
+  </svg>
+);
+
+// Fila para disparar CapturaDocumento (INE, talon/estado de cuenta,
+// documentos del bloque 5): un solo estilo para "adjuntar un documento" en
+// toda la app, para que no se vea distinto segun la pantalla.
+export function DocTrigger({ nombre, sub, done, load, onClick, disabled }) {
+  return (
+    <button
+      type="button"
+      className={`hub-item doc-item${done ? ' done' : ''}`}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <span className="grow" style={{ minWidth: 0 }}>
+        <div style={{ fontWeight: 600 }}>{nombre}</div>
+        <div className="sub">{sub}</div>
+      </span>
+      <span className="doc-trailing">
+        {load ? (
+          <span className="spin-sm" aria-label="Cargando" />
+        ) : done ? (
+          <span className="doc-ic ok">
+            <IconCheck />
+          </span>
+        ) : (
+          <span className="doc-ic">
+            <IconUpload />
+          </span>
+        )}
+      </span>
+    </button>
+  );
+}
+
 export function AppHeader() {
   const [open, setOpen] = useState(false);
   const { track } = useMetrics();

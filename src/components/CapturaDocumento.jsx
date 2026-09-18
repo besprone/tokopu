@@ -27,6 +27,12 @@ import { Button } from './ui.jsx';
 // ese caso el boton principal dice "Mantener este" en vez de "Aceptar
 // captura". Si el llamador no conserva el archivo (p. ej. tras recargar la
 // pagina) simplemente no hay nada que mostrar y debe usar `abrir()`.
+//
+// `autoMostrar` (opcional): como llamar a `mostrar(file)` apenas se monta,
+// sin pasar por el `trigger` -para saltarse un paso intermedio cuando ya
+// hay un archivo cargado (p. ej. el reverso de la INE al revisar una que
+// ya se cargo antes: ver Identificacion.jsx). Solo tiene efecto en el
+// primer render de esta instancia.
 export default function CapturaDocumento({
   titulo,
   subtitulo,
@@ -35,15 +41,18 @@ export default function CapturaDocumento({
   onAceptar,
   onCancelar,
   consejos,
+  autoMostrar,
 }) {
   const inputRef = useRef(null);
-  const [archivo, setArchivo] = useState(null); // { file, url }
+  const [archivo, setArchivo] = useState(() =>
+    autoMostrar ? { file: autoMostrar, url: URL.createObjectURL(autoMostrar) } : null
+  ); // { file, url }
   const [zoom, setZoom] = useState(false);
   // true cuando la revision muestra un archivo YA aceptado antes (via
-  // `mostrar`, no recien elegido en el selector): el boton principal dice
-  // "Mantener este" en vez de "Aceptar captura", porque no se esta
-  // aceptando nada nuevo.
-  const [origenExistente, setOrigenExistente] = useState(false);
+  // `mostrar`/`autoMostrar`, no recien elegido en el selector): el boton
+  // principal dice "Mantener este" en vez de "Aceptar captura", porque no
+  // se esta aceptando nada nuevo.
+  const [origenExistente, setOrigenExistente] = useState(!!autoMostrar);
   const lastTapRef = useRef(0);
   const archivoRef = useRef(null);
 
