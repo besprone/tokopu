@@ -469,6 +469,7 @@ export default function Identificacion() {
           {!frenteListo ? (
             <CapturaDocumento
               key="ine-frente"
+              docId="ine-frente"
               titulo="Capturar el frente de la INE"
               subtitulo="Coloca la parte frontal de la INE del cliente."
               consejos={CONSEJOS_INE}
@@ -476,7 +477,7 @@ export default function Identificacion() {
                 setFrenteArchivo(file);
                 setFrenteListo(true);
               }}
-              trigger={(abrir, mostrar) => (
+              trigger={(abrir, mostrarSiExiste) => (
                 <DocTrigger
                   nombre="INE"
                   sub={
@@ -490,10 +491,14 @@ export default function Identificacion() {
                   done={ineEscaneada}
                   load={cargandoIne}
                   disabled={cargandoIne}
-                  onClick={() => {
+                  onClick={async () => {
                     track('click', { target: 'ident_datos_escanear_ine' });
-                    if (ineEscaneada && frenteArchivo) mostrar(frenteArchivo);
-                    else abrir();
+                    if (ineEscaneada) {
+                      const encontrado = await mostrarSiExiste();
+                      if (!encontrado) abrir();
+                    } else {
+                      abrir();
+                    }
                   }}
                 />
               )}
@@ -501,10 +506,11 @@ export default function Identificacion() {
           ) : (
             <CapturaDocumento
               key="ine-reverso"
+              docId="ine-reverso"
               titulo="Capturar el reverso de la INE"
               subtitulo="Ahora la parte trasera de la INE del cliente."
               consejos={CONSEJOS_INE}
-              autoMostrar={ineArchivos?.reverso}
+              autoMostrarSiExiste
               onAceptar={(file) => {
                 setFrenteListo(false);
                 setCargandoIne(true);
@@ -526,10 +532,10 @@ export default function Identificacion() {
                 // tiene -webkit-overflow-scrolling:touch) Safari en iOS la
                 // confina y sus botones se encimen con los de FooterActions.
                 //
-                // Si ya hay un reverso guardado (ineArchivos.reverso),
-                // CapturaDocumento usa `autoMostrar` y esta sheet nunca
-                // llega a verse -se salta directo a la revision del
-                // reverso, sin este paso intermedio.
+                // Si ya hay un reverso guardado en IndexedDB para este
+                // docId, `autoMostrarSiExiste` lo encuentra antes de que
+                // esta sheet llegue a pintarse -se salta directo a la
+                // revision del reverso, sin este paso intermedio.
                 createPortal(
                   <div className="carta-sheet-backdrop">
                     <div

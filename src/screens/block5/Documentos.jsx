@@ -14,11 +14,7 @@ export default function Documentos() {
   const { track } = useMetrics();
   const { solicitud, toggleDoc } = useStore();
   const [cargando, setCargando] = useState({});
-  // Archivos ya aceptados, en memoria de esta sesion (no sobreviven un
-  // reload): permiten volver a mostrar la revision de un documento ya
-  // cargado en vez de abrir la camara/administrador de archivos de nuevo.
-  const [archivos, setArchivos] = useState({});
-  // Documento "done" tocado sin un File real en memoria (autocompletado demo,
+  // Documento "done" tocado sin un File real en el cache (autocompletado demo,
   // o cargado desde otra pantalla como la INE): { doc, abrir } mientras se
   // muestra la confirmacion ligera de solo texto en vez de saltar directo a
   // la camara/administrador de archivos.
@@ -67,7 +63,6 @@ export default function Documentos() {
 
   const confirmarCaptura = (d, file) => {
     const reemplazo = !!solicitud.documentos[d.id];
-    setArchivos((a) => ({ ...a, [d.id]: file }));
     setCargando((c) => ({ ...c, [d.id]: true }));
     clearTimeout(timers.current[d.id]);
     timers.current[d.id] = setTimeout(() => {
@@ -119,22 +114,25 @@ export default function Documentos() {
                 return (
                   <CapturaDocumento
                     key={d.id}
+                    docId={d.id}
                     titulo={d.nombre}
                     subtitulo="Verifica que se lea bien antes de aceptar."
                     onAceptar={(file) => confirmarCaptura(d, file)}
-                    trigger={(abrir, mostrar) => (
+                    trigger={(abrir, mostrarSiExiste) => (
                       <DocTrigger
                         nombre={d.nombre}
                         sub={subLinea(meta, load)}
                         done={done}
                         load={load}
                         disabled={load}
-                        onClick={() => {
+                        onClick={async () => {
                           if (!done) return abrir();
-                          if (archivos[d.id]) return mostrar(archivos[d.id]);
-                          // done pero sin File real en memoria (autocompletado
-                          // demo, o cargado desde otra pantalla): confirmacion
-                          // ligera en vez de saltar directo a la camara.
+                          const encontrado = await mostrarSiExiste();
+                          if (encontrado) return;
+                          // done pero sin File real en el cache (autocompletado
+                          // demo, o cargado desde otra pantalla como la INE):
+                          // confirmacion ligera en vez de saltar directo a la
+                          // camara.
                           setRevisarDemo({ doc: d, abrir });
                         }}
                       />

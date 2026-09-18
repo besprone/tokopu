@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MetaSheet } from '../components/ui.jsx';
 import { useMetrics } from '../metrics/MetricsProvider.jsx';
 import { useStore } from '../state/store.jsx';
+import { borrarTodosLosArchivos } from '../state/archivosDB.js';
 import { ORDEN_GRUPOS } from '../flow.js';
 import Home from './block1/Home.jsx';
 
@@ -26,9 +27,11 @@ export default function Bienvenida() {
       return;
     }
     // Limpia TODO: estado del store en memoria (no solo localStorage) para que
-    // el hub arranque vacio, y la sesion de metricas.
+    // el hub arranque vacio, la sesion de metricas, y los archivos (fotos)
+    // que hubiera guardado una prueba anterior en este mismo dispositivo.
     reset();
     localStorage.removeItem('toko.solicitud.v1');
+    borrarTodosLosArchivos();
     resetSession({ participante: nombre.trim(), modoSesion });
     track('click', { target: 'iniciar_prueba' });
     if (modoSesion === 'remota') {

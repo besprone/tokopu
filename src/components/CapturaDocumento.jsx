@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from './ui.jsx';
+import { guardarArchivo, obtenerArchivo } from '../state/archivosDB.js';
 
 // Captura de un documento: abre DIRECTO el selector nativo del telefono (el
 // propio SO ya ofrece "Tomar foto" o "Elegir de archivos/galeria", no hace
@@ -20,20 +21,25 @@ import { Button } from './ui.jsx';
 // captura (p. ej. frente -> reverso de la INE) tampoco puede auto-abrirse
 // sola: hace falta un boton visible para el segundo toque tambien.
 //
-// `trigger` recibe (abrir, mostrar): `abrir` dispara el selector nativo;
-// `mostrar(file)` reabre la revision de un archivo YA aceptado (que el
-// llamador debe conservar el mismo en memoria) sin tocar la camara/
-// administrador de archivos -para "volver a ver" lo que ya se cargo. En
-// ese caso el boton principal dice "Mantener este" en vez de "Aceptar
-// captura". Si el llamador no conserva el archivo (p. ej. tras recargar la
-// pagina) simplemente no hay nada que mostrar y debe usar `abrir()`.
-//
-// `autoMostrar` (opcional): como llamar a `mostrar(file)` apenas se monta,
-// sin pasar por el `trigger` -para saltarse un paso intermedio cuando ya
-// hay un archivo cargado (p. ej. el reverso de la INE al revisar una que
-// ya se cargo antes: ver Identificacion.jsx). Solo tiene efecto en el
-// primer render de esta instancia.
+// `docId` (obligatorio): identifica el documento en el cache compartido de
+// IndexedDB (archivosDB.js). Al aceptar una captura, el archivo se guarda
+// ahi solo -el llamador no necesita mantener su propio cache en memoria.
+// `trigger` recibe (abrir, mostrarSiExiste): `abrir` dispara el selector
+// nativo; `mostrarSiExiste()` (async) busca en el cache un archivo YA
+// aceptado para este docId -en esta pantalla o en cualquier otra- y si lo
+// encuentra abre su revision (sin tocar la camara), devolviendo true; si no
+// hay nada devuelve false, para que el llamador decida un fallback (p. ej.
+// una confirmacion de solo texto). En ese caso el boton principal de la
+// revision dice "Mantener este" en vez de "Aceptar captura ✓", porque no se
+// esta aceptando nada nuevo.
+// `autoMostrarSiExiste`: como llamar a `mostrarSiExiste()` apenas se monta,
+// sin pasar por el trigger -para saltarse un paso intermedio cuando ya hay
+// un archivo guardado (p. ej. el reverso de la INE al revisar una que ya se
+// cargo antes: ver Identificacion.jsx). Mientras se resuelve esa consulta
+// (siempre casi instantanea) no se dibuja nada, ni el trigger, para evitar
+// parpadeos.
 export default function CapturaDocumento({
+  docId,
   titulo,
   subtitulo,
   accept = 'image/*',
@@ -41,18 +47,16 @@ export default function CapturaDocumento({
   onAceptar,
   onCancelar,
   consejos,
-  autoMostrar,
+  autoMostrarSiExiste,
 }) {
   const inputRef = useRef(null);
-  const [archivo, setArchivo] = useState(() =>
-    autoMostrar ? { file: autoMostrar, url: URL.createObjectURL(autoMostrar) } : null
-  ); // { file, url }
+  const [archivo, setArchivo] = useState(null); // { file, url }
   const [zoom, setZoom] = useState(false);
   // true cuando la revision muestra un archivo YA aceptado antes (via
-  // `mostrar`/`autoMostrar`, no recien elegido en el selector): el boton
-  // principal dice "Mantener este" en vez de "Aceptar captura", porque no
-  // se esta aceptando nada nuevo.
-  const [origenExistente, setOrigenExistente] = useState(!!autoMostrar);
+  // mostrarSiExiste/autoMostrarSiExiste, no recien elegido en el selector):
+  // el boton principal dice "Mantener este" en vez de "Aceptar captura".
+  const [origenExistente, setOrigenExistente] = useState(false);
+  const [listo, setListo] = useState(!autoMostrarSiExiste);
   const lastTapRef = useRef(0);
   const archivoRef = useRef(null);
 
@@ -68,17 +72,32 @@ export default function CapturaDocumento({
     };
   }, []);
 
+  useEffect(() => {
+    if (!autoMostrarSiExiste) return;
+    let cancelado = false;
+    obtenerArchivo(docId).then((file) => {
+      if (cancelado) return;
+      if (file) {
+        setArchivo({ file, url: URL.createObjectURL(file) });
+        setOrigenExistente(true);
+      }
+      setListo(true);
+    });
+    return () => {
+      cancelado = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const abrir = () => inputRef.current?.click();
 
-  // Muestra la revision de un archivo YA aceptado antes (en memoria de esta
-  // misma sesion, p. ej. para "volver a ver" un documento ya cargado) sin
-  // pasar por el selector nativo: no hace falta que sea sincrono con un
-  // toque, a diferencia de `abrir`.
-  const mostrar = (file) => {
-    if (!file) return;
+  const mostrarSiExiste = async () => {
+    const file = await obtenerArchivo(docId);
+    if (!file) return false;
     setArchivo({ file, url: URL.createObjectURL(file) });
     setZoom(false);
     setOrigenExistente(true);
+    return true;
   };
 
   const onChangeInput = (e) => {
@@ -114,6 +133,7 @@ export default function CapturaDocumento({
   const aceptar = () => {
     const file = archivo.file;
     cerrar();
+    guardarArchivo(docId, file);
     onAceptar?.(file);
   };
 
@@ -126,7 +146,7 @@ export default function CapturaDocumento({
   return (
     <>
       <input ref={inputRef} type="file" accept={accept} hidden onChange={onChangeInput} />
-      {trigger(abrir, mostrar)}
+      {listo && trigger(abrir, mostrarSiExiste)}
 
       {archivo &&
         createPortal(

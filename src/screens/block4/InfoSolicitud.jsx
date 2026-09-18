@@ -147,10 +147,6 @@ export default function InfoSolicitud() {
   // el grupo en el que estas parado nunca se marca "visitado" por si mismo,
   // solo los que ya dejaste atras.
   const [visitados, setVisitados] = useState(() => new Set());
-  // Archivos ya aceptados (talon/estado de cuenta), en memoria de esta
-  // sesion: permiten volver a mostrar la revision de lo ya cargado en vez
-  // de abrir la camara/administrador de archivos de nuevo.
-  const [archivosEscaneo, setArchivosEscaneo] = useState({});
   const [cargandoEscaneo, setCargandoEscaneo] = useState(false);
   const timerEscaneo = useRef(null);
   useEffect(() => () => clearTimeout(timerEscaneo.current), []);
@@ -216,7 +212,6 @@ export default function InfoSolicitud() {
   const aceptarEscaneo = (file) => {
     const tabDeEscaneo = tab;
     const cfg = escaneoCfg;
-    setArchivosEscaneo((a) => ({ ...a, [cfg.doc]: file }));
     setCargandoEscaneo(true);
     clearTimeout(timerEscaneo.current);
     timerEscaneo.current = setTimeout(() => {
@@ -313,21 +308,25 @@ export default function InfoSolicitud() {
               Escaneo
             </div>
             <CapturaDocumento
+              docId={escaneoCfg.doc}
               titulo={escaneoCfg.titulo}
               subtitulo={escaneoCfg.subtitulo}
               onAceptar={aceptarEscaneo}
-              trigger={(abrir, mostrar) => (
+              trigger={(abrir, mostrarSiExiste) => (
                 <DocTrigger
                   nombre={escaneoCfg.label}
                   sub={subEscaneo}
                   done={escaneado}
                   load={cargandoEscaneo}
                   disabled={cargandoEscaneo}
-                  onClick={() => {
+                  onClick={async () => {
                     track('click', { target: `info_${tab}_escanear` });
-                    const previo = archivosEscaneo[escaneoCfg.doc];
-                    if (escaneado && previo) mostrar(previo);
-                    else abrir();
+                    if (escaneado) {
+                      const encontrado = await mostrarSiExiste();
+                      if (!encontrado) abrir();
+                    } else {
+                      abrir();
+                    }
                   }}
                 />
               )}

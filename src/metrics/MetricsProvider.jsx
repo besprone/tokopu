@@ -17,6 +17,7 @@ import {
   enviarParcialAlOcultar,
 } from './track.js';
 import { ORDEN_GRUPOS, GRUPOS_PRUEBA } from '../flow.js';
+import { borrarTodosLosArchivos } from '../state/archivosDB.js';
 
 const MetricsCtx = createContext(null);
 
@@ -64,8 +65,14 @@ export function MetricsProvider({ children }) {
       exportarJSON,
       susResultado,
       tareas,
-      // Cierra la sesion del participante: la guarda local y la manda al backend.
-      finalizarSesion: () => enviarSesion(construirSesion({ completa: true })),
+      // Cierra la sesion del participante: la guarda local y la manda al
+      // backend, y vacia el cache de archivos (fotos) de esta sesion -no
+      // deben quedar disponibles para una prueba siguiente en el mismo
+      // dispositivo.
+      finalizarSesion: () => {
+        enviarSesion(construirSesion({ completa: true }));
+        borrarTodosLosArchivos();
+      },
       // Marca el fin de un grupo de prueba y decide a donde seguir segun el
       // modo de la sesion:
       //  - remota: siempre pasa por su SEQ (la propia pantalla de SEQ dispara
@@ -88,6 +95,7 @@ export function MetricsProvider({ children }) {
           return grupo.next;
         }
         enviarSesion(construirSesion({ completa: true }));
+        borrarTodosLosArchivos();
         return '/gracias';
       },
     }),
