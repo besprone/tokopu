@@ -5,10 +5,31 @@ import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolici
 import CapturaDocumento from '../../components/CapturaDocumento.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore, DOCS_AUTOGRAFA, DOCS_DIGITAL } from '../../state/store.jsx';
-import { obtenerArchivo } from '../../state/archivosDB.js';
+import { obtenerArchivo, guardarArchivoDeMuestra } from '../../state/archivosDB.js';
 
 // Carga simulada: tiempo de "subida" antes de marcar el documento como listo.
 const SIM_CARGA_MS = 1200;
+
+// Imagenes de muestra para el autocompletado demo: nunca hubo una foto real,
+// pero asi se puede revisar algo en vez de solo texto. INE guarda frente y
+// reverso (ver guardarImagenDemoPara).
+const IMAGEN_DEMO = {
+  'edo-cuenta': { url: '/estado_cuenta/edocuenta.webp', nombre: 'estado-cuenta-muestra.webp' },
+  'talon-1': { url: '/talon/talon.webp', nombre: 'talon-muestra.webp' },
+  'talon-2': { url: '/talon/talon.webp', nombre: 'talon-muestra.webp' },
+};
+const IMAGEN_DEMO_GENERICA = { url: '/documentos-demo/generico.svg', nombre: 'documento-muestra.svg' };
+
+function guardarImagenDemoPara(id) {
+  if (id === 'ine') {
+    return Promise.all([
+      guardarArchivoDeMuestra('ine-frente', '/ine/frente.webp', 'ine-frente-muestra.webp'),
+      guardarArchivoDeMuestra('ine-reverso', '/ine/reverso.jpeg', 'ine-reverso-muestra.jpeg'),
+    ]);
+  }
+  const cfg = IMAGEN_DEMO[id] || IMAGEN_DEMO_GENERICA;
+  return guardarArchivoDeMuestra(id, cfg.url, cfg.nombre);
+}
 
 export default function Documentos() {
   const navigate = useNavigate();
@@ -55,9 +76,10 @@ export default function Documentos() {
     });
     clearTimeout(timers.current.__resto);
     timers.current.__resto = setTimeout(() => {
-      pend.forEach((d) =>
-        toggleDoc(d.id, { nombre: 'cargado con el comprobante', tamKB: 0, tipo: 'demo', demo: true, auto: true })
-      );
+      pend.forEach((d) => {
+        toggleDoc(d.id, { nombre: 'cargado con el comprobante', tamKB: 0, tipo: 'demo', demo: true, auto: true });
+        guardarImagenDemoPara(d.id);
+      });
       setCargando((c) => {
         const n = { ...c };
         pend.forEach((d) => (n[d.id] = false));

@@ -8,6 +8,7 @@ import CapturaDocumento from '../../components/CapturaDocumento.jsx';
 import OtpEspera from './OtpEspera.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore } from '../../state/store.jsx';
+import { guardarArchivoDeMuestra } from '../../state/archivosDB.js';
 import { email as vEmail, telefono as vTel } from '../../domain/validators.js';
 import { OCR_MOCK, TALON_MOCK, CLIENTE_EXISTENTE_MOCK, AUTENTICACION_REMOTA } from '../../domain/catalogs.js';
 import { capacidadPagoQuincenal, mxn } from '../../domain/finance.js';
@@ -442,9 +443,14 @@ export default function Identificacion() {
           });
           if (identOk) {
             // Como si el OCR del INE del cliente ya hubiera corrido: 'datos_captura'
-            // llega pre-llenado y el INE ya cuenta como documento.
+            // llega pre-llenado y el INE ya cuenta como documento. El cliente
+            // nunca tomo una foto de verdad en este flujo simulado, asi que
+            // se guardan unas de muestra (mismas que usa el bloque 5) para
+            // poder revisarlas en vez de solo ver texto.
             llenarDesdeINE();
             toggleDoc('ine', { nombre: 'Capturada en la identificacion', demo: true });
+            guardarArchivoDeMuestra('ine-frente', '/ine/frente.webp', 'ine-frente-muestra.webp');
+            guardarArchivoDeMuestra('ine-reverso', '/ine/reverso.jpeg', 'ine-reverso-muestra.jpeg');
           }
           ir('datos_captura');
         }}
