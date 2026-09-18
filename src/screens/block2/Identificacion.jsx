@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Screen, StatusBar, Content, FooterActions, Button, TopBar, Callout, CerrarSolicitud, DocTrigger } from '../../components/ui.jsx';
+import { Screen, StatusBar, Content, FooterActions, Button, IconButton, TopBar, Callout, CerrarSolicitud, DocTrigger } from '../../components/ui.jsx';
 import Field from '../../components/Field.jsx';
 import SignaturePad from '../../components/SignaturePad.jsx';
 import CapturaDocumento from '../../components/CapturaDocumento.jsx';
@@ -306,13 +306,13 @@ export default function Identificacion() {
             <div className="summary-row"><span className="k">Nacionalidad</span><span className="v">{c.nacionalidad}</span></div>
           </div>
           <p className="small" style={{ margin: '16px 0 4px' }}>¿Los datos no corresponden?</p>
-          <button
-            className="btn link"
+          <Button
+            variant="link"
             style={{ padding: 0, fontWeight: 700 }}
             onClick={() => ir('contacto')}
           >
             Volver a capturar
-          </button>
+          </Button>
         </Content>
         <FooterActions>
           <Button
@@ -550,20 +550,19 @@ export default function Identificacion() {
                       aria-modal="true"
                       aria-label="Capturar el reverso de la INE"
                     >
-                      <button
-                        type="button"
+                      <IconButton
                         className="carta-sheet-close"
                         aria-label="Cerrar"
                         onClick={() => setFrenteListo(false)}
                       >
                         ✕
-                      </button>
+                      </IconButton>
                       <div className="docscan-body">
                         <h2>Frente capturado ✓</h2>
                         <p className="lead">Ahora captura el reverso de la INE del cliente.</p>
                       </div>
                       <div className="docscan-actions">
-                        <Button variant="dark" onClick={abrir} track="ident_ine_reverso_continuar">
+                        <Button variant="primary" onClick={abrir} track="ident_ine_reverso_continuar">
                           Escanear el reverso →
                         </Button>
                       </div>
@@ -890,7 +889,7 @@ export default function Identificacion() {
             El cliente tiene una capacidad de pago de <strong>{mxn(cap)}mxn</strong>
           </p>
           <div className="grow" />
-          <Button variant="dark" onClick={terminar} track="ident_resultado_ok_terminar">
+          <Button variant="primary" onClick={terminar} track="ident_resultado_ok_terminar">
             Continuar →
           </Button>
         </div>
@@ -947,9 +946,9 @@ function CartaSheet({ onClose }) {
         aria-label="Carta de consulta al portal de dependencia"
         onClick={(e) => e.stopPropagation()}
       >
-        <button type="button" className="carta-sheet-close" aria-label="Cerrar" onClick={onClose}>
+        <IconButton className="carta-sheet-close" aria-label="Cerrar" onClick={onClose}>
           ✕
-        </button>
+        </IconButton>
         <h2>Carta de consulta al portal de dependencia</h2>
         <p className="lead">Podras consultar la carta en el espacio inferior.</p>
         <div className="carta-doc">

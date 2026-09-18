@@ -104,7 +104,7 @@ export default function Completada() {
           </div>
         </div>
         <div className="grow" />
-        <Button variant="dark" onClick={terminar} track="terminar_solicitud">
+        <Button variant="primary" onClick={terminar} track="terminar_solicitud">
           Terminar →
         </Button>
       </div>

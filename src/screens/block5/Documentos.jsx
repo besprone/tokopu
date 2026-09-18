@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud, DocTrigger } from '../../components/ui.jsx';
+import { Screen, StatusBar, Content, FooterActions, Button, IconButton, TopBar, CerrarSolicitud, DocTrigger } from '../../components/ui.jsx';
 import CapturaDocumento from '../../components/CapturaDocumento.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore, DOCS_AUTOGRAFA, DOCS_DIGITAL } from '../../state/store.jsx';
@@ -222,20 +222,19 @@ export default function Documentos() {
                               aria-modal="true"
                               aria-label="Capturar el reverso de la INE"
                             >
-                              <button
-                                type="button"
+                              <IconButton
                                 className="carta-sheet-close"
                                 aria-label="Cerrar"
                                 onClick={() => setIneFrenteListo(false)}
                               >
                                 ✕
-                              </button>
+                              </IconButton>
                               <div className="docscan-body">
                                 <h2>Frente listo ✓</h2>
                                 <p className="lead">Ahora el reverso de la INE.</p>
                               </div>
                               <div className="docscan-actions">
-                                <Button variant="dark" onClick={abrir} track="doc_ine_reverso_continuar">
+                                <Button variant="primary" onClick={abrir} track="doc_ine_reverso_continuar">
                                   Escanear el reverso →
                                 </Button>
                               </div>
@@ -291,14 +290,13 @@ export default function Documentos() {
                 aria-label={revisarDemo.doc.nombre}
                 onClick={(e) => e.stopPropagation()}
               >
-                <button
-                  type="button"
+                <IconButton
                   className="carta-sheet-close"
                   aria-label="Cerrar"
                   onClick={() => setRevisarDemo(null)}
                 >
                   ✕
-                </button>
+                </IconButton>
                 <div className="docscan-body">
                   <h2>{revisarDemo.doc.nombre}</h2>
                   <p className="lead">
@@ -314,7 +312,7 @@ export default function Documentos() {
                     Mantener este
                   </Button>
                   <Button
-                    variant="dark"
+                    variant="primary"
                     onClick={() => {
                       const { abrir } = revisarDemo;
                       setRevisarDemo(null);

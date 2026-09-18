@@ -88,8 +88,8 @@ export default function ConfirmaDatos() {
             <div className="card" key={s.tab} style={{ marginBottom: 12 }}>
               <div className="row between" style={{ marginBottom: 4 }}>
                 <strong>{s.titulo}</strong>
-                <button
-                  className="btn link"
+                <Button
+                  variant="link"
                   style={{ padding: 0 }}
                   onClick={() => {
                     track('click', { target: `editar_${s.tab}` });
@@ -97,7 +97,7 @@ export default function ConfirmaDatos() {
                   }}
                 >
                   Editar
-                </button>
+                </Button>
               </div>
               {s.filas(d).map(([k, v]) => (
                 <div className="summary-row" key={k}>

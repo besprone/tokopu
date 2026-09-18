@@ -105,7 +105,7 @@ export default function FirmaDigital() {
               Via SMS
             </Button>
             <Button
-              variant="dark"
+              variant="primary"
               className="grow"
               onClick={() => enviarLink('whatsapp')}
               track="firma_digital_whatsapp"
@@ -185,12 +185,12 @@ export default function FirmaDigital() {
             </p>
             {modo && (
               <div className="row" style={{ gap: 14, justifyContent: 'center' }}>
-                <button className="btn link" onClick={() => adelantar(1)}>
+                <Button variant="link" onClick={() => adelantar(1)}>
                   avanzar etapa
-                </button>
-                <button className="btn link" onClick={completarAhora}>
+                </Button>
+                <Button variant="link" onClick={completarAhora}>
                   completar ahora
-                </button>
+                </Button>
               </div>
             )}
           </>

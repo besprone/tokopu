@@ -100,8 +100,8 @@ export default function ModSesiones() {
         <div className="row between">
           <h1 style={{ margin: 0 }}>Sesiones ({sesiones.length})</h1>
           {modo === 'api' && (
-            <button
-              className="btn link"
+            <Button
+              variant="link"
               style={{ padding: 0 }}
               onClick={() => {
                 cerrarSesionMod();
@@ -109,7 +109,7 @@ export default function ModSesiones() {
               }}
             >
               Cerrar sesion
-            </button>
+            </Button>
           )}
         </div>
 
@@ -150,14 +150,14 @@ export default function ModSesiones() {
 
         <div className="stack" style={{ gap: 8, marginTop: 18 }}>
           <div className="row" style={{ gap: 8 }}>
-            <Button variant="ghost" className="sm grow" onClick={() => descargar('json')}>
+            <Button variant="ghost" size="sm" className="grow" onClick={() => descargar('json')}>
               Descargar todo · JSON
             </Button>
-            <Button variant="ghost" className="sm grow" onClick={() => descargar('csv')}>
+            <Button variant="ghost" size="sm" className="grow" onClick={() => descargar('csv')}>
               Descargar todo · CSV
             </Button>
           </div>
-          <Button variant="ghost" className="sm" onClick={borrar}>
+          <Button variant="ghost" size="sm" onClick={borrar}>
             Borrar todas las sesiones
           </Button>
         </div>

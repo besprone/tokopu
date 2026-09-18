@@ -33,8 +33,7 @@ export function CerrarSolicitud() {
 
   return (
     <>
-      <button
-        className="topbar-x"
+      <IconButton
         aria-label="Cerrar solicitud"
         onClick={() => {
           track('click', { target: 'cerrar_solicitud', desde: location.pathname });
@@ -42,7 +41,7 @@ export function CerrarSolicitud() {
         }}
       >
         ✕
-      </button>
+      </IconButton>
       {open && (
         <div className="panel-backdrop" onClick={() => setOpen(false)}>
           <div
@@ -63,9 +62,9 @@ export function CerrarSolicitud() {
               <Button variant="ghost" onClick={descartar}>
                 Salir sin guardar
               </Button>
-              <button className="btn link" onClick={() => setOpen(false)}>
+              <Button variant="link" onClick={() => setOpen(false)}>
                 Cancelar
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -300,22 +299,22 @@ export function AppHeader() {
   const { track } = useMetrics();
   return (
     <div className="app-header">
-      <button
-        className="header-help"
+      <IconButton
         aria-label="Ayuda"
         onClick={() => track('click', { target: 'ayuda' })}
       >
         <IconHelp />
-      </button>
-      <button
-        className="header-add"
+      </IconButton>
+      <Button
+        variant="primary"
+        size="sm"
         onClick={() => {
           track('click', { target: 'fab_nueva' });
           setOpen(true);
         }}
       >
         <span aria-hidden="true">+</span> Nueva
-      </button>
+      </Button>
       <NuevaSheet open={open} onClose={() => setOpen(false)} />
     </div>
   );
@@ -366,16 +365,19 @@ export function TopBar({ title, onBack, onClose, right }) {
       {title ? <strong className="small">{title}</strong> : <span className="grow" />}
       {right ??
         (onClose === undefined ? (
-          <button
+          <IconButton
+            aria-label="Cerrar"
             onClick={() => {
               track('click', { target: 'cerrar' });
               navigate('/inicio');
             }}
           >
             ✕
-          </button>
+          </IconButton>
         ) : onClose ? (
-          <button onClick={onClose}>✕</button>
+          <IconButton aria-label="Cerrar" onClick={onClose}>
+            ✕
+          </IconButton>
         ) : (
           <span style={{ width: 24 }} />
         ))}
@@ -424,9 +426,9 @@ export function MetaSheet({ label, children, onClose }) {
           <div className="flowsheet-top">
             <span className="flowsheet-label">{label}</span>
             {dismissible && (
-              <button type="button" className="btn ghost sm" onClick={() => onClose()}>
+              <Button variant="ghost" size="sm" onClick={() => onClose()}>
                 Cerrar
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -440,11 +442,36 @@ export function FooterActions({ children }) {
   return <div className="footer-actions">{children}</div>;
 }
 
-export function Button({ variant = 'primary', className = '', track: trackName, children, onClick, ...rest }) {
+// Boton unico y reutilizable de todo el sistema. variant: primary (amarillo,
+// la accion principal) / secondary (tonal, relleno suave del amarillo) /
+// ghost (transparente con borde) / link (texto azul subrayado, sin fondo).
+// size: sin size = "md" (default); "sm" para espacios chicos. El disabled
+// (gris plano, igual en las 3 variantes con fondo) lo resuelve el CSS solo.
+export function Button({ variant = 'primary', size, className = '', track: trackName, children, onClick, ...rest }) {
   const { track } = useMetrics();
   return (
     <button
-      className={`btn ${variant} ${className}`}
+      className={`btn ${variant}${size ? ` ${size}` : ''} ${className}`}
+      onClick={(e) => {
+        if (trackName) track('click', { target: trackName });
+        onClick?.(e);
+      }}
+      {...rest}
+    >
+      {children}
+    </button>
+  );
+}
+
+// Version icon-only del mismo sistema: mismas 3 variantes (default ghost,
+// el uso mas comun para iconos de chrome como regresar/cerrar), cuadrado
+// fijo (nunca circulo) y el mismo disabled gris.
+export function IconButton({ variant = 'ghost', className = '', track: trackName, children, onClick, ...rest }) {
+  const { track } = useMetrics();
+  return (
+    <button
+      type="button"
+      className={`icon-btn ${variant} ${className}`}
       onClick={(e) => {
         if (trackName) track('click', { target: trackName });
         onClick?.(e);

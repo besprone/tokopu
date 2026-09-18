@@ -7,6 +7,11 @@
   --brand-600: #e0b200;
   --brand-50: #fdf1c4;
   --brand-ink: #7a5d00;
+  /* Azul reservado solo para links de texto inline (nunca fondos ni bordes de
+     botones) -unico acento fuera de la familia amarillo/ink del resto del
+     sistema. */
+  --link: #1d4ed8;
+  --link-hover: #1e40af;
   --ink: #14181f;
   --ink-2: #4a5260;
   --ink-3: #7b8494;
@@ -266,6 +271,14 @@ input[type='radio'] {
 .screen.meta .btn.ghost:hover {
   background: rgba(255, 255, 255, 0.06);
 }
+/* El gris de disabled es claro por diseno (calca --line-2/--ink-3), pero eso
+   se ve fuera de lugar sobre el fondo oscuro de las pantallas meta -aqui se
+   adapta a su propia paleta oscura en vez de la clara. */
+.screen.meta .btn:disabled {
+  background: var(--meta-line);
+  border-color: var(--meta-line);
+  color: var(--meta-ink-2);
+}
 .screen.meta .btn.link {
   color: var(--brand);
 }
@@ -461,7 +474,13 @@ h2,
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* ---------------- Buttons ---------------- */
+/* ---------------- Buttons ----------------
+   Sistema unico de botones: primary / secondary / ghost / link, mas el
+   tamano sm (el default sin .sm se piensa como "md"). Mismo --radius-sm en
+   todos -nunca pill- y mismo tratamiento de disabled (gris plano, no solo
+   "la misma opacidad, mas transparente"). Los icon-btn (.icon-btn, mas
+   abajo junto a los demas estilos de icono) comparten las 3 variantes y el
+   mismo disabled. */
 
 .btn {
   display: inline-flex;
@@ -472,18 +491,12 @@ h2,
   padding: 14px 18px;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
-  background: var(--ink);
-  color: #fff;
   font-weight: 600;
   font-size: 15px;
   transition: transform 0.04s ease, opacity 0.15s ease, background 0.15s ease;
 }
-.btn:active {
+.btn:active:not(:disabled) {
   transform: translateY(1px);
-}
-.btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 .btn.primary {
   background: var(--brand);
@@ -492,28 +505,109 @@ h2,
 .btn.primary:hover:not(:disabled) {
   background: var(--brand-600);
 }
-.btn.dark {
-  background: var(--ink);
+/* Secondary: tonal -relleno suave del amarillo de marca, texto en su tono
+   oscuro (--brand-ink), nunca negro plano encima. No es "un primary
+   deslavado", es la misma familia de color en otra intensidad -mismo
+   patron que ya usabamos en .likert button.sel. */
+.btn.secondary {
+  background: rgba(245, 197, 24, 0.16);
+  color: var(--brand-ink);
+}
+.btn.secondary:hover:not(:disabled) {
+  background: rgba(245, 197, 24, 0.26);
 }
 .btn.ghost {
   background: transparent;
   color: var(--ink);
   border-color: var(--line);
 }
-.btn.ghost:hover {
+.btn.ghost:hover:not(:disabled) {
   background: var(--line-2);
 }
 .btn.link {
   background: none;
-  color: var(--brand-ink);
+  border: none;
+  color: var(--link);
   width: auto;
   padding: 8px 4px;
   text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.btn.link:hover:not(:disabled) {
+  color: var(--link-hover);
+  background: none;
+}
+/* Disabled: gris plano parejo sin importar la variante. */
+.btn:disabled {
+  background: var(--line-2);
+  border-color: var(--line-2);
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
+.btn.link:disabled {
+  background: none;
+  border: none;
+  color: var(--ink-3);
 }
 .btn.sm {
   width: auto;
   padding: 9px 14px;
   font-size: 13px;
+  gap: 6px;
+}
+
+/* ---------------- Icon buttons ----------------
+   Mismas 3 variantes y el mismo disabled que .btn, en un cuadrado fijo
+   (mismo --radius-sm, nunca circulo). Ghost sin borde en reposo -a
+   diferencia del ghost de texto- porque en chrome denso (topbar, cierres de
+   sheet) un borde en cada icono se ve recargado; el fondo al :hover ya
+   marca que es interactivo. */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 17px;
+  line-height: 1;
+  transition: background 0.15s ease;
+}
+.icon-btn.primary {
+  background: var(--brand);
+  color: var(--ink);
+}
+.icon-btn.primary:hover:not(:disabled) {
+  background: var(--brand-600);
+}
+.icon-btn.secondary {
+  background: rgba(245, 197, 24, 0.16);
+  color: var(--brand-ink);
+}
+.icon-btn.secondary:hover:not(:disabled) {
+  background: rgba(245, 197, 24, 0.26);
+}
+.icon-btn.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--ink-2);
+}
+.icon-btn.ghost:hover:not(:disabled) {
+  background: var(--line-2);
+}
+.icon-btn:disabled {
+  background: var(--line-2);
+  border-color: var(--line-2);
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* ---------------- Cards / lists ---------------- */
@@ -1286,40 +1380,8 @@ input[type='range']::-moz-range-thumb {
   padding: 12px 18px 4px;
   background: var(--bg);
 }
-.app-header .header-help {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink-2);
-  display: grid;
-  place-items: center;
-}
-.app-header .header-help svg {
-  width: 18px;
-  height: 18px;
-}
-.app-header .header-add {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  border: none;
-  background: var(--brand);
-  color: var(--ink);
-  font-weight: 700;
-  font-size: 13px;
-  padding: 7px 14px 7px 11px;
-  border-radius: 999px;
-  box-shadow: 0 2px 8px rgba(20, 24, 31, 0.15);
-}
-.app-header .header-add span {
-  font-size: 17px;
-  line-height: 1;
-}
-.app-header .header-add:hover {
-  background: var(--brand-600);
-}
+/* header-help/header-add ahora son IconButton/Button (ver ui.jsx): usan
+   .icon-btn/.btn, no clases propias. */
 
 .stat-grid {
   display: grid;
@@ -1488,14 +1550,9 @@ input[type='range']::-moz-range-thumb {
   flex-direction: column;
   animation: instr-up 0.28s ease-out;
 }
+/* Solo posiciona -el estilo visual del boton lo da .icon-btn.ghost. */
 .carta-sheet-close {
   align-self: flex-end;
-  font-size: 20px;
-  line-height: 1;
-  color: var(--ink);
-  padding: 4px 4px 8px;
-  background: none;
-  border: none;
 }
 .carta-sheet h2 {
   margin: 0 0 6px;

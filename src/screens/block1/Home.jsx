@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Screen, StatusBar, AppHeader, BottomNav } from '../../components/ui.jsx';
+import { Screen, StatusBar, AppHeader, BottomNav, Button } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
 import { useStore, hayBorrador } from '../../state/store.jsx';
 
@@ -41,8 +41,8 @@ export default function Home() {
 
         <div className="row between" style={{ marginBottom: 10 }}>
           <strong>Tus solicitudes</strong>
-          <button
-            className="btn link"
+          <Button
+            variant="link"
             style={{ padding: 0 }}
             onClick={() => {
               track('click', { target: 'home_ver_todas' });
@@ -50,7 +50,7 @@ export default function Home() {
             }}
           >
             ver todas
-          </button>
+          </Button>
         </div>
 
         <div className="stat-grid">
@@ -72,9 +72,9 @@ export default function Home() {
 
         <div className="row between" style={{ margin: '22px 0 10px' }}>
           <strong>Promociones y campanas</strong>
-          <button className="btn link" style={{ padding: 0 }} onClick={() => track('click', { target: 'home_promos_ver_todas' })}>
+          <Button variant="link" style={{ padding: 0 }} onClick={() => track('click', { target: 'home_promos_ver_todas' })}>
             ver todas
-          </button>
+          </Button>
         </div>
 
         <div className="promo-scroll">
@@ -84,12 +84,13 @@ export default function Home() {
               <div className="promo-body">
                 <h3>{p.t}</h3>
                 <p>{p.d}</p>
-                <button
-                  className="btn ghost sm"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => track('click', { target: 'promo_activar', promo: p.t })}
                 >
                   Activar
-                </button>
+                </Button>
               </div>
             </div>
           ))}

@@ -59,7 +59,7 @@ export default function SusScreen() {
         <div className="row between" style={{ marginTop: 14 }}>
           <Button
             variant="ghost"
-            className="sm"
+            size="sm"
             disabled={actual === 0}
             onClick={() => setIdx((i) => Math.max(0, i - 1))}
           >
@@ -68,7 +68,7 @@ export default function SusScreen() {
           <span className="tiny">{contestadas}/{total} contestadas</span>
           <Button
             variant="ghost"
-            className="sm"
+            size="sm"
             disabled={actual === total - 1 || resp[actual + 1] == null}
             onClick={() => setIdx((i) => Math.min(total - 1, i + 1))}
           >

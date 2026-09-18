@@ -187,11 +187,11 @@ export default function ModDetalle() {
       </Content>
       <FooterActions>
         <div className="row" style={{ gap: 8 }}>
-          <Button variant="ghost" className="sm grow" onClick={() => bajar('json')}>
+          <Button variant="ghost" size="sm" className="grow" onClick={() => bajar('json')}>
             Descargar · JSON
           </Button>
           {modo === 'api' && (
-            <Button variant="ghost" className="sm grow" onClick={() => bajar('md')}>
+            <Button variant="ghost" size="sm" className="grow" onClick={() => bajar('md')}>
               Descargar · MD
             </Button>
           )}

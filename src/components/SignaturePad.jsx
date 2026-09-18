@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Button } from './ui.jsx';
 
 export default function SignaturePad({ onChange }) {
   const ref = useRef(null);
@@ -70,9 +71,9 @@ export default function SignaturePad({ onChange }) {
         onTouchMove={move}
         onTouchEnd={end}
       />
-      <button className="btn link" onClick={clear} type="button">
+      <Button variant="link" onClick={clear} type="button">
         Borrar firma ✕
-      </button>
+      </Button>
     </div>
   );
 }

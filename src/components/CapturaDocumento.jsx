@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Button } from './ui.jsx';
+import { Button, IconButton } from './ui.jsx';
 import { guardarArchivo, obtenerArchivo } from '../state/archivosDB.js';
 
 // Captura de un documento: abre DIRECTO el selector nativo del telefono (el
@@ -158,9 +158,9 @@ export default function CapturaDocumento({
               aria-label={titulo}
               onClick={(e) => e.stopPropagation()}
             >
-              <button type="button" className="carta-sheet-close" aria-label="Cerrar" onClick={cancelar}>
+              <IconButton className="carta-sheet-close" aria-label="Cerrar" onClick={cancelar}>
                 ✕
-              </button>
+              </IconButton>
               <div className="docscan-body">
                 <h2>{titulo}</h2>
                 {subtitulo && <p className="lead">{subtitulo}</p>}
@@ -192,7 +192,7 @@ export default function CapturaDocumento({
                 <Button variant="ghost" onClick={reintentar} track="docscan_reintentar">
                   Escanea de nuevo
                 </Button>
-                <Button variant="dark" onClick={aceptar} track="docscan_aceptar">
+                <Button variant="primary" onClick={aceptar} track="docscan_aceptar">
                   {origenExistente ? 'Mantener este' : 'Aceptar captura ✓'}
                 </Button>
               </div>
