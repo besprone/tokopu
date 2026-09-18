@@ -648,6 +648,16 @@ h2,
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+.field input[type='date'] {
+  /* Safari/iOS: el control nativo de fecha a veces ignora el width:100% y
+     se dibuja mas ancho que su contenedor, empujando toda la pantalla a
+     hacer scroll horizontal. min-width:0 quita el ancho minimo implicito
+     del control nativo; max-width:100% evita que se salga aunque lo
+     ignore. */
+  min-width: 0;
+  max-width: 100%;
+  display: block;
+}
 .field select {
   /* Safari le pone su propio estilo nativo al <select> (relleno y flecha
      distintos) si no se resetea explicitamente. */
