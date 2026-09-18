@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, Content, FooterActions, Button, TopBar, CerrarSolicitud, DocTrigger } from '../../components/ui.jsx';
 import CapturaDocumento from '../../components/CapturaDocumento.jsx';
@@ -17,6 +18,11 @@ export default function Documentos() {
   // reload): permiten volver a mostrar la revision de un documento ya
   // cargado en vez de abrir la camara/administrador de archivos de nuevo.
   const [archivos, setArchivos] = useState({});
+  // Documento "done" tocado sin un File real en memoria (autocompletado demo,
+  // o cargado desde otra pantalla como la INE): { doc, abrir } mientras se
+  // muestra la confirmacion ligera de solo texto en vez de saltar directo a
+  // la camara/administrador de archivos.
+  const [revisarDemo, setRevisarDemo] = useState(null);
   const timers = useRef({});
 
   useEffect(() => () => Object.values(timers.current).forEach(clearTimeout), []);
@@ -123,7 +129,14 @@ export default function Documentos() {
                         done={done}
                         load={load}
                         disabled={load}
-                        onClick={() => (done && archivos[d.id] ? mostrar(archivos[d.id]) : abrir())}
+                        onClick={() => {
+                          if (!done) return abrir();
+                          if (archivos[d.id]) return mostrar(archivos[d.id]);
+                          // done pero sin File real en memoria (autocompletado
+                          // demo, o cargado desde otra pantalla): confirmacion
+                          // ligera en vez de saltar directo a la camara.
+                          setRevisarDemo({ doc: d, abrir });
+                        }}
                       />
                     )}
                   />
@@ -133,6 +146,54 @@ export default function Documentos() {
           </div>
         ))}
 
+        {revisarDemo &&
+          createPortal(
+            <div className="carta-sheet-backdrop" onClick={() => setRevisarDemo(null)}>
+              <div
+                className="carta-sheet docscan-sheet"
+                role="dialog"
+                aria-modal="true"
+                aria-label={revisarDemo.doc.nombre}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  className="carta-sheet-close"
+                  aria-label="Cerrar"
+                  onClick={() => setRevisarDemo(null)}
+                >
+                  ✕
+                </button>
+                <div className="docscan-body">
+                  <h2>{revisarDemo.doc.nombre}</h2>
+                  <p className="lead">
+                    Ya tienes cargado: {subLinea(solicitud.documentos[revisarDemo.doc.id], false)}.
+                  </p>
+                </div>
+                <div className="docscan-actions">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setRevisarDemo(null)}
+                    track="doc_demo_mantener"
+                  >
+                    Mantener este
+                  </Button>
+                  <Button
+                    variant="dark"
+                    onClick={() => {
+                      const { abrir } = revisarDemo;
+                      setRevisarDemo(null);
+                      abrir();
+                    }}
+                    track="doc_demo_adjuntar"
+                  >
+                    Adjuntar mi propio archivo →
+                  </Button>
+                </div>
+              </div>
+            </div>,
+            document.getElementById('sheet-portal-root') || document.body
+          )}
       </Content>
       <FooterActions>
         <Button
