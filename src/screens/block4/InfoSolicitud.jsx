@@ -248,35 +248,34 @@ export default function InfoSolicitud() {
     <Screen>
       <StatusBar />
       <TopBar title="Solicitud de credito" right={<CerrarSolicitud />} />
+      <div className="tab-chips" role="tablist" aria-label="Grupos de datos">
+        {TABS_INFO.map((t, i) => {
+          const activo = t === tab;
+          const ok = validez[i];
+          const cls = ['tab-chip'];
+          if (ok) cls.push('ok');
+          if (activo) cls.push('active');
+          return (
+            <button
+              key={t}
+              ref={activo ? activeChipRef : null}
+              type="button"
+              role="tab"
+              aria-selected={activo}
+              className={cls.join(' ')}
+              onClick={() => irAGrupo(t)}
+            >
+              {TAB_LABEL[t]}
+              {ok && (
+                <span className="chip-check" aria-hidden="true">
+                  ✓
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
       <Content>
-        <div className="tab-chips" role="tablist" aria-label="Grupos de datos">
-          {TABS_INFO.map((t, i) => {
-            const activo = t === tab;
-            const ok = validez[i];
-            const cls = ['tab-chip'];
-            if (ok) cls.push('ok');
-            if (activo) cls.push('active');
-            return (
-              <button
-                key={t}
-                ref={activo ? activeChipRef : null}
-                type="button"
-                role="tab"
-                aria-selected={activo}
-                className={cls.join(' ')}
-                onClick={() => irAGrupo(t)}
-              >
-                {TAB_LABEL[t]}
-                {ok && (
-                  <span className="chip-check" aria-hidden="true">
-                    ✓
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
         <span className="tiny">
           {nValidos} de {TABS_INFO.length} grupos completos · llénalos en el orden que quieras
         </span>
