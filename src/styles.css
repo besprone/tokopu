@@ -649,14 +649,19 @@ h2,
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .field input[type='date'] {
-  /* Safari/iOS: el control nativo de fecha a veces ignora el width:100% y
-     se dibuja mas ancho que su contenedor, empujando toda la pantalla a
-     hacer scroll horizontal. min-width:0 quita el ancho minimo implicito
-     del control nativo; max-width:100% evita que se salga aunque lo
-     ignore. */
-  min-width: 0;
-  max-width: 100%;
+  /* Safari/iOS le da a su control nativo de fecha un ancho minimo interno
+     que min-width/max-width "normales" (puestos directo) no lograban
+     anular. Este es el truco que si funciona: fijar width a algo chico y
+     dejar que min-width:100% sea quien realmente manda.
+     OJO: no agregar aqui -webkit-min-logical-width -el navegador lo
+     traduce a min-inline-size, la MISMA propiedad subyacente que
+     min-width, y al ir despues en la regla pisaba el min-width:100% de
+     arriba (asi se rompio la primera vez). */
   display: block;
+  box-sizing: border-box;
+  width: 1px;
+  min-width: 100%;
+  max-width: 100%;
 }
 .field select {
   /* Safari le pone su propio estilo nativo al <select> (relleno y flecha
