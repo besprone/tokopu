@@ -144,7 +144,7 @@ export default function CapturaDocumento({
               </div>
             </div>
           </div>,
-          document.body
+          document.getElementById('sheet-portal-root') || document.body
         )}
     </>
   );

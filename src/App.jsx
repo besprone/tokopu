@@ -52,6 +52,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <SessionWidgets />
+        <div id="sheet-portal-root" className="sheet-portal-root" />
       </div>
     </div>
   );

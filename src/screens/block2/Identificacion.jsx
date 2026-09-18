@@ -497,8 +497,8 @@ export default function Identificacion() {
                 // diseno original, aunque el paso a reverso siga
                 // necesitando un toque explicito del asesor (el navegador
                 // no abre el selector de archivos si no viene de un toque
-                // directo). Portal a document.body por el mismo motivo que
-                // CapturaDocumento: si se queda dentro de <Content> (que
+                // directo). Portal a #sheet-portal-root por el mismo motivo
+                // que CapturaDocumento: si se queda dentro de <Content> (que
                 // tiene -webkit-overflow-scrolling:touch) Safari en iOS la
                 // confina y sus botones se encimen con los de FooterActions.
                 createPortal(
@@ -528,7 +528,7 @@ export default function Identificacion() {
                       </div>
                     </div>
                   </div>,
-                  document.body
+                  document.getElementById('sheet-portal-root') || document.body
                 )
               }
             />

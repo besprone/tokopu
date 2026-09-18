@@ -102,6 +102,22 @@ input[type='radio'] {
   flex-direction: column;
 }
 
+/* Raiz para los portales de sheets que necesitan escapar el overflow de un
+   ancestro intermedio (p. ej. .content, que en Safari/iOS confina mal un
+   position:fixed anidado dentro de -webkit-overflow-scrolling:touch). El
+   transform la convierte en el "containing block" de sus hijos con
+   position:fixed, asi quedan confinados al marco del telefono (.device la
+   recorta con su propio overflow:hidden) en vez de cubrir toda la ventana
+   del navegador en escritorio. Vacia y sin pointer-events cuando no hay
+   ninguna sheet portalizada, para no bloquear clics en la pantalla real.
+   Ver CapturaDocumento.jsx e Identificacion.jsx. */
+.sheet-portal-root {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(0);
+  pointer-events: none;
+}
+
 @media (max-width: 480px) {
   .device-wrap {
     padding: 0;
@@ -1444,11 +1460,13 @@ input[type='range']::-moz-range-thumb {
 }
 
 /* ---- Sheet de la carta de consulta (solo lectura, en firma del asesor) ---- */
-/* position: fixed (no absolute) + portal a document.body: si se deja
+/* position: fixed (no absolute) + portal a #sheet-portal-root: si se deja
    absolute dentro de .content (que tiene -webkit-overflow-scrolling:touch),
    Safari en iOS confina/recorta la sheet al alto de .content en vez de
    cubrir toda la pantalla, y sus botones terminan encimados con los de
-   FooterActions. Ver CapturaDocumento.jsx e Identificacion.jsx. */
+   FooterActions. El portal la saca de .content; .sheet-portal-root la
+   confina de vuelta al marco del telefono. Ver CapturaDocumento.jsx e
+   Identificacion.jsx. */
 .carta-sheet-backdrop {
   position: fixed;
   inset: 0;
@@ -1457,6 +1475,7 @@ input[type='range']::-moz-range-thumb {
   align-items: flex-end;
   z-index: 60; /* sobre la pestana de moderador (55) */
   animation: carta-fade 0.2s ease-out;
+  pointer-events: auto; /* .sheet-portal-root es pointer-events:none */
 }
 @keyframes carta-fade {
   from {
