@@ -26,6 +26,10 @@ export default function Documentos() {
   const { track } = useMetrics();
   const { solicitud, toggleDoc } = useStore();
   const [cargando, setCargando] = useState({});
+  // Archivos ya aceptados, en memoria de esta sesion (no sobreviven un
+  // reload): permiten volver a mostrar la revision de un documento ya
+  // cargado en vez de abrir la camara/administrador de archivos de nuevo.
+  const [archivos, setArchivos] = useState({});
   const timers = useRef({});
 
   useEffect(() => () => Object.values(timers.current).forEach(clearTimeout), []);
@@ -70,6 +74,7 @@ export default function Documentos() {
 
   const confirmarCaptura = (d, file) => {
     const reemplazo = !!solicitud.documentos[d.id];
+    setArchivos((a) => ({ ...a, [d.id]: file }));
     setCargando((c) => ({ ...c, [d.id]: true }));
     clearTimeout(timers.current[d.id]);
     timers.current[d.id] = setTimeout(() => {
@@ -124,12 +129,12 @@ export default function Documentos() {
                     titulo={d.nombre}
                     subtitulo="Verifica que se lea bien antes de aceptar."
                     onAceptar={(file) => confirmarCaptura(d, file)}
-                    trigger={(abrir) => (
+                    trigger={(abrir, mostrar) => (
                       <button
                         type="button"
                         className={`hub-item doc-item${done ? ' done' : ''}`}
                         disabled={load}
-                        onClick={abrir}
+                        onClick={() => (done && archivos[d.id] ? mostrar(archivos[d.id]) : abrir())}
                       >
                         <span className="grow" style={{ minWidth: 0 }}>
                           <div style={{ fontWeight: 600 }}>{d.nombre}</div>

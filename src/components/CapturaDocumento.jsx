@@ -19,6 +19,14 @@ import { Button } from './ui.jsx';
 // forma sincrona, nunca desde un setTimeout/efecto. Encadenar una segunda
 // captura (p. ej. frente -> reverso de la INE) tampoco puede auto-abrirse
 // sola: hace falta un boton visible para el segundo toque tambien.
+//
+// `trigger` recibe (abrir, mostrar): `abrir` dispara el selector nativo;
+// `mostrar(file)` reabre la revision de un archivo YA aceptado (que el
+// llamador debe conservar el mismo en memoria) sin tocar la camara/
+// administrador de archivos -para "volver a ver" lo que ya se cargo. En
+// ese caso el boton principal dice "Mantener este" en vez de "Aceptar
+// captura". Si el llamador no conserva el archivo (p. ej. tras recargar la
+// pagina) simplemente no hay nada que mostrar y debe usar `abrir()`.
 export default function CapturaDocumento({
   titulo,
   subtitulo,
@@ -31,6 +39,11 @@ export default function CapturaDocumento({
   const inputRef = useRef(null);
   const [archivo, setArchivo] = useState(null); // { file, url }
   const [zoom, setZoom] = useState(false);
+  // true cuando la revision muestra un archivo YA aceptado antes (via
+  // `mostrar`, no recien elegido en el selector): el boton principal dice
+  // "Mantener este" en vez de "Aceptar captura", porque no se esta
+  // aceptando nada nuevo.
+  const [origenExistente, setOrigenExistente] = useState(false);
   const lastTapRef = useRef(0);
   const archivoRef = useRef(null);
 
@@ -48,6 +61,17 @@ export default function CapturaDocumento({
 
   const abrir = () => inputRef.current?.click();
 
+  // Muestra la revision de un archivo YA aceptado antes (en memoria de esta
+  // misma sesion, p. ej. para "volver a ver" un documento ya cargado) sin
+  // pasar por el selector nativo: no hace falta que sea sincrono con un
+  // toque, a diferencia de `abrir`.
+  const mostrar = (file) => {
+    if (!file) return;
+    setArchivo({ file, url: URL.createObjectURL(file) });
+    setZoom(false);
+    setOrigenExistente(true);
+  };
+
   const onChangeInput = (e) => {
     const file = e.target.files?.[0];
     e.target.value = ''; // permite reelegir el mismo archivo
@@ -57,6 +81,7 @@ export default function CapturaDocumento({
     }
     setArchivo({ file, url: URL.createObjectURL(file) });
     setZoom(false);
+    setOrigenExistente(false);
   };
 
   const cerrar = () => {
@@ -92,7 +117,7 @@ export default function CapturaDocumento({
   return (
     <>
       <input ref={inputRef} type="file" accept={accept} hidden onChange={onChangeInput} />
-      {trigger(abrir)}
+      {trigger(abrir, mostrar)}
 
       {archivo &&
         createPortal(
@@ -139,7 +164,7 @@ export default function CapturaDocumento({
                   Escanea de nuevo
                 </Button>
                 <Button variant="dark" onClick={aceptar} track="docscan_aceptar">
-                  Aceptar captura ✓
+                  {origenExistente ? 'Mantener este' : 'Aceptar captura ✓'}
                 </Button>
               </div>
             </div>

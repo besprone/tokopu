@@ -465,13 +465,14 @@ export default function Identificacion() {
                 setFrenteArchivo(file);
                 setFrenteListo(true);
               }}
-              trigger={(abrir) => (
+              trigger={(abrir, mostrar) => (
                 <button
                   type="button"
                   className={`scan-ine${ineEscaneada ? ' done' : ''}`}
                   onClick={() => {
                     track('click', { target: 'ident_datos_escanear_ine' });
-                    abrir();
+                    if (ineEscaneada && frenteArchivo) mostrar(frenteArchivo);
+                    else abrir();
                   }}
                 >
                   <span>{ineEscaneada ? 'INE escaneada' : 'Escanear INE'}</span>
@@ -491,7 +492,7 @@ export default function Identificacion() {
                 setFrenteListo(false);
               }}
               onCancelar={() => setFrenteListo(false)}
-              trigger={(abrir) =>
+              trigger={(abrir, mostrar) => {
                 // Sheet flotante (no un boton en la pagina de fondo): el
                 // flujo queda conectado de principio a fin, como en el
                 // diseno original, aunque el paso a reverso siga
@@ -501,7 +502,8 @@ export default function Identificacion() {
                 // que CapturaDocumento: si se queda dentro de <Content> (que
                 // tiene -webkit-overflow-scrolling:touch) Safari en iOS la
                 // confina y sus botones se encimen con los de FooterActions.
-                createPortal(
+                const reversoPrevio = ineArchivos?.reverso;
+                return createPortal(
                   <div className="carta-sheet-backdrop">
                     <div
                       className="carta-sheet docscan-sheet"
@@ -522,15 +524,19 @@ export default function Identificacion() {
                         <p className="lead">Ahora captura el reverso de la INE del cliente.</p>
                       </div>
                       <div className="docscan-actions">
-                        <Button variant="dark" onClick={abrir} track="ident_ine_reverso_continuar">
-                          Escanear el reverso →
+                        <Button
+                          variant="dark"
+                          onClick={() => (reversoPrevio ? mostrar(reversoPrevio) : abrir())}
+                          track="ident_ine_reverso_continuar"
+                        >
+                          {reversoPrevio ? 'Ver el reverso ya cargado →' : 'Escanear el reverso →'}
                         </Button>
                       </div>
                     </div>
                   </div>,
                   document.getElementById('sheet-portal-root') || document.body
-                )
-              }
+                );
+              }}
             />
           )}
           {ineEscaneada && !frenteListo && (

@@ -142,6 +142,10 @@ export default function InfoSolicitud() {
   // el grupo en el que estas parado nunca se marca "visitado" por si mismo,
   // solo los que ya dejaste atras.
   const [visitados, setVisitados] = useState(() => new Set());
+  // Archivos ya aceptados (talon/estado de cuenta), en memoria de esta
+  // sesion: permiten volver a mostrar la revision de lo ya cargado en vez
+  // de abrir la camara/administrador de archivos de nuevo.
+  const [archivosEscaneo, setArchivosEscaneo] = useState({});
   // Si el grupo ACTUAL ya se habia visitado antes, se fuerza la validacion de
   // sus campos para que se vea lo que falta (en la primera visita se deja
   // limpio). Se deriva de `visitados` en cada render -no es un contador
@@ -196,6 +200,7 @@ export default function InfoSolicitud() {
   }, [tab]);
 
   const aceptarEscaneo = (file) => {
+    setArchivosEscaneo((a) => ({ ...a, [escaneoCfg.doc]: file }));
     setTabData(tab, { ...escaneoCfg.campos });
     // Un documento puede autollenar campos de otros tabs (el talon trae el sueldo).
     for (const [t, vals] of Object.entries(escaneoCfg.camposExtra || {})) {
@@ -291,13 +296,15 @@ export default function InfoSolicitud() {
               titulo={escaneoCfg.titulo}
               subtitulo={escaneoCfg.subtitulo}
               onAceptar={aceptarEscaneo}
-              trigger={(abrir) => (
+              trigger={(abrir, mostrar) => (
                 <button
                   type="button"
                   className={`scan-ine${escaneado ? ' done' : ''}`}
                   onClick={() => {
                     track('click', { target: `info_${tab}_escanear` });
-                    abrir();
+                    const previo = archivosEscaneo[escaneoCfg.doc];
+                    if (escaneado && previo) mostrar(previo);
+                    else abrir();
                   }}
                 >
                   <span>{escaneado ? `${escaneoCfg.label} escaneado` : escaneoCfg.label}</span>
