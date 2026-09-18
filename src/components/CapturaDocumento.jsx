@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from './ui.jsx';
 
 // Captura de un documento: abre DIRECTO el selector nativo del telefono (el
@@ -93,56 +94,58 @@ export default function CapturaDocumento({
       <input ref={inputRef} type="file" accept={accept} hidden onChange={onChangeInput} />
       {trigger(abrir)}
 
-      {archivo && (
-        <div className="carta-sheet-backdrop" onClick={cancelar}>
-          <div
-            className="carta-sheet docscan-sheet"
-            role="dialog"
-            aria-modal="true"
-            aria-label={titulo}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button type="button" className="carta-sheet-close" aria-label="Cerrar" onClick={cancelar}>
-              ✕
-            </button>
-            <div className="docscan-body">
-              <h2>{titulo}</h2>
-              {subtitulo && <p className="lead">{subtitulo}</p>}
-              <div className="docscan-doc">
-                <img
-                  className={`docscan-shot${zoom ? ' zoomed' : ''}`}
-                  src={archivo.url}
-                  alt={`${titulo} capturado`}
-                  onClick={tocarImagen}
-                />
+      {archivo &&
+        createPortal(
+          <div className="carta-sheet-backdrop" onClick={cancelar}>
+            <div
+              className="carta-sheet docscan-sheet"
+              role="dialog"
+              aria-modal="true"
+              aria-label={titulo}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button type="button" className="carta-sheet-close" aria-label="Cerrar" onClick={cancelar}>
+                ✕
+              </button>
+              <div className="docscan-body">
+                <h2>{titulo}</h2>
+                {subtitulo && <p className="lead">{subtitulo}</p>}
+                <div className="docscan-doc">
+                  <img
+                    className={`docscan-shot${zoom ? ' zoomed' : ''}`}
+                    src={archivo.url}
+                    alt={`${titulo} capturado`}
+                    onClick={tocarImagen}
+                  />
+                </div>
+                <p className="tiny" style={{ textAlign: 'center', marginTop: 6 }}>
+                  Doble tap para {zoom ? 'alejar' : 'acercar'} y verificar que se lea bien
+                </p>
+                {consejos?.length > 0 && (
+                  <>
+                    <div className="sec-label" style={{ borderBottom: 'none', margin: '14px 0 2px' }}>
+                      Consejos
+                    </div>
+                    <ul className="consejos tiny">
+                      {consejos.map((c, i) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </div>
-              <p className="tiny" style={{ textAlign: 'center', marginTop: 6 }}>
-                Doble tap para {zoom ? 'alejar' : 'acercar'} y verificar que se lea bien
-              </p>
-              {consejos?.length > 0 && (
-                <>
-                  <div className="sec-label" style={{ borderBottom: 'none', margin: '14px 0 2px' }}>
-                    Consejos
-                  </div>
-                  <ul className="consejos tiny">
-                    {consejos.map((c, i) => (
-                      <li key={i}>{c}</li>
-                    ))}
-                  </ul>
-                </>
-              )}
+              <div className="docscan-actions">
+                <Button variant="ghost" onClick={reintentar} track="docscan_reintentar">
+                  Escanea de nuevo
+                </Button>
+                <Button variant="dark" onClick={aceptar} track="docscan_aceptar">
+                  Aceptar captura ✓
+                </Button>
+              </div>
             </div>
-            <div className="docscan-actions">
-              <Button variant="ghost" onClick={reintentar} track="docscan_reintentar">
-                Escanea de nuevo
-              </Button>
-              <Button variant="dark" onClick={aceptar} track="docscan_aceptar">
-                Aceptar captura ✓
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }

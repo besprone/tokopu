@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, Content, FooterActions, Button, TopBar, Callout, CerrarSolicitud } from '../../components/ui.jsx';
 import Field from '../../components/Field.jsx';
@@ -490,40 +491,46 @@ export default function Identificacion() {
                 setFrenteListo(false);
               }}
               onCancelar={() => setFrenteListo(false)}
-              trigger={(abrir) => (
+              trigger={(abrir) =>
                 // Sheet flotante (no un boton en la pagina de fondo): el
                 // flujo queda conectado de principio a fin, como en el
                 // diseno original, aunque el paso a reverso siga
                 // necesitando un toque explicito del asesor (el navegador
                 // no abre el selector de archivos si no viene de un toque
-                // directo).
-                <div className="carta-sheet-backdrop">
-                  <div
-                    className="carta-sheet docscan-sheet"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-label="Capturar el reverso de la INE"
-                  >
-                    <button
-                      type="button"
-                      className="carta-sheet-close"
-                      aria-label="Cerrar"
-                      onClick={() => setFrenteListo(false)}
+                // directo). Portal a document.body por el mismo motivo que
+                // CapturaDocumento: si se queda dentro de <Content> (que
+                // tiene -webkit-overflow-scrolling:touch) Safari en iOS la
+                // confina y sus botones se encimen con los de FooterActions.
+                createPortal(
+                  <div className="carta-sheet-backdrop">
+                    <div
+                      className="carta-sheet docscan-sheet"
+                      role="dialog"
+                      aria-modal="true"
+                      aria-label="Capturar el reverso de la INE"
                     >
-                      ✕
-                    </button>
-                    <div className="docscan-body">
-                      <h2>Frente capturado ✓</h2>
-                      <p className="lead">Ahora captura el reverso de la INE del cliente.</p>
+                      <button
+                        type="button"
+                        className="carta-sheet-close"
+                        aria-label="Cerrar"
+                        onClick={() => setFrenteListo(false)}
+                      >
+                        ✕
+                      </button>
+                      <div className="docscan-body">
+                        <h2>Frente capturado ✓</h2>
+                        <p className="lead">Ahora captura el reverso de la INE del cliente.</p>
+                      </div>
+                      <div className="docscan-actions">
+                        <Button variant="dark" onClick={abrir} track="ident_ine_reverso_continuar">
+                          Escanear el reverso →
+                        </Button>
+                      </div>
                     </div>
-                    <div className="docscan-actions">
-                      <Button variant="dark" onClick={abrir} track="ident_ine_reverso_continuar">
-                        Escanear el reverso →
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
+                  </div>,
+                  document.body
+                )
+              }
             />
           )}
           {ineEscaneada && !frenteListo && (

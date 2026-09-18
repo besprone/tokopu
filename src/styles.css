@@ -1444,13 +1444,18 @@ input[type='range']::-moz-range-thumb {
 }
 
 /* ---- Sheet de la carta de consulta (solo lectura, en firma del asesor) ---- */
+/* position: fixed (no absolute) + portal a document.body: si se deja
+   absolute dentro de .content (que tiene -webkit-overflow-scrolling:touch),
+   Safari en iOS confina/recorta la sheet al alto de .content en vez de
+   cubrir toda la pantalla, y sus botones terminan encimados con los de
+   FooterActions. Ver CapturaDocumento.jsx e Identificacion.jsx. */
 .carta-sheet-backdrop {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgba(8, 10, 14, 0.55);
   display: flex;
   align-items: flex-end;
-  z-index: 60; /* dentro del marco, sobre la pestana de moderador (55) */
+  z-index: 60; /* sobre la pestana de moderador (55) */
   animation: carta-fade 0.2s ease-out;
 }
 @keyframes carta-fade {
