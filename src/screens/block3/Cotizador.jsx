@@ -47,14 +47,16 @@ export default function Cotizador() {
   // monto min/max) -asi el propio medidor de capacidad se puede arrastrar
   // como un slider mas: mueve el pago objetivo y de ahi se despeja el monto
   // (montoMaximoPorPago invierte cotizar()), sin tocar el plazo elegido en
-  // los chips.
+  // los chips. El tope es la capacidad de pago: a diferencia del slider de
+  // monto (que si puede llevar a "excede", pues su rango es politica de
+  // producto, no la capacidad de ESTE cliente), este slider representa
+  // justo esa capacidad, asi que no tiene sentido dejarlo pasarse de ahi.
   const pagoRango = useMemo(() => {
     if (!plazo) return null;
-    return {
-      min: cotizar(FIN_CONFIG.montoMin, plazo).pagoQuincenal,
-      max: cotizar(FIN_CONFIG.montoMax, plazo).pagoQuincenal,
-    };
-  }, [plazo]);
+    const min = cotizar(FIN_CONFIG.montoMin, plazo).pagoQuincenal;
+    const maxPorMonto = cotizar(FIN_CONFIG.montoMax, plazo).pagoQuincenal;
+    return { min, max: Math.min(maxPorMonto, capacidad) };
+  }, [plazo, capacidad]);
   const pagoPct =
     r && pagoRango && pagoRango.max > pagoRango.min
       ? Math.round(((r.pagoQuincenal - pagoRango.min) / (pagoRango.max - pagoRango.min)) * 100)
