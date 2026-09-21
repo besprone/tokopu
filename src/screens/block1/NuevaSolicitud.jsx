@@ -72,7 +72,10 @@ export default function NuevaSolicitud() {
     // grupo 1): sigue derecho, sin SEQ. Se deja una marca liviana para poder
     // ver despues cuanto tardo esta mitad del grupo si hiciera falta.
     track('bloque_completo', { bloque: 'iniciar_solicitud', dependencia: dep, convenio: conv, tipoFirma: firma });
-    navigate('/identificacion', { replace: true });
+    // Al hub primero, no directo a identificacion: el asesor debe ver el
+    // checklist (con "Identificacion y autenticacion" como el primer
+    // pendiente) y entrar ahi el mismo, en vez de saltarselo.
+    navigate('/solicitud', { replace: true });
   };
 
   return (
