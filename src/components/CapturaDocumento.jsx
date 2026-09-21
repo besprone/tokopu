@@ -163,7 +163,7 @@ export default function CapturaDocumento({
               <IconButton className="carta-sheet-close" aria-label="Cerrar" onClick={cancelar}>
                 ✕
               </IconButton>
-              <div className="docscan-body">
+              <div className={`docscan-body${esPdf ? ' docscan-body--pdf' : ''}`}>
                 <h2>{titulo}</h2>
                 {subtitulo && <p className="lead">{subtitulo}</p>}
                 <div className={`docscan-doc${esPdf ? ' docscan-doc--pdf' : ''}`}>

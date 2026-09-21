@@ -1631,18 +1631,29 @@ input[type='range']::-moz-range-thumb {
   width: 220%;
   max-width: 220%;
 }
-/* Sin padding/overflow propio: el iframe ya trae su visor de PDF nativo con
-   scroll interno -si .docscan-doc conserva su padding + overflow:auto de
-   las imagenes, el iframe (55vh) se pasa por ese padding y aparecen DOS
-   scrollbars anidados (la del visor y la de .docscan-doc). */
+/* PDF: darle una altura fija (p. ej. 55vh) al visor y dejar que
+   .docscan-body siga siendo un bloque con overflow-y:auto (igual que para
+   imagenes) produce DOS scrollbars pegados -el de .docscan-body (porque
+   titulo+visor+consejos suman mas alto de lo disponible) y el interno del
+   propio visor de PDF. En vez de eso, .docscan-body--pdf se vuelve flex
+   column: titulo/subtitulo/consejos ocupan su alto natural (siempre
+   cortos) y .docscan-doc--pdf crece con flex:1 para llenar EXACTO el
+   sobrante -asi el unico scroll que queda es el interno del visor. */
+.docscan-body--pdf {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 .docscan-doc--pdf {
+  flex: 1;
+  min-height: 0;
   padding: 0;
   overflow: hidden;
 }
 .docscan-pdf {
   display: block;
   width: 100%;
-  height: 55vh;
+  height: 100%;
   border: none;
   border-radius: 4px;
 }
