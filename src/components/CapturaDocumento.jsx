@@ -42,7 +42,7 @@ export default function CapturaDocumento({
   docId,
   titulo,
   subtitulo,
-  accept = 'image/*',
+  accept = 'image/*,application/pdf',
   trigger,
   onAceptar,
   onCancelar,
@@ -143,6 +143,8 @@ export default function CapturaDocumento({
     lastTapRef.current = ahora;
   };
 
+  const esPdf = archivo?.file.type === 'application/pdf';
+
   return (
     <>
       <input ref={inputRef} type="file" accept={accept} hidden onChange={onChangeInput} />
@@ -164,17 +166,27 @@ export default function CapturaDocumento({
               <div className="docscan-body">
                 <h2>{titulo}</h2>
                 {subtitulo && <p className="lead">{subtitulo}</p>}
-                <div className="docscan-doc">
-                  <img
-                    className={`docscan-shot${zoom ? ' zoomed' : ''}`}
-                    src={archivo.url}
-                    alt={`${titulo} capturado`}
-                    onClick={tocarImagen}
-                  />
+                <div className={`docscan-doc${esPdf ? ' docscan-doc--pdf' : ''}`}>
+                  {esPdf ? (
+                    <iframe
+                      className="docscan-pdf"
+                      src={`${archivo.url}#toolbar=0`}
+                      title={`${titulo} capturado`}
+                    />
+                  ) : (
+                    <img
+                      className={`docscan-shot${zoom ? ' zoomed' : ''}`}
+                      src={archivo.url}
+                      alt={`${titulo} capturado`}
+                      onClick={tocarImagen}
+                    />
+                  )}
                 </div>
-                <p className="tiny" style={{ textAlign: 'center', marginTop: 6 }}>
-                  Doble tap para {zoom ? 'alejar' : 'acercar'} y verificar que se lea bien
-                </p>
+                {!esPdf && (
+                  <p className="tiny" style={{ textAlign: 'center', marginTop: 6 }}>
+                    Doble tap para {zoom ? 'alejar' : 'acercar'} y verificar que se lea bien
+                  </p>
+                )}
                 {consejos?.length > 0 && (
                   <>
                     <div className="sec-label" style={{ borderBottom: 'none', margin: '14px 0 2px' }}>

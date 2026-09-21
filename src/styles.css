@@ -1631,6 +1631,21 @@ input[type='range']::-moz-range-thumb {
   width: 220%;
   max-width: 220%;
 }
+/* Sin padding/overflow propio: el iframe ya trae su visor de PDF nativo con
+   scroll interno -si .docscan-doc conserva su padding + overflow:auto de
+   las imagenes, el iframe (55vh) se pasa por ese padding y aparecen DOS
+   scrollbars anidados (la del visor y la de .docscan-doc). */
+.docscan-doc--pdf {
+  padding: 0;
+  overflow: hidden;
+}
+.docscan-pdf {
+  display: block;
+  width: 100%;
+  height: 55vh;
+  border: none;
+  border-radius: 4px;
+}
 .docscan-shot--mock {
   aspect-ratio: 3 / 4;
   display: flex;
