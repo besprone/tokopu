@@ -8,6 +8,7 @@ import {
   cotizar,
   capacidadPagoQuincenal,
   generarOfertas,
+  montoMaximoPorPago,
   mxn,
   pct,
 } from '../../domain/finance.js';
@@ -41,6 +42,29 @@ export default function Cotizador() {
   const montoPct = Math.round(
     ((monto - FIN_CONFIG.montoMin) / (FIN_CONFIG.montoMax - FIN_CONFIG.montoMin)) * 100
   );
+
+  // Rango de pago quincenal alcanzable para el plazo elegido (extremos del
+  // monto min/max) -asi el propio medidor de capacidad se puede arrastrar
+  // como un slider mas: mueve el pago objetivo y de ahi se despeja el monto
+  // (montoMaximoPorPago invierte cotizar()), sin tocar el plazo elegido en
+  // los chips.
+  const pagoRango = useMemo(() => {
+    if (!plazo) return null;
+    return {
+      min: cotizar(FIN_CONFIG.montoMin, plazo).pagoQuincenal,
+      max: cotizar(FIN_CONFIG.montoMax, plazo).pagoQuincenal,
+    };
+  }, [plazo]);
+  const pagoPct =
+    r && pagoRango && pagoRango.max > pagoRango.min
+      ? Math.round(((r.pagoQuincenal - pagoRango.min) / (pagoRango.max - pagoRango.min)) * 100)
+      : 0;
+
+  const ajustarPorPago = (targetPago) => {
+    const nuevoMonto = montoMaximoPorPago(targetPago, plazo);
+    setMonto(nuevoMonto);
+    track('field_change', { campo: 'cotizador_pago_quincenal', valor: targetPago });
+  };
 
   const confirmar = (origen, resumen, m, n) => {
     patch({
@@ -148,14 +172,31 @@ export default function Cotizador() {
             <div className="slider-block" style={{ marginTop: 16 }}>
               <div className="cap">Pago quincenal que realizara</div>
               <div className="big">{r ? mxn(r.pagoQuincenal) : '—'}</div>
-              <div className={`capacity-meter${excede ? ' over' : ''}`}>
-                <div className="bar">
-                  <i style={{ width: `${usoPct}%` }} />
+              {r && pagoRango ? (
+                <input
+                  type="range"
+                  className={`capacity-slider${excede ? ' over' : ''}`}
+                  min={Math.floor(pagoRango.min)}
+                  max={Math.max(Math.ceil(pagoRango.max), Math.floor(pagoRango.min) + 1)}
+                  step={1}
+                  value={Math.round(r.pagoQuincenal)}
+                  style={{
+                    background: `linear-gradient(to right, ${
+                      excede ? 'var(--danger)' : 'var(--ok)'
+                    } 0 ${pagoPct}%, var(--line) ${pagoPct}% 100%)`,
+                  }}
+                  onChange={(e) => ajustarPorPago(Number(e.target.value))}
+                />
+              ) : (
+                <div className="capacity-meter">
+                  <div className="bar">
+                    <i style={{ width: '0%' }} />
+                  </div>
                 </div>
-                <div className="range-ends">
-                  <span>{r ? `${usoPct}% de la capacidad` : 'Elige el numero de quincenas'}</span>
-                  <span>Capacidad de pago {mxn(capacidad)}</span>
-                </div>
+              )}
+              <div className="range-ends">
+                <span>{r ? `${usoPct}% de la capacidad` : 'Elige el numero de quincenas'}</span>
+                <span>Capacidad de pago {mxn(capacidad)}</span>
               </div>
             </div>
 
