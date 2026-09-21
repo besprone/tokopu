@@ -148,7 +148,12 @@ export default function CapturaDocumento({
   return (
     <>
       <input ref={inputRef} type="file" accept={accept} hidden onChange={onChangeInput} />
-      {listo && trigger(abrir, mostrarSiExiste)}
+      {/* !archivo: si autoMostrarSiExiste (o el trigger) ya encontro un
+          archivo guardado, la revision de abajo se pinta y el trigger debe
+          desaparecer -si no, un trigger como el de Identificacion.jsx (una
+          sheet completa, no solo un boton) queda montado por debajo,
+          invisible solo por casualidad de orden en el DOM. */}
+      {listo && !archivo && trigger(abrir, mostrarSiExiste)}
 
       {archivo &&
         createPortal(
