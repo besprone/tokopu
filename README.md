@@ -4,6 +4,8 @@ Prototipo interactivo para pruebas de usabilidad del flujo de solicitud de **Cr�
 
 **Demo en vivo:** [tokopu.vercel.app](https://tokopu.vercel.app)
 
+¿Vas a arrancar un proyecto nuevo parecido a este, o quieres entender cómo se armó? Ve [SETUP.md](./SETUP.md).
+
 ## Stack
 
 - [React 18](https://react.dev/) + [Vite 5](https://vitejs.dev/)
