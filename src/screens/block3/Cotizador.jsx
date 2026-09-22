@@ -71,14 +71,24 @@ export default function Cotizador() {
     [ingreso]
   );
 
+  const ofertas = useMemo(() => generarOfertas(capacidad), [capacidad]);
+  // Oferta "recomendada": siempre hay al menos una, es la primera.
+  const recomendada = ofertas[0];
+
   const [tab, setTab] = useState('ofertas');
-  const [monto, setMonto] = useState(solicitud.oferta?.monto || FIN_CONFIG.montoMin);
-  // El plazo NO viene preseleccionado: el asesor debe elegirlo (se le indica cual).
-  const [plazo, setPlazo] = useState(solicitud.oferta?.nQuincenas ?? null);
+  // El cotizador arranca precargado con la oferta recomendada (monto y
+  // plazo), no en blanco: el asesor debe notar que el monto sugerido no es
+  // el que pidio el cliente y ajustarlo -ya no "elegir el plazo desde cero"
+  // (el plazo recomendado ya coincide con el pedido en el guion de la
+  // tarea; ver flow.js).
+  const [monto, setMonto] = useState(
+    solicitud.oferta?.monto || recomendada?.monto || FIN_CONFIG.montoMin
+  );
+  const [plazo, setPlazo] = useState(
+    solicitud.oferta?.nQuincenas ?? recomendada?.nQuincenas ?? null
+  );
 
   const r = useMemo(() => (plazo ? cotizar(monto, plazo) : null), [monto, plazo]);
-  const ofertas = useMemo(() => generarOfertas(capacidad), [capacidad]);
-  // La primera oferta viene preseleccionada: siempre hay al menos una.
   const [ofertaSel, setOfertaSel] = useState(null);
   const ofertaSelActual = ofertaSel ?? ofertas[0]?.id ?? null;
 

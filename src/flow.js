@@ -52,7 +52,7 @@ Datos de Sara:
     id: 'g2_cotizar_info',
     num: 2,
     titulo: 'Cotizar la oferta y capturar la información',
-    escenario: `Sara quiere $45,000 a 60 quincenas. Configura esa oferta y dile cuánto se le descontará cada quincena. Luego completa la información de su solicitud y confírmala.
+    escenario: `Sara quiere $45,000 a 60 quincenas. El cotizador ya trae una oferta sugerida: ajústala a lo que Sara pidió y dile cuánto se le descontará cada quincena. Luego completa la información de su solicitud y confírmala.
 
 Datos de Sara:
 • Banco: BBVA · CLABE: 012180001234567899
@@ -61,7 +61,7 @@ Datos de Sara:
     exito:
       'Oferta confirmada ($45,000 / 60 quincenas, pago quincenal ~$1,235, CAT ~53%); los 5 grupos de información completos, CLABE y banco capturados, ingreso $13,500, datos confirmados.',
     observar: [
-      '¿Llega al monto exacto con el slider? ¿Nota que el plazo no viene preseleccionado?',
+      '¿Nota que el monto precargado (sugerido por el sistema) no es el que pidió Sara y lo ajusta, o confirma la oferta tal cual viene?',
       '¿Entiende la "capacidad de pago" y que el pago debe quedar por debajo? ¿Distingue "Ofertas" de "Cotizador"?',
       '¿Encuentra el pago quincenal y el CAT sin salir del flujo?',
       '¿Verifica los campos autollenados por el OCR o los pasa sin leer?',
