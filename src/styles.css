@@ -980,11 +980,13 @@ h2,
 .slider-block .cap {
   font-size: 12px;
   color: var(--ink-3);
+  text-align: center;
 }
 .slider-block .big {
   font-size: 26px;
   font-weight: 700;
   margin: 2px 0 12px;
+  text-align: center;
 }
 /* Version editable del "big": mismo tamano/peso que el texto estatico, pero
    con borde propio (como cualquier .field input) para que se note que se
@@ -1002,6 +1004,7 @@ h2,
   font-size: 26px;
   font-weight: 700;
   color: var(--ink);
+  text-align: center;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }

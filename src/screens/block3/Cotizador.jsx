@@ -96,6 +96,32 @@ export default function Cotizador() {
   const [ofertaSel, setOfertaSel] = useState(null);
   const ofertaSelActual = ofertaSel ?? ofertas[0]?.id ?? null;
 
+  // Al mover el monto (slider o input), si el plazo actual ya no alcanza a
+  // pagarlo dentro de la capacidad, se busca solo el plazo mas corto de los
+  // disponibles que si alcance -asi nunca hace falta llegar al aviso de
+  // "excede la capacidad" solo por mover el monto. Si ni el plazo mas largo
+  // alcanza (capacidad muy baja), se limita el monto a lo maximo pagable ahi.
+  // Cambiar el plazo a mano (los chips) SI puede seguir mostrando "excede":
+  // esa es una decision explicita del asesor, no algo que el sistema deba
+  // corregir por su cuenta.
+  const ajustarPorMonto = (nuevoMonto) => {
+    if (!plazo || cotizar(nuevoMonto, plazo).pagoQuincenal <= capacidad) {
+      setMonto(nuevoMonto);
+      return;
+    }
+    const plazoQueAlcanza = FIN_CONFIG.plazosSugeridos.find(
+      (n) => cotizar(nuevoMonto, n).pagoQuincenal <= capacidad
+    );
+    if (plazoQueAlcanza) {
+      setPlazo(plazoQueAlcanza);
+      setMonto(nuevoMonto);
+    } else {
+      const plazoMax = FIN_CONFIG.plazosSugeridos[FIN_CONFIG.plazosSugeridos.length - 1];
+      setPlazo(plazoMax);
+      setMonto(montoMaximoPorPago(capacidad, plazoMax));
+    }
+  };
+
   const excede = !!r && r.pagoQuincenal > capacidad;
   const usoPct = r ? Math.min(100, Math.round((r.pagoQuincenal / capacidad) * 100)) : 0;
   const montoPct = Math.round(
@@ -194,7 +220,7 @@ export default function Cotizador() {
                 value={monto}
                 min={FIN_CONFIG.montoMin}
                 max={FIN_CONFIG.montoMax}
-                onChange={setMonto}
+                onChange={ajustarPorMonto}
                 trackName="cotizador_monto_input"
               />
               <input
@@ -208,7 +234,7 @@ export default function Cotizador() {
                 }}
                 onChange={(e) => {
                   const v = Number(e.target.value);
-                  setMonto(v);
+                  ajustarPorMonto(v);
                   track('field_change', { campo: 'cotizador_monto', valor: v });
                 }}
               />
