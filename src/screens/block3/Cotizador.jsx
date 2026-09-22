@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Screen, StatusBar, Content, FooterActions, Button, TopBar, SummaryRow, Callout, CerrarSolicitud } from '../../components/ui.jsx';
 import { useMetrics } from '../../metrics/MetricsProvider.jsx';
@@ -12,6 +12,51 @@ import {
   mxn,
   pct,
 } from '../../domain/finance.js';
+
+// Version editable del numero grande de un slider: mientras se escribe se ve
+// en digitos crudos (sin formato, para no pelearse con lo que el asesor esta
+// tecleando); al perder el foco se recorta a [min,max] y se vuelve a mostrar
+// formateado. El slider se sincroniza en vivo mientras se escribe (onChange
+// se dispara con cada digito valido, sin esperar al blur).
+function MontoInput({ value, min, max, onChange, trackName }) {
+  const { track } = useMetrics();
+  const [editando, setEditando] = useState(false);
+  const [texto, setTexto] = useState(String(Math.round(value)));
+
+  useEffect(() => {
+    if (!editando) setTexto(String(Math.round(value)));
+  }, [value, editando]);
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      className="big-input"
+      value={editando ? texto : mxn(value)}
+      onFocus={(e) => {
+        setEditando(true);
+        setTexto(String(Math.round(value)));
+        requestAnimationFrame(() => e.target.select());
+      }}
+      onChange={(e) => {
+        const digitos = e.target.value.replace(/[^0-9]/g, '');
+        setTexto(digitos);
+        if (digitos !== '') {
+          const n = Number(digitos);
+          onChange(n);
+          if (trackName) track('field_change', { campo: trackName, valor: n });
+        }
+      }}
+      onBlur={() => {
+        let n = Number(texto);
+        if (!Number.isFinite(n) || texto === '') n = min;
+        n = Math.min(max, Math.max(min, n));
+        onChange(n);
+        setEditando(false);
+      }}
+    />
+  );
+}
 
 export default function Cotizador() {
   const navigate = useNavigate();
@@ -131,7 +176,13 @@ export default function Cotizador() {
 
             <div className="slider-block">
               <div className="cap">Lo que recibira en su cuenta</div>
-              <div className="big">{mxn(monto)}</div>
+              <MontoInput
+                value={monto}
+                min={FIN_CONFIG.montoMin}
+                max={FIN_CONFIG.montoMax}
+                onChange={setMonto}
+                trackName="cotizador_monto_input"
+              />
               <input
                 type="range"
                 min={FIN_CONFIG.montoMin}
@@ -173,14 +224,23 @@ export default function Cotizador() {
 
             <div className="slider-block" style={{ marginTop: 16 }}>
               <div className="cap">Pago quincenal que realizara</div>
-              <div className="big">{r ? mxn(r.pagoQuincenal) : '—'}</div>
+              {r && pagoRango ? (
+                <MontoInput
+                  value={r.pagoQuincenal}
+                  min={Math.floor(pagoRango.min)}
+                  max={Math.max(Math.ceil(pagoRango.max), Math.floor(pagoRango.min) + 1)}
+                  onChange={ajustarPorPago}
+                />
+              ) : (
+                <div className="big">—</div>
+              )}
               {r && pagoRango ? (
                 <input
                   type="range"
                   className={`capacity-slider${excede ? ' over' : ''}`}
                   min={Math.floor(pagoRango.min)}
                   max={Math.max(Math.ceil(pagoRango.max), Math.floor(pagoRango.min) + 1)}
-                  step={1}
+                  step={25}
                   value={Math.round(r.pagoQuincenal)}
                   style={{
                     background: `linear-gradient(to right, ${

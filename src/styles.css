@@ -986,16 +986,42 @@ h2,
   font-weight: 700;
   margin: 2px 0 12px;
 }
+/* Version editable del "big": mismo tamano/peso, reseteado a inputs (sin
+   borde/fondo propio) para que se vea igual de estatico hasta que se toca. */
+.big-input {
+  display: block;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 2px 0 12px;
+  font: inherit;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--ink);
+  outline: none;
+}
 input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
   height: 6px;
+  /* Padding + margin negativo iguales: crecen el area tocable/arrastrable
+     bastante mas alla de la barra visible (6px es muy poco para un dedo)
+     sin mover nada del layout de alrededor -el margen negativo cancela el
+     espacio extra que el padding metería en el flujo. background-clip
+     confina el relleno de color (el gradient inline de cada slider) a la
+     caja de contenido, para que la barra se seguna viendo igual de fina. */
+  padding: 9px 0;
+  margin: -9px 0;
+  box-sizing: content-box;
+  background-clip: content-box;
   border-radius: 999px;
   /* El relleno (parte recorrida) lo pinta cada slider con un linear-gradient
      inline calculado desde su valor. Fallback plano: */
   background: var(--line);
   outline: none;
+  transition: background 0.15s ease;
 }
 /* Firefox: relleno nativo de la parte recorrida */
 input[type='range']::-moz-range-progress {
