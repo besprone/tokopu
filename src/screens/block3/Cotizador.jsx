@@ -96,11 +96,25 @@ export default function Cotizador() {
   const [ofertaSel, setOfertaSel] = useState(null);
   const ofertaSelActual = ofertaSel ?? ofertas[0]?.id ?? null;
 
+  // Techo real del monto: como pasarse de lo que el plazo actual alcanza a
+  // pagar avanza de plazo solo (ver ajustarPorMonto), sin importar en que
+  // plazo se este parado ahora mismo lo maximo que se puede llegar a pedir
+  // es lo que alcanza a pagarse en el plazo MAS LARGO disponible. Motrar
+  // $150,000 (el limite de politica) como si fuera alcanzable cuando en
+  // realidad el slider se va a topar antes deja una franja muerta al final
+  // del recorrido -mejor que el slider (y su etiqueta derecha) usen este
+  // techo real, para que se pueda llegar hasta el borde.
+  const plazoMax = FIN_CONFIG.plazosSugeridos[FIN_CONFIG.plazosSugeridos.length - 1];
+  const montoTecho = useMemo(
+    () => Math.min(FIN_CONFIG.montoMax, montoMaximoPorPago(capacidad, plazoMax)),
+    [capacidad, plazoMax]
+  );
+
   // Al mover el monto (slider o input), si el plazo actual ya no alcanza a
   // pagarlo dentro de la capacidad, se busca solo el plazo mas corto de los
   // disponibles que si alcance -asi nunca hace falta llegar al aviso de
   // "excede la capacidad" solo por mover el monto. Si ni el plazo mas largo
-  // alcanza (capacidad muy baja), se limita el monto a lo maximo pagable ahi.
+  // alcanza (capacidad muy baja), se limita el monto al techo real de arriba.
   // Cambiar el plazo a mano (los chips) SI puede seguir mostrando "excede":
   // esa es una decision explicita del asesor, no algo que el sistema deba
   // corregir por su cuenta.
@@ -116,16 +130,15 @@ export default function Cotizador() {
       setPlazo(plazoQueAlcanza);
       setMonto(nuevoMonto);
     } else {
-      const plazoMax = FIN_CONFIG.plazosSugeridos[FIN_CONFIG.plazosSugeridos.length - 1];
       setPlazo(plazoMax);
-      setMonto(montoMaximoPorPago(capacidad, plazoMax));
+      setMonto(montoTecho);
     }
   };
 
   const excede = !!r && r.pagoQuincenal > capacidad;
   const usoPct = r ? Math.min(100, Math.round((r.pagoQuincenal / capacidad) * 100)) : 0;
   const montoPct = Math.round(
-    ((monto - FIN_CONFIG.montoMin) / (FIN_CONFIG.montoMax - FIN_CONFIG.montoMin)) * 100
+    ((monto - FIN_CONFIG.montoMin) / (montoTecho - FIN_CONFIG.montoMin)) * 100
   );
 
   // Rango de pago quincenal alcanzable para el plazo elegido (extremos del
@@ -219,14 +232,14 @@ export default function Cotizador() {
               <MontoInput
                 value={monto}
                 min={FIN_CONFIG.montoMin}
-                max={FIN_CONFIG.montoMax}
+                max={montoTecho}
                 onChange={ajustarPorMonto}
                 trackName="cotizador_monto_input"
               />
               <input
                 type="range"
                 min={FIN_CONFIG.montoMin}
-                max={FIN_CONFIG.montoMax}
+                max={montoTecho}
                 step={FIN_CONFIG.montoStep}
                 value={monto}
                 style={{
@@ -240,7 +253,7 @@ export default function Cotizador() {
               />
               <div className="range-ends">
                 <span>{mxn(FIN_CONFIG.montoMin)}</span>
-                <span>{mxn(FIN_CONFIG.montoMax)}</span>
+                <span>{mxn(montoTecho)}</span>
               </div>
             </div>
 
