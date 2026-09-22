@@ -13,44 +13,48 @@ import {
   pct,
 } from '../../domain/finance.js';
 
-// Version editable del numero grande de un slider: mientras se escribe se ve
-// en digitos crudos (sin formato, para no pelearse con lo que el asesor esta
-// tecleando); al perder el foco se recorta a [min,max] y se vuelve a mostrar
-// formateado. El slider se sincroniza en vivo mientras se escribe (onChange
-// se dispara con cada digito valido, sin esperar al blur).
+// Version editable del numero grande de un slider, estilo "monto de envio"
+// de una app de pagos: los digitos se acumulan como CENTAVOS de derecha a
+// izquierda (igual que Venmo/SPEI en el celular) y siempre se ven con "$",
+// separador de miles y los dos decimales -nunca digitos crudos sueltos. El
+// slider se sincroniza en vivo con cada digito (onChange se dispara antes
+// del blur); al perder el foco se recorta a [min,max].
 function MontoInput({ value, min, max, onChange, trackName }) {
   const { track } = useMetrics();
   const [editando, setEditando] = useState(false);
-  const [texto, setTexto] = useState(String(Math.round(value)));
+  // Centavos totales, como string de puros digitos (p. ej. "580000" = $5,800.00).
+  const [centavos, setCentavos] = useState(String(Math.round(value * 100)));
 
   useEffect(() => {
-    if (!editando) setTexto(String(Math.round(value)));
+    if (!editando) setCentavos(String(Math.round(value * 100)));
   }, [value, editando]);
+
+  const valorDeCentavos = Number(centavos || '0') / 100;
 
   return (
     <input
       type="text"
       inputMode="numeric"
       className="big-input"
-      value={editando ? texto : mxn(value)}
+      value={editando ? mxn(valorDeCentavos) : mxn(value)}
       onFocus={(e) => {
         setEditando(true);
-        setTexto(String(Math.round(value)));
+        setCentavos(String(Math.round(value * 100)));
         requestAnimationFrame(() => e.target.select());
       }}
       onChange={(e) => {
-        const digitos = e.target.value.replace(/[^0-9]/g, '');
-        setTexto(digitos);
-        if (digitos !== '') {
-          const n = Number(digitos);
-          onChange(n);
-          if (trackName) track('field_change', { campo: trackName, valor: n });
-        }
+        // Los caracteres de formato ($, comas, punto) no traen digitos, asi
+        // que quitarlos deja exactamente los centavos ya tecleados mas el
+        // nuevo digito (si se escribio al final) o menos el ultimo (si se
+        // borro) -sin tener que rastrear a mano el cursor.
+        const nuevosCentavos = e.target.value.replace(/[^0-9]/g, '');
+        setCentavos(nuevosCentavos);
+        const n = Number(nuevosCentavos || '0') / 100;
+        onChange(n);
+        if (trackName) track('field_change', { campo: trackName, valor: n });
       }}
       onBlur={() => {
-        let n = Number(texto);
-        if (!Number.isFinite(n) || texto === '') n = min;
-        n = Math.min(max, Math.max(min, n));
+        const n = Math.min(max, Math.max(min, valorDeCentavos));
         onChange(n);
         setEditando(false);
       }}

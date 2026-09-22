@@ -986,20 +986,28 @@ h2,
   font-weight: 700;
   margin: 2px 0 12px;
 }
-/* Version editable del "big": mismo tamano/peso, reseteado a inputs (sin
-   borde/fondo propio) para que se vea igual de estatico hasta que se toca. */
+/* Version editable del "big": mismo tamano/peso que el texto estatico, pero
+   con borde propio (como cualquier .field input) para que se note que se
+   puede tocar -padding chico a proposito: con letra de 26px un padding como
+   el de un input normal (12px 14px) se ve inflado y desproporcionado. */
 .big-input {
   display: block;
   width: 100%;
-  border: none;
-  background: none;
-  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  padding: 4px 10px;
   margin: 2px 0 12px;
   font: inherit;
   font-size: 26px;
   font-weight: 700;
   color: var(--ink);
   outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.big-input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-50);
 }
 input[type='range'] {
   -webkit-appearance: none;
